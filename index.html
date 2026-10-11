@@ -3968,16 +3968,32 @@ startPieceGame=function(piece){vqcCloseOtherViews('piece');vqcOldPiece(piece);if
 const vqcOldExit=exitPieceGame;
 exitPieceGame=function(){vqcCloseOtherViews('editor');vqcOldExit();vqcBroadcastView('editor');};
 
+let teacherLastStudentJoinEvent = null;
 let teacherRewardLastScore = null;
 let rewardDismissedInRoom = false;
 let rewardClosing = false;
 function listenToRoom(){
   teacherRewardLastScore = null;
+  teacherLastStudentJoinEvent = null;
   rewardDismissedInRoom = false;
   stopRoomListener();
   roomUnsubscribe=roomRef.onSnapshot(snap=>{
     if(!snap.exists)return;
     const data=snap.data();
+    // Chỉ thông báo khi xuất hiện một lượt tham gia mới; không lặp lại khi bàn cờ cập nhật.
+    if(role==="teacher"){
+      const joinEvent=typeof data.studentJoinEvent==="string"?data.studentJoinEvent:null;
+      if(joinEvent && joinEvent!==teacherLastStudentJoinEvent){
+        const firstObservation=teacherLastStudentJoinEvent===null;
+        teacherLastStudentJoinEvent=joinEvent;
+        // Lượt vào phòng vừa xảy ra trong 30 giây: kể cả khi giáo viên mới mở lại trang.
+        const joinTime=Number(joinEvent.split(':')[0]);
+        if(!firstObservation || (Number.isFinite(joinTime)&&Date.now()-joinTime>=0&&Date.now()-joinTime<30000)){
+          vqcNotify('Học sinh đã vào lớp thành công! Phòng '+room+' đã có học sinh tham gia.','success');
+          addLog('Học sinh vừa vào phòng '+room);
+        }
+      }
+    }
     vqcReceiveView(data.activeView);
     if(data.mateExercise)receiveMateExercise(data.mateExercise);
     pvpReceive(data.pvp||null);
@@ -4014,7 +4030,7 @@ async function createRoom(){
   try{
     setRole("teacher");room=String(Math.floor(100000+Math.random()*900000));document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     lastFrom=lastTo=selected=null;renderBoard();
-    await roomRef.set({state:[...state],editorSession:{mode:editorPlaying?"play":"edit",fen:editorPlaying&&editorChess?editorChess.fen():editorFen()},lastFrom:null,lastTo:null,studentOnline:false,activeView:{view:'editor',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await roomRef.set({state:[...state],editorSession:{mode:editorPlaying?"play":"edit",fen:editorPlaying&&editorChess?editorChess.fen():editorFen()},lastFrom:null,lastTo:null,studentOnline:false,studentJoinEvent:null,activeView:{view:'editor',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
@@ -4023,7 +4039,7 @@ async function joinRoom(){
   try{
     room=normalizeRoomCode(document.getElementById("roomCode").value);if(!room){vqcAlert("Hãy nhập mã phòng.");return;}document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     const snap=await roomRef.get();if(!snap.exists){vqcAlert("Không tìm thấy phòng "+room+".");roomRef=null;return;}
-    if(role==="student")await roomRef.update({studentOnline:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(role==="student")await roomRef.update({studentOnline:true,studentJoinEvent:Date.now()+':'+Math.random().toString(36).slice(2,10),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();document.getElementById("connection").innerHTML='<div class="dot"></div>Đã vào phòng '+room;document.getElementById("status").textContent=role==="student"?"✅ Đã kết nối với giáo viên.":"👀 Đang quan sát học sinh.";addLog((role==="student"?"Học sinh":"Giáo viên")+" đã vào phòng "+room);
     vqcNotify("Vào lớp thành công! Đã kết nối với phòng " + room + ". Chúc bạn có buổi học thật vui!", "success");
   }catch(e){console.error(e);vqcAlert("Không vào được phòng. Kiểm tra Firestore Rules và Internet.");}
