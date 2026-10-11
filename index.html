@@ -2576,7 +2576,7 @@ button{
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<!-- Spark: Không tải Firebase Functions; tài khoản học viên được tạo thủ công trong Firebase Console. -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 
 
 
@@ -2610,7 +2610,7 @@ const firebaseConfig={apiKey:"AIzaSyBL95lreBAEGfPL2TIv2FnxTNBVarVA1t0",authDomai
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const auth=firebase.auth();
-const ACCOUNT_SPARK_MODE=true; // Gói Spark: không gọi Cloud Functions
+const callable=firebase.app().functions("asia-southeast1");
 
 /* =========================================================
 
@@ -3873,7 +3873,7 @@ function exitPieceGame(){
 }
 document.querySelectorAll(".lesson[data-piece]").forEach(item=>{
   item.addEventListener("click",()=>{
-    if(role==="teacher"&&roomRef){document.getElementById("status").textContent="Giáo viên đang theo dõi thử thách của học sinh.";return;}
+    // Giáo viên cũng được mở và thực hành các bài tập quân cờ cơ bản.
     document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active")); item.classList.add("active");
     const p=item.dataset.piece;
     if(p==="FREE") exitPieceGame(); else startPieceGame(p);
@@ -4489,7 +4489,7 @@ async function pvpOfferDraw(){
 }
 
 
-/* ========== TÀI KHOẢN HỌC VIÊN: AUTH + FIRESTORE (SPARK) ========== */
+/* ========== TÀI KHOẢN HỌC VIÊN: AUTH + CLOUD FUNCTIONS ========== */
 window.accountProfile=null;
 const accountEsc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const accountMsg=(msg,error=false)=>{const el=document.getElementById('accountActionMessage');if(el){el.textContent=msg;el.style.color=error?'#b42318':'#397453';}};
@@ -4527,23 +4527,26 @@ async function accountShowTab(tab){
  if(tab==='profile'){
   root.innerHTML='<h3>Hồ sơ</h3><p><b>'+accountEsc(p.name)+'</b> · '+accountEsc(p.code||'Giáo viên')+'</p><p>Vai trò: '+(p.role==='teacher'?'Giáo viên':'Học viên')+'</p><label>Đổi mật khẩu</label><input id="newAccountPassword" type="password" placeholder="Mật khẩu mới (tối thiểu 10 ký tự)"><button class="btn btn-blue" onclick="accountChangePassword()">Đổi mật khẩu</button>';
  }else if(tab==='manage'&&p.role==='teacher'){
-  root.innerHTML='<h3>Quản lý học viên — Firebase Spark</h3><p class="account-note">Gói Spark: giáo viên tạo, khóa và đặt lại mật khẩu tài khoản trong Firebase Console. Website chỉ hiển thị danh sách học viên, không tạo tài khoản tự động.</p><p class="account-note"><b>Tạo học viên:</b> Firebase Console → Authentication → Users → Add user. Với mã HV001, dùng email nội bộ <code>HV001@students.hoccovua.invalid</code> và mật khẩu riêng. Sao chép UID, tạo tài liệu <code>users/{UID}</code> trong Firestore với <code>role: student</code>, <code>active: true</code>, <code>name</code>, <code>code: HV001</code> và <code>teacherId</code> là UID giáo viên. Chỉ làm việc này trong Firebase Console, không cung cấp quyền quản trị cho học viên.</p><p class="account-note"><b>Khóa học viên:</b> đổi <code>active</code> thành <code>false</code> trong hồ sơ Firestore; để ngăn đăng nhập, vô hiệu hóa tài khoản trong Authentication. <b>Đặt lại mật khẩu:</b> quản lý trong Authentication hoặc dùng quy trình khôi phục phù hợp; mã email nội bộ không nhận thư khôi phục.</p><h3>Học viên của tôi</h3><div id="accountStudentList" class="account-list">Đang tải...</div>';
+  root.innerHTML='<h3>Tạo tài khoản học viên</h3><label>Họ tên</label><input id="newStudentName" placeholder="Họ tên học viên"><label>Mã học viên</label><input id="newStudentCode" placeholder="HV001"><label>Mật khẩu ban đầu</label><input id="newStudentPassword" type="password" placeholder="Tối thiểu 10 ký tự"><label>Mã lớp (không bắt buộc)</label><input id="newStudentClass" placeholder="CB01"><button class="btn btn-blue" onclick="accountCreateStudent()">+ Tạo học viên</button><h3>Học viên của tôi</h3><div id="accountStudentList" class="account-list">Đang tải...</div>';
   accountLoadStudents();
  }else if(tab==='classes'&&p.role==='teacher'){
-  root.innerHTML='<h3>Lớp & giao bài — Firebase Spark</h3><p class="account-note">Tính năng tạo lớp và giao bài tự động đang tạm tắt vì cần Cloud Functions. Bạn có thể xem danh sách lớp đã có bên dưới. Chỉ cập nhật dữ liệu trong Firebase Console sau khi xác nhận cấu trúc và quy tắc Firestore của dự án.</p><div id="accountClassList">Đang tải...</div>';
+  root.innerHTML='<h3>Tạo lớp</h3><label>Mã lớp</label><input id="newClassCode" placeholder="CB01"><label>Tên lớp</label><input id="newClassName" placeholder="Cờ vua cơ bản"><button class="btn btn-blue" onclick="accountCreateClass()">Tạo lớp</button><h3>Giao bài</h3><label>Mã lớp</label><input id="assignmentClass" placeholder="CB01"><label>Bài tập</label><select id="assignmentExercise"><option value="basic_R">Quân Xe</option><option value="basic_B">Quân Tượng</option><option value="basic_Q">Quân Hậu</option><option value="basic_K">Quân Vua</option><option value="basic_N">Quân Mã</option><option value="basic_P">Quân Tốt</option>'+Array.from({length:10},(_,i)=>'<option value="mate2_'+(52+i)+'">Hình '+(52+i)+'</option>').join('')+Array.from({length:6},(_,i)=>'<option value="mate3_'+(162+i)+'">Hình '+(162+i)+'</option>').join('')+'</select><button class="btn btn-blue" onclick="accountAssign()">Giao bài</button><div id="accountClassList"></div>';
   accountLoadClasses();
  }else if(tab==='progress'){
   root.innerHTML='<h3>Tiến độ học tập</h3>'+(p.role==='teacher'?'<label>Mã học viên cần xem</label><input id="progressStudentCode" placeholder="HV001"><button class="btn btn-blue" onclick="accountLoadProgress()">Xem kết quả</button>':'')+'<div id="accountProgressList">Đang tải...</div><h3>Bài được giao</h3><div id="accountAssignmentList"></div>';
   if(p.role==='student')accountLoadProgress();
  }
 }
-function accountSparkNotice(){accountMsg('Chức năng này cần Cloud Functions (Blaze). Trên Spark, hãy quản lý thủ công trong Firebase Console.',true);}
-async function accountCreateStudent(){accountSparkNotice();}
-async function accountLoadStudents(){const el=document.getElementById('accountStudentList');try{const s=await db.collection('users').where('teacherId','==',auth.currentUser.uid).limit(100).get();el.innerHTML=s.empty?'Chưa có học viên.':s.docs.map(d=>{const x=d.data();return '<div class="account-list-item"><b>'+accountEsc(x.name)+'</b> · '+accountEsc(x.code)+' · '+accountEsc(x.classCode||'Chưa xếp lớp')+' · '+(x.active===false?'Đang khóa':'Đang hoạt động')+'</div>';}).join('');}catch(e){el.textContent='Không tải được danh sách: '+e.message;}}
-async function accountToggleStudent(){accountSparkNotice();}
-async function accountResetStudent(){accountSparkNotice();}
-async function accountCreateClass(){accountSparkNotice();}
-async function accountAssign(){accountSparkNotice();}
+async function accountCall(name,data){return (await callable.httpsCallable(name)(data)).data;}
+async function accountCreateStudent(){
+ const name=document.getElementById('newStudentName').value.trim(),code=document.getElementById('newStudentCode').value.trim().toUpperCase(),password=document.getElementById('newStudentPassword').value, classCode=document.getElementById('newStudentClass').value.trim().toUpperCase();
+ try{const result=await accountCall('createStudent',{name,code,password,classCode});accountMsg('Đã tạo tài khoản '+result.code+'. Hãy chuyển mật khẩu riêng cho phụ huynh.');document.getElementById('newStudentPassword').value='';accountLoadStudents();}catch(e){accountMsg(e.message,true);}
+}
+async function accountLoadStudents(){const el=document.getElementById('accountStudentList');try{const s=await db.collection('users').where('teacherId','==',auth.currentUser.uid).limit(100).get();el.innerHTML=s.empty?'Chưa có học viên.':s.docs.map(d=>{const x=d.data();return '<div class="account-list-item"><b>'+accountEsc(x.name)+'</b> · '+accountEsc(x.code)+' · '+accountEsc(x.classCode||'Chưa xếp lớp')+'<div class="account-row"><button onclick="accountToggleStudent(\''+d.id+'\','+!x.active+')">'+(x.active===false?'Mở khóa':'Khóa')+'</button><button onclick="accountResetStudent(\''+d.id+'\')">Đặt lại mật khẩu</button></div></div>';}).join('');}catch(e){el.textContent='Không tải được danh sách: '+e.message;}}
+async function accountToggleStudent(uid,active){try{await accountCall('setStudentActive',{uid,active});accountMsg('Đã cập nhật tài khoản.');accountLoadStudents();}catch(e){accountMsg(e.message,true);}}
+async function accountResetStudent(uid){const password=prompt('Nhập mật khẩu mới (ít nhất 10 ký tự). Không gửi qua nhóm công khai.');if(!password)return;try{await accountCall('resetStudentPassword',{uid,password});accountMsg('Đã đặt lại mật khẩu.');}catch(e){accountMsg(e.message,true);}}
+async function accountCreateClass(){try{await accountCall('createClass',{code:document.getElementById('newClassCode').value.trim().toUpperCase(),name:document.getElementById('newClassName').value.trim()});accountMsg('Đã tạo lớp.');accountLoadClasses();}catch(e){accountMsg(e.message,true);}}
+async function accountAssign(){try{await accountCall('createAssignment',{classCode:document.getElementById('assignmentClass').value.trim().toUpperCase(),exercise:document.getElementById('assignmentExercise').value});accountMsg('Đã giao bài.');}catch(e){accountMsg(e.message,true);}}
 async function accountLoadClasses(){const el=document.getElementById('accountClassList');try{const s=await db.collection('classes').where('teacherId','==',auth.currentUser.uid).limit(50).get();el.innerHTML='<h3>Lớp của tôi</h3>'+s.docs.map(d=>'<p>'+accountEsc(d.data().code)+' — '+accountEsc(d.data().name)+'</p>').join('');}catch(e){el.textContent=e.message;}}
 async function accountSaveProgress(exercise,completed,score){
  const p=window.accountProfile;if(!p||p.role!=='student'||!auth.currentUser)return;
@@ -4560,6 +4563,10 @@ async function accountLoadProgress(){
 }
 
 </script>
+
+<footer style="text-align:center;padding:22px 12px 28px;color:#63788B;font-size:14px;line-height:1.6">
+  © 2026 Vương Quốc Cờ Vua · Tác giả: <strong>Dương Thanh Sang</strong>
+</footer>
 </body>
 
 </html>
