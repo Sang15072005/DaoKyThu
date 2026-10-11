@@ -2181,28 +2181,6 @@ button{
 
 
 
-
-
-    <div class="lesson">
-
-
-
-        <div class="lesson-icon">
-
-            ⭐
-
-        </div>
-
-
-
-        Bài tập vui
-
-
-
-    </div>
-
-
-
 <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
 <div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước (6 bài)</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
 
@@ -2761,6 +2739,7 @@ let history = [];
 
 /* Trò chơi riêng cho từng quân cờ */
 let editorMode = true;
+let vqcCurrentSection = 'editor';
 let editorPlaying = false;
 let editorChess = null;
 let editorSyncBusy = false;
@@ -2769,8 +2748,8 @@ let editorFlipped = false;
 let editorFrom = null;
 function editorRefresh(){
  const panel=document.getElementById('editorPanel');if(!panel)return;
- panel.style.display=editorMode?'block':'none';
- const playBar=document.getElementById('editorPlayBar');if(playBar)playBar.style.display=editorPlaying?'flex':'none';
+ panel.style.display=(editorMode && vqcCurrentSection==='editor')?'block':'none';
+ const playBar=document.getElementById('editorPlayBar');if(playBar)playBar.style.display=(editorPlaying && vqcCurrentSection==='editor')?'flex':'none';
  const pal=document.getElementById('editorPalette');pal.innerHTML='';
  ['K','Q','R','B','N','P','k','q','r','b','n','p',''].forEach(code=>{
   const b=document.createElement('button');b.type='button';b.draggable=true;b.className='editor-piece'+(editorPiece===code?' active':'');
@@ -3947,6 +3926,8 @@ let vqcNavApplying=false;
 let vqcNavSeen=null;
 let vqcNavSerial=0;
 function vqcCloseOtherViews(target){
+  vqcCurrentSection=target;
+  if(typeof editorRefresh==='function')editorRefresh();
   if(target!=='mate2')document.getElementById('mateOverlay')?.classList.remove('open');
   if(target!=='mate3')document.getElementById('mate3Overlay')?.classList.remove('open');
   if(target!=='pvp')document.getElementById('pvpOverlay')?.classList.remove('open');
@@ -3968,11 +3949,7 @@ function vqcReceiveView(data){
     if(view==='mate2')openMateExercises(index);
     else if(view==='mate3')openMate3(index);
     else if(view==='pvp')openPvp();
-    else if(view==='fun'){
-      const el=[...document.querySelectorAll('.lesson')].find(e=>e.textContent.includes('Bài tập vui'));
-      if(el){document.querySelectorAll('.lesson').forEach(e=>e.classList.remove('active'));el.classList.add('active');}
-      document.getElementById('status').textContent='⭐ Đã chuyển đến Bài tập vui. Chọn một quân cờ để bắt đầu.';
-    }else if(view==='piece'&&pieceGameNames[data.piece]){
+    else if(view==='piece'&&pieceGameNames[data.piece]){
       startPieceGame(data.piece);
     }else if(view==='editor'){
       exitPieceGame();
@@ -4050,13 +4027,7 @@ async function joinRoom(){
     listenToRoom();document.getElementById("connection").innerHTML='<div class="dot"></div>Đã vào phòng '+room;document.getElementById("status").textContent=role==="student"?"✅ Đã kết nối với giáo viên.":"👀 Đang quan sát học sinh.";addLog((role==="student"?"Học sinh":"Giáo viên")+" đã vào phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không vào được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
-document.querySelectorAll('.lesson').forEach(el=>{
- if(el.textContent.includes('Bài tập vui')){
-   el.setAttribute('role','button');el.tabIndex=0;
-   el.addEventListener('click',()=>{vqcCloseOtherViews('fun');vqcBroadcastView('fun');});
-   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.click();}});
- }
-});
+
 /* =========================================================
    11. GỬI BÀN CỜ LÊN FIRESTORE
 ========================================================= */
@@ -4140,6 +4111,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&document.getElementById('starRewardOverlay')?.classList.contains('open'))closeStarReward();
 });
 function startPieceGame(piece){
+  vqcCurrentSection='piece';
   hideStarRewardLocal();
   rewardDismissedInRoom=false;
   editorPlaying=false;editorChess=null;
@@ -4189,6 +4161,7 @@ function updatePieceGameBar(){
   document.getElementById("pieceGameScore").textContent="⭐ " + pieceGame.score + " / 6";
 }
 function exitPieceGame(){
+  vqcCurrentSection='editor';
   editorPlaying=false;editorChess=null;
   editorMode=true;editorRefresh();
   pieceGame=null; history=[]; selected=lastFrom=lastTo=null; state=getStartPosition();
