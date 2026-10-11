@@ -1836,6 +1836,23 @@ button{
 .mate-side button,.mate3-side button{border-radius:12px!important;border:1px solid #bfdcf3!important;background:#eef7ff!important;color:#264c70!important;font-weight:700!important;padding:14px!important;cursor:pointer}
 .mate-side button:hover,.mate3-side button:hover{background:#dceeff!important}
 .mate-board,.mate3-board{border:5px solid #e2edf7!important;border-radius:13px!important;overflow:hidden}
+
+/* Trang chào mừng – chỉ trang trí, không thay đổi trạng thái Firebase */
+.vqc-home-hero[hidden]{display:none!important}.vqc-home-hero{position:relative;overflow:hidden;text-align:center;border-radius:24px;padding:25px 22px 24px;margin-bottom:19px;background:linear-gradient(135deg,#f0f9ff 0%,#e5f1ff 50%,#eaf9f1 100%);border:1px solid #cde3ee;box-shadow:0 10px 30px rgba(24,83,126,.09)}
+.vqc-home-hero:before,.vqc-home-hero:after{content:'✦';position:absolute;color:#e9b73b;font-size:35px;opacity:.6}.vqc-home-hero:before{top:16px;left:24px}.vqc-home-hero:after{right:26px;bottom:20px;font-size:25px}
+.vqc-home-tag{display:inline-block;padding:7px 14px;background:#ffffffb8;color:#356e91;border-radius:99px;font-weight:800;font-size:11px;letter-spacing:1.2px}
+.vqc-home-symbol{font-size:66px;color:#206b9d;line-height:1.25;text-shadow:0 5px 0 #d4e5f5}
+.vqc-home-hero h1{font-size:clamp(25px,3.1vw,39px);line-height:1.16;color:#1e4b71;margin:4px 0 12px;font-weight:900}.vqc-home-hero h1 span{color:#26986d}
+.vqc-home-hero p{font-size:14px;line-height:1.7;color:#49677b;margin:0 auto 18px;max-width:510px}
+.vqc-home-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.vqc-home-actions button{border:0;border-radius:12px;background:linear-gradient(135deg,#218b66,#2fa77c);color:white;padding:12px 18px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 6px 16px #238b6730}.vqc-home-actions button:hover{transform:translateY(-1px)}.vqc-home-actions .vqc-home-secondary{background:white;color:#246e9b;border:1px solid #c4deed;box-shadow:none}
+.vqc-home-hint{font-size:11px;color:#668398;margin-top:15px}
+@media(max-width:600px){.vqc-home-hero{padding:18px 12px}.vqc-home-symbol{font-size:52px}.vqc-home-hero p{font-size:12px}.vqc-home-actions button{padding:11px 12px;font-size:12px}}
+
+/* Trang chủ không còn bàn cờ tự do: chỉ mở bàn khi bắt đầu bài thực hành. */
+.center .board-shell{display:none}
+.center.vqc-practice-active .board-shell{display:block}
+.center .board-toolbar{display:none!important}
+.center:not(.vqc-practice-active) #pieceGameBar{display:none!important}
 </style>
 
 
@@ -2162,27 +2179,7 @@ button{
 
 
 
-    <div class="lesson" data-piece="FREE" role="button" tabindex="0" aria-label="Chỉnh sửa bàn cờ">
-
-
-
-        <div class="lesson-icon">
-
-            🧩
-
-        </div>
-
-
-
-        Chỉnh sửa bàn cờ
-
-
-
-    </div>
-
-
-
-<div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
+    <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
 <div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước (6 bài)</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
 
 
@@ -2205,50 +2202,6 @@ button{
 
 
 
-    <div class="welcome">
-
-
-
-        <div class="welcome-icon">
-
-            👋
-
-        </div>
-
-
-
-        <div>
-
-
-
-            <strong>
-
-                Chào mừng đến lớp học cờ!
-
-            </strong>
-
-
-
-            <span>
-
-                Chọn quân trong bảng chỉnh sửa để tự tạo một thế cờ.
-
-            </span>
-
-
-
-        </div>
-
-
-
-    </div>
-
-
-
-
-
-
-
     <div id="pieceGameBar" class="piece-game-bar">
         <div>
             <div id="pieceGameTitle" class="piece-game-title">⭐ Thử thách quân cờ</div>
@@ -2257,7 +2210,7 @@ button{
         <div id="pieceGameScore" class="piece-game-score">⭐ 0 / 6</div>
     </div>
 
-    <div id="editorPlayBar" style="display:none;margin:0 0 12px;padding:12px;border:2px solid #a5d6bb;border-radius:14px;background:#f0fff6;align-items:center;gap:10px;flex-wrap:wrap"><strong id="editorPlayStatus">♟ Đang luyện thế cờ</strong><button class="btn btn-soft" onclick="editorBackToEdit()">✎ Chỉnh sửa thế cờ</button></div><div class="board-shell">
+    <div class="board-shell">
 
 
 
@@ -2378,19 +2331,7 @@ button{
 
 
     </div>
-
-
-
-
-
-    <div id="editorPanel" class="editor-panel">
-      <div class="editor-heading">♟ Chỉnh sửa bàn cờ <span>Kéo quân từ khay vào bàn cờ hoặc chọn quân rồi bấm ô. Kéo quân trên bàn để đổi vị trí.</span></div>
-      <div id="editorPalette" class="editor-palette"></div>
-      <div class="editor-actions"><button class="btn btn-soft" onclick="editorFlip()">⇅ Đảo bàn cờ</button><button class="btn btn-blue" onclick="editorCopyFen()">📋 Sao chép FEN</button><button class="btn btn-soft" onclick="editorLoadFen()">📥 Nhập FEN</button><label class="editor-turn">Lượt đi <select id="editorTurn"><option value="w">Trắng</option><option value="b">Đen</option></select></label><button class="btn btn-green" onclick="editorStartHere()">▶ Bắt đầu từ đây</button></div>
-      <small>Giáo viên dựng thế cờ, chọn lượt đi rồi nhấn “Bắt đầu từ đây”. Trong phòng, giáo viên và học sinh đều có thể di chuyển quân đúng luật trên cùng bàn cờ.</small>
-    </div>
-
-    <div class="panel-content">
+<div class="panel-content">
 
 
 
@@ -2739,8 +2680,8 @@ let roomRef = null;
 let history = [];
 
 /* Trò chơi riêng cho từng quân cờ */
-let editorMode = true;
-let vqcCurrentSection = 'editor';
+let editorMode = false;
+let vqcCurrentSection = 'board';
 let editorPlaying = false;
 let editorChess = null;
 let editorSyncBusy = false;
@@ -3018,6 +2959,9 @@ function getPieceGameLegalMoves(from){
 }
 
 function renderBoard(){
+    const center=document.querySelector('section.center');
+    if(center)center.classList.toggle('vqc-practice-active',!!pieceGame);
+
     if(editorMode)editorRefresh();
 
 
@@ -3345,6 +3289,9 @@ function renderBoard(){
 
 
 function clickSquare(index){
+    // Không cho phép đi tự do ngoài các bài học có luật.
+    if(!pieceGame && !editorMode && !editorPlaying)return;
+
     if(editorMode){editorPut(index);return;}
     if(editorPlaying){
       if(selected===null){if(state[index] && editorChess && editorChess.get('abcdefgh'[index%8]+(8-Math.floor(index/8)))?.color===editorChess.turn()){selected=index;renderBoard();}return;}
@@ -3952,7 +3899,7 @@ function vqcReceiveView(data){
     else if(view==='pvp')openPvp();
     else if(view==='piece'&&pieceGameNames[data.piece]){
       startPieceGame(data.piece);
-    }else if(view==='editor'){
+    }else if(view==='board'){
       exitPieceGame();
     }
   }finally{vqcNavApplying=false;}
@@ -3967,7 +3914,7 @@ openPvp=function(){vqcCloseOtherViews('pvp');vqcOldPvp();vqcBroadcastView('pvp',
 const vqcOldPiece=startPieceGame;
 startPieceGame=function(piece){vqcCloseOtherViews('piece');vqcOldPiece(piece);if(!vqcNavApplying&&roomRef){const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+role;vqcNavSeen=stamp;roomRef.update({activeView:{view:'piece',piece,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(console.error);}};
 const vqcOldExit=exitPieceGame;
-exitPieceGame=function(){vqcCloseOtherViews('editor');vqcOldExit();vqcBroadcastView('editor');};
+exitPieceGame=function(){vqcCloseOtherViews('board');vqcOldExit();vqcBroadcastView('board');};
 
 // Theo dõi trạng thái học sinh: rời phòng chủ động hoặc mất kết nối.
 let studentPresenceTimer=null;
@@ -4050,13 +3997,6 @@ function listenToRoom(){
     if(data.mateExercise)receiveMateExercise(data.mateExercise);
     pvpReceive(data.pvp||null);
     // Chỉ nhận dữ liệu từ máy khác hoặc bản đã xác nhận, không xóa nước đi đang chọn.
-    if(data.editorSession){
-      const sess=data.editorSession;
-      if(sess.mode==='play'&&typeof Chess==='function'){
-        const g=new Chess();if(g.load(sess.fen)){editorChess=g;editorPlaying=true;editorMode=false;pieceGame=null;editorSetStatus();}
-      }else if(sess.mode==='edit'){editorPlaying=false;editorChess=null;editorMode=true;}
-      editorRefresh();
-    }
     if(Array.isArray(data.state)&&data.state.length===64){
       state=[...data.state];lastFrom=data.lastFrom??null;lastTo=data.lastTo??null;
       const g=data.pieceGame;
@@ -4082,7 +4022,7 @@ async function createRoom(){
   try{
     setRole("teacher");room=String(Math.floor(100000+Math.random()*900000));document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     lastFrom=lastTo=selected=null;renderBoard();
-    await roomRef.set({state:[...state],editorSession:{mode:editorPlaying?"play":"edit",fen:editorPlaying&&editorChess?editorChess.fen():editorFen()},lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:null,studentJoinEvent:null,activeView:{view:'editor',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:null,studentJoinEvent:null,activeView:{view:'board',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
@@ -4101,7 +4041,7 @@ async function joinRoom(){
    11. GỬI BÀN CỜ LÊN FIRESTORE
 ========================================================= */
 async function sendBoard(){
-  if(editorMode||editorPlaying)return;
+  
   if(!roomRef||role!=="student")return;
   try{await roomRef.update({state:[...state],pieceGame:serializePieceGame(),rewardDismissed:pieceGame&&pieceGame.score>=6?rewardDismissedInRoom:false,lastFrom:lastFrom??null,lastTo:lastTo??null,lastActor:role,studentOnline:true,studentHeartbeatAt:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
   catch(e){console.error(e);document.getElementById("status").textContent="⚠️ Chưa gửi được thao tác lên Firebase.";}
@@ -4180,6 +4120,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&document.getElementById('starRewardOverlay')?.classList.contains('open'))closeStarReward();
 });
 function startPieceGame(piece){
+  document.getElementById("vqcHomeHero")?.setAttribute("hidden", "");
   vqcCurrentSection='piece';
   hideStarRewardLocal();
   rewardDismissedInRoom=false;
@@ -4230,9 +4171,10 @@ function updatePieceGameBar(){
   document.getElementById("pieceGameScore").textContent="⭐ " + pieceGame.score + " / 6";
 }
 function exitPieceGame(){
-  vqcCurrentSection='editor';
+  vqcCurrentSection='board';
+  document.getElementById('vqcHomeHero')?.removeAttribute('hidden');
   editorPlaying=false;editorChess=null;
-  editorMode=true;editorRefresh();
+  editorMode=false;editorRefresh();
   pieceGame=null; history=[]; selected=lastFrom=lastTo=null; state=getStartPosition();
   document.getElementById("pieceGameBar").classList.remove("show");
   document.querySelectorAll(".board-toolbar").forEach(x=>x.style.display="flex");
@@ -4240,12 +4182,12 @@ function exitPieceGame(){
   renderBoard(); sendBoard();
 }
 document.querySelectorAll(".lesson[data-piece]").forEach(item=>{
-  if(item.dataset.piece==="FREE") item.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();item.click();}});
+  
   item.addEventListener("click",()=>{
     // Giáo viên cũng được mở và thực hành các bài tập quân cờ cơ bản.
     document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active")); item.classList.add("active");
     const p=item.dataset.piece;
-    if(p==="FREE") exitPieceGame(); else startPieceGame(p);
+    startPieceGame(p);
   });
 });
 
@@ -4259,7 +4201,7 @@ document.querySelectorAll(".lesson[data-piece]").forEach(item=>{
 
 function setupStart(){
     editorPlaying=false;editorChess=null;
-    editorMode=true;editorRefresh();
+    editorMode=false;editorRefresh();
 
 
 
@@ -4341,7 +4283,7 @@ function setupStart(){
 
 function clearBoard(){
     editorPlaying=false;editorChess=null;
-    editorMode=true;editorRefresh();
+    editorMode=false;editorRefresh();
 
 
 
@@ -4538,6 +4480,7 @@ let mateChess=null,mateIndex=0,mateSelected=null,mateWhiteMoves=0,mateBusy=false
 function mateMessage(t){document.getElementById('mateMessage').textContent=t;}
 function mateCoords(i){return 'abcdefgh'[i%8]+(8-Math.floor(i/8));}
 function openMateExercises(i){
+  document.getElementById("vqcHomeHero")?.setAttribute("hidden", "");
   if(typeof Chess==='undefined'){vqcAlert('Cần có Internet để tải thư viện luật cờ vua. Hãy thử tải lại trang.');return;}
   document.getElementById('mateOverlay').classList.add('open');
   mateIndex=(i+MATE_EXERCISES.length)%MATE_EXERCISES.length;
@@ -4612,7 +4555,7 @@ function receiveMateExercise(data){
 /* ===== BÀI TẬP CHIẾU HẾT TRONG 3 NƯỚC: HÌNH 162–167 ===== */
 const MATE3_DATA=[{"num":162,"fen":"k2N4/7R/8/4K3/8/8/8/8 w - - 0 1","lines":[["e5d6","a8b8","d8c6","b8a8","h7a7"]]},{"num":163,"fen":"8/6P1/8/8/8/3K4/1k6/R7 w - - 0 1","lines":[["g7g8r","b2a1","d3c2","a1a2","g8a8"]]},{"num":164,"fen":"3k4/8/8/3B4/8/3Q4/3K4/8 w - - 0 1","lines":[["d3h7","d8c8","d5e6"]]},{"num":165,"fen":"4R3/8/8/8/8/8/1k6/R2K4 w - - 0 1","lines":[["e8b8","b2c3","a1a4","c3d3","b8b3"]]},{"num":166,"fen":"6nk/4R3/R7/5K2/8/8/8/8 w - - 0 1","lines":[["a6h6","g8h6","f5g6","h6g8","e7h7"]]},{"num":167,"fen":"8/2p2K2/8/6R1/k7/8/7p/1R6 w - - 0 1","lines":[["g5g6","a4a5","g6g2","a5a4","g2a2"]]}];
 let mate3Index=0,mate3Chess=null,mate3Selected=null,mate3White=0,mate3Done=false,mate3History=[];
-function openMate3(i){if(typeof Chess==='undefined'){vqcAlert('Cần Internet để tải thư viện luật cờ vua.');return;}mate3Index=(i+6)%6;document.getElementById('mate3Overlay').classList.add('open');resetMate3();}
+function openMate3(i){document.getElementById("vqcHomeHero")?.setAttribute("hidden", "");if(typeof Chess==='undefined'){vqcAlert('Cần Internet để tải thư viện luật cờ vua.');return;}mate3Index=(i+6)%6;document.getElementById('mate3Overlay').classList.add('open');resetMate3();}
 function closeMate3(){closeMate3Promotion();document.getElementById('mate3Overlay').classList.remove('open');}
 function mate3Message(t){document.getElementById('mate3Message').textContent=t;}
 function resetMate3(){closeMate3Promotion();const p=MATE3_DATA[mate3Index];mate3Chess=new Chess(p.fen);mate3Selected=null;mate3White=0;mate3Done=false;mate3History=[];document.getElementById('mate3Title').textContent='♛ Chiếu hết trong 3 nước — Bài '+(mate3Index+1)+'/6 (Hình '+p.num+')';mate3Message('Trắng đi trước. Hãy chiếu hết Vua Đen trong 3 nước của Trắng.'+(p.num===163?' Lưu ý: nước Đen thứ hai được hiệu chỉnh thành Ka2 vì Ka1–b3 không hợp lệ.':''));renderMate3();}
@@ -4753,6 +4696,7 @@ function pvpFinished(c){
 }
 function pvpStatus(msg){document.getElementById('pvpStatus').textContent=msg;}
 function openPvp(){
+  document.getElementById("vqcHomeHero")?.setAttribute("hidden", "");
  document.getElementById('pvpOverlay').classList.add('open');pvpSelected=null;
  if(typeof Chess==='undefined')pvpStatus('Không tải được chess.js. Kiểm tra Internet.');
  else if(!roomRef)pvpStatus('Hãy tạo phòng (giáo viên) hoặc vào lớp (học sinh) ở thanh trên trước.');
@@ -4975,6 +4919,13 @@ async function accountLoadProgress(){
  }catch(e){el.textContent='Không tải được: '+e.message;}
 }
 
+// Mở ngay bài thực hành quân Xe khi tải trang; không hiển thị màn hình chào mừng.
+// Không tạo hoặc tham gia phòng Firebase tự động.
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded',()=>startPieceGame('R'),{once:true});
+}else{
+  startPieceGame('R');
+}
 </script>
 
 <footer style="text-align:center;padding:22px 12px 28px;color:#63788B;font-size:14px;line-height:1.6">
