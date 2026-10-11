@@ -4025,6 +4025,7 @@ async function joinRoom(){
     const snap=await roomRef.get();if(!snap.exists){vqcAlert("Không tìm thấy phòng "+room+".");roomRef=null;return;}
     if(role==="student")await roomRef.update({studentOnline:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();document.getElementById("connection").innerHTML='<div class="dot"></div>Đã vào phòng '+room;document.getElementById("status").textContent=role==="student"?"✅ Đã kết nối với giáo viên.":"👀 Đang quan sát học sinh.";addLog((role==="student"?"Học sinh":"Giáo viên")+" đã vào phòng "+room);
+    vqcNotify("Vào lớp thành công! Đã kết nối với phòng " + room + ". Chúc bạn có buổi học thật vui!", "success");
   }catch(e){console.error(e);vqcAlert("Không vào được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
 
