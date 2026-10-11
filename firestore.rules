@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signed(){return request.auth!=null;}
+  function me(){return get(/databases/$(database)/documents/users/$(request.auth.uid));}
+  function active(){return signed() && me().data.active==true;}
+  function teacher(){return active() && me().data.role=='teacher';}
+  function student(){return active() && me().data.role=='student';}
+  match /users/{uid} {
+   allow read: if active() && (request.auth.uid==uid || (teacher() && resource.data.role=='student' && resource.data.teacherId==request.auth.uid));
+   allow write: if false;
+  }
+  match /studentCodes/{code} {allow read,write: if false;}
+  match /classes/{id} {
+   allow read: if teacher() && resource.data.teacherId==request.auth.uid || student() && resource.data.teacherId==me().data.teacherId && resource.data.code==me().data.classCode;
+   allow write: if false;
+  }
+  match /assignments/{id} {
+   allow read: if teacher() && resource.data.teacherId==request.auth.uid || student() && resource.data.teacherId==me().data.teacherId && resource.data.classCode==me().data.classCode;
+   allow write: if false;
+  }
+  match /progress/{id} {
+   allow read: if student() && resource.data.studentId==request.auth.uid || teacher() && resource.data.teacherId==request.auth.uid;
+   allow create: if student() && id.matches(request.auth.uid+'_(basic_[RBNQKP]|mate2_(5[2-9]|6[01])|mate3_16[2-7])') && request.resource.data.keys().hasOnly(['studentId','teacherId','exercise','completed','score','updatedAt']) && request.resource.data.studentId==request.auth.uid && request.resource.data.teacherId==me().data.teacherId && request.resource.data.exercise is string && request.resource.data.completed is bool && request.resource.data.score is number && request.resource.data.score>=0 && request.resource.data.score<=6;
+   allow update: if student() && resource.data.studentId==request.auth.uid && resource.data.teacherId==me().data.teacherId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed','score','updatedAt']) && request.resource.data.score is number && request.resource.data.score>=0 && request.resource.data.score<=6 && request.resource.data.completed is bool;
+   allow delete: if false;
+  }
+  // Existing live classroom: restrict authenticated access. For production,
+  // replace this with membership-aware rules before using real student data.
+  match /rooms/{roomId} {
+   allow read,create,update: if active();
+   allow delete: if false;
+  }
+  match /{document=**} {allow read,write: if false;}
+ }
+}
