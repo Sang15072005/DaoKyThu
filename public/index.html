@@ -3922,10 +3922,12 @@ let teacherPresenceTimer=null;
 let teacherWasOnline=null;
 let lastStudentPresence=null;
 let teacherRoomData=null;
-const STUDENT_OFFLINE_AFTER=15000; // Cảnh báo sau khoảng 15 giây không nhận heartbeat
+const STUDENT_OFFLINE_AFTER=15000; // Ngưỡng cảnh báo khi không nhận heartbeat
+const STUDENT_HEARTBEAT_EVERY=5000;
 function studentOnlineFromData(data){
   if(!data || data.studentOnline!==true)return false;
-  const t=Number(data.studentHeartbeatAt||0);
+  const serverTime=data.studentHeartbeatServerAt;
+  const t=serverTime&&typeof serverTime.toMillis==='function' ? serverTime.toMillis() : Number(data.studentHeartbeatAt||0);
   return t>0 && Date.now()-t<STUDENT_OFFLINE_AFTER;
 }
 function refreshTeacherPresence(){
@@ -3939,6 +3941,11 @@ function refreshTeacherPresence(){
   const el=document.getElementById('connection');
   if(el)el.innerHTML='<div class="dot"></div>'+(online?'Học sinh đang trong lớp':'Đang chờ học sinh')+' • Phòng '+room;
 }
+async function sendStudentHeartbeat(){
+  if(!roomRef||role!=='student')return;
+  try{await roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp()});}
+  catch(e){console.warn('Không gửi được heartbeat:',e);}
+}
 function stopPresenceTimers(){
   if(studentPresenceTimer){clearInterval(studentPresenceTimer);studentPresenceTimer=null;}
   if(teacherPresenceTimer){clearInterval(teacherPresenceTimer);teacherPresenceTimer=null;}
@@ -3946,9 +3953,8 @@ function stopPresenceTimers(){
 function startPresenceTimers(){
   stopPresenceTimers();
   if(role==='student'&&roomRef){
-    studentPresenceTimer=setInterval(()=>{
-      if(roomRef&&role==='student')roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now()}).catch(console.warn);
-    },5000); // Học sinh gửi tín hiệu mỗi 5 giây
+    sendStudentHeartbeat();
+    studentPresenceTimer=setInterval(sendStudentHeartbeat,STUDENT_HEARTBEAT_EVERY); // 5 giây
   }
   if(role==='teacher'&&roomRef){teacherPresenceTimer=setInterval(refreshTeacherPresence,2000);}
 }
@@ -3960,11 +3966,26 @@ async function leaveClassroom(){
   const leaveBtn=document.getElementById('leaveRoomBtn');if(leaveBtn)leaveBtn.style.display='none';
   const el=document.getElementById('connection');if(el)el.textContent='Chưa kết nối phòng';
   if(wasStudent&&previous){
-    try{await previous.update({studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
+    try{await previous.update({studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
     catch(e){console.warn('Không gửi được trạng thái rời phòng:',e);vqcNotify('Đã rời phòng trên máy này, nhưng chưa báo được cho giáo viên.','warning');return;}
   }
   vqcNotify('Đã rời phòng học.','success');
 }
+// Kiểm tra lại ngay khi tab giáo viên quay về; không phụ thuộc chờ chu kỳ timer.
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    if(role==='teacher')refreshTeacherPresence();
+    else if(role==='student')sendStudentHeartbeat();
+  }
+});
+window.addEventListener('focus',()=>{if(role==='teacher')refreshTeacherPresence();});
+window.addEventListener('online',()=>{if(role==='student')sendStudentHeartbeat();});
+// Cố gắng báo rời phòng khi đóng tab; thao tác bất đồng bộ này không được bảo đảm.
+window.addEventListener('pagehide',()=>{
+  if(roomRef&&role==='student'){
+    roomRef.update({studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:Date.now()}).catch(()=>{});
+  }
+});
 let teacherLastStudentJoinEvent = null;
 let teacherRewardLastScore = null;
 let rewardDismissedInRoom = false;
@@ -4022,7 +4043,7 @@ async function createRoom(){
   try{
     setRole("teacher");room=String(Math.floor(100000+Math.random()*900000));document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     lastFrom=lastTo=selected=null;renderBoard();
-    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentLeaveEvent:null,studentJoinEvent:null,activeView:{view:'board',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:{view:'board',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
@@ -4031,7 +4052,7 @@ async function joinRoom(){
   try{
     room=normalizeRoomCode(document.getElementById("roomCode").value);if(!room){vqcAlert("Hãy nhập mã phòng.");return;}document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     const snap=await roomRef.get();if(!snap.exists){vqcAlert("Không tìm thấy phòng "+room+".");roomRef=null;return;}
-    if(role==="student")await roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now(),studentJoinEvent:Date.now()+':'+Math.random().toString(36).slice(2,10),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(role==="student")await roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp(),studentJoinEvent:Date.now()+':'+Math.random().toString(36).slice(2,10),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã vào phòng '+room;document.getElementById("status").textContent=role==="student"?"✅ Đã kết nối với giáo viên.":"👀 Đang quan sát học sinh.";addLog((role==="student"?"Học sinh":"Giáo viên")+" đã vào phòng "+room);
     vqcNotify("Vào lớp thành công! Đã kết nối với phòng " + room + ". Chúc bạn có buổi học thật vui!", "success");
   }catch(e){console.error(e);vqcAlert("Không vào được phòng. Kiểm tra Firestore Rules và Internet.");}
@@ -4043,7 +4064,7 @@ async function joinRoom(){
 async function sendBoard(){
   
   if(!roomRef||role!=="student")return;
-  try{await roomRef.update({state:[...state],pieceGame:serializePieceGame(),rewardDismissed:pieceGame&&pieceGame.score>=6?rewardDismissedInRoom:false,lastFrom:lastFrom??null,lastTo:lastTo??null,lastActor:role,studentOnline:true,studentHeartbeatAt:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
+  try{await roomRef.update({state:[...state],pieceGame:serializePieceGame(),rewardDismissed:pieceGame&&pieceGame.score>=6?rewardDismissedInRoom:false,lastFrom:lastFrom??null,lastTo:lastTo??null,lastActor:role,studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
   catch(e){console.error(e);document.getElementById("status").textContent="⚠️ Chưa gửi được thao tác lên Firebase.";}
 }
 
