@@ -3922,7 +3922,7 @@ let teacherPresenceTimer=null;
 let teacherWasOnline=null;
 let lastStudentPresence=null;
 let teacherRoomData=null;
-const STUDENT_OFFLINE_AFTER=65000;
+const STUDENT_OFFLINE_AFTER=15000; // Cảnh báo sau khoảng 15 giây không nhận heartbeat
 function studentOnlineFromData(data){
   if(!data || data.studentOnline!==true)return false;
   const t=Number(data.studentHeartbeatAt||0);
@@ -3948,9 +3948,9 @@ function startPresenceTimers(){
   if(role==='student'&&roomRef){
     studentPresenceTimer=setInterval(()=>{
       if(roomRef&&role==='student')roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now()}).catch(console.warn);
-    },20000);
+    },5000); // Học sinh gửi tín hiệu mỗi 5 giây
   }
-  if(role==='teacher'&&roomRef){teacherPresenceTimer=setInterval(refreshTeacherPresence,5000);}
+  if(role==='teacher'&&roomRef){teacherPresenceTimer=setInterval(refreshTeacherPresence,2000);}
 }
 async function leaveClassroom(){
   const previous=roomRef;
