@@ -3912,7 +3912,7 @@ openMate3=function(i){vqcCloseOtherViews('mate3');vqcOldMate3(i);vqcBroadcastVie
 const vqcOldPvp=openPvp;
 openPvp=function(){vqcCloseOtherViews('pvp');vqcOldPvp();vqcBroadcastView('pvp',0);};
 const vqcOldPiece=startPieceGame;
-startPieceGame=function(piece){vqcCloseOtherViews('piece');vqcOldPiece(piece);if(!vqcNavApplying&&roomRef){const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+role;vqcNavSeen=stamp;roomRef.update({activeView:{view:'piece',piece,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(console.error);}};
+startPieceGame=function(piece){vqcCloseOtherViews('piece');vqcOldPiece(piece);};
 const vqcOldExit=exitPieceGame;
 exitPieceGame=function(){vqcCloseOtherViews('board');vqcOldExit();vqcBroadcastView('board');};
 
@@ -4043,8 +4043,10 @@ async function createRoom(){
   try{
     setRole("teacher");room=String(Math.floor(100000+Math.random()*900000));document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
     lastFrom=lastTo=selected=null;renderBoard();
-    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:{view:'board',index:0,stamp:Date.now()+'-init'},pieceGame:null,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-    listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
+    const initialPiece=serializePieceGame();
+    const initialView=initialPiece?{view:'piece',piece:initialPiece.piece,stamp:Date.now()+'-init'}:{view:'board',index:0,stamp:Date.now()+'-init'};
+    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    vqcNavSeen=initialView.stamp;listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
 async function joinRoom(){
@@ -4063,8 +4065,16 @@ async function joinRoom(){
 ========================================================= */
 async function sendBoard(){
   
-  if(!roomRef||role!=="student")return;
-  try{await roomRef.update({state:[...state],pieceGame:serializePieceGame(),rewardDismissed:pieceGame&&pieceGame.score>=6?rewardDismissedInRoom:false,lastFrom:lastFrom??null,lastTo:lastTo??null,lastActor:role,studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}
+  if(!roomRef || vqcNavApplying)return;
+  // Giáo viên và học sinh đều có thể lưu bài tập, kể cả khi chỉ có giáo viên trong phòng.
+  const payload={state:[...state],pieceGame:serializePieceGame(),rewardDismissed:pieceGame&&pieceGame.score>=6?rewardDismissedInRoom:false,lastFrom:lastFrom??null,lastTo:lastTo??null,lastActor:role,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(pieceGame){
+    const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+role;
+    vqcNavSeen=stamp;
+    payload.activeView={view:'piece',piece:pieceGame.piece,stamp};
+  }
+  if(role==='student')Object.assign(payload,{studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp()});
+  try{await roomRef.update(payload);}
   catch(e){console.error(e);document.getElementById("status").textContent="⚠️ Chưa gửi được thao tác lên Firebase.";}
 }
 
