@@ -1955,7 +1955,7 @@
 
 
 
-            <button class="btn btn-green" onclick="createRoom()">Tạo phòng</button>
+            <select id="vqcTeacherClass" aria-label="Chọn lớp để mở phòng" style="display:none;max-width:145px;padding:9px;border:1px solid #bad8ee;border-radius:9px;background:white"><option value="">Chọn lớp</option></select><button class="btn btn-green" onclick="createRoom()">Tạo phòng</button>
 
             <button
 
@@ -2208,6 +2208,7 @@
 
 
     <section class="center">
+<div id="vqcStudentClassHome" style="display:none;background:#eef8ff;border:1px solid #c7e5f8;border-radius:15px;padding:15px;margin-bottom:14px;line-height:1.6"></div>
 
 
 
@@ -3972,6 +3973,15 @@
     async function leaveClassroom(){
     const previous=roomRef;
     const wasStudent=role==='student';
+    const wasTeacher=role==='teacher';
+    const previousRoom=room;
+    const previousClass=vqcTeacherLiveClass;
+    if(wasTeacher&&previous&&previousClass&&window.accountProfile?.uid){
+        const clsRef=db.collection('classes').doc(window.accountProfile.uid+'_'+previousClass);
+        try{await db.runTransaction(async tx=>{const snap=await tx.get(clsRef);if(snap.exists&&snap.data().liveRoomCode===previousRoom)tx.update(clsRef,{liveRoomCode:null});});}
+        catch(e){console.warn('Chưa cập nhật trạng thái phòng của lớp:',e);}
+        vqcTeacherLiveClass='';
+    }
     stopPresenceTimers();stopRoomListener();
     roomRef=null;room='';teacherRoomData=null;teacherWasOnline=null;
     const leaveBtn=document.getElementById('leaveRoomBtn');if(leaveBtn)leaveBtn.style.display='none';
@@ -4052,17 +4062,27 @@
     async function createRoom(){
     if(!window.accountProfile || window.accountProfile.role!=="teacher"){vqcAlert("Chỉ giáo viên đã đăng nhập mới tạo phòng.");return;}
     try{
+        const chosenClass=document.getElementById('vqcTeacherClass')?.value||'';
+        if(!chosenClass){vqcNotify('Hãy chọn lớp trước khi tạo phòng trực tiếp.','error');return;}
+        const owner=window.accountProfile.uid;
+        const classRef=db.collection('classes').doc(owner+'_'+chosenClass);
+        const classSnap=await classRef.get();
+        if(!classSnap.exists||classSnap.data().teacherId!==owner){vqcNotify('Không tìm thấy lớp thuộc giáo viên này.','error');return;}
         setRole("teacher");room=String(Math.floor(100000+Math.random()*900000));document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
         lastFrom=lastTo=selected=null;renderBoard();
         const initialPiece=serializePieceGame();
         const initialView=initialPiece?{view:'piece',piece:initialPiece.piece,stamp:Date.now()+'-init'}:{view:'board',index:0,stamp:Date.now()+'-init'};
-        await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        await roomRef.set({teacherId:owner,classCode:chosenClass,state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        await classRef.update({liveRoomCode:room,liveRoomOpenedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        vqcTeacherLiveClass=chosenClass;
         vqcNavSeen=initialView.stamp;listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
     }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
     }
     async function joinRoom(){
     if(!window.accountProfile){showAccountPanel();return;}
     try{
+        if(roomRef&&room===normalizeRoomCode(document.getElementById('roomCode').value))return;
+        if(roomRef)await leaveClassroom();
         room=normalizeRoomCode(document.getElementById("roomCode").value);if(!room){vqcAlert("Hãy nhập mã phòng.");return;}document.getElementById("roomCode").value=room;roomRef=db.collection("rooms").doc(room);
         const snap=await roomRef.get();if(!snap.exists){vqcAlert("Không tìm thấy phòng "+room+".");roomRef=null;return;}
         if(role==="student")await roomRef.update({studentOnline:true,studentHeartbeatAt:Date.now(),studentHeartbeatServerAt:firebase.firestore.FieldValue.serverTimestamp(),studentJoinEvent:Date.now()+':'+Math.random().toString(36).slice(2,10),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
@@ -4901,9 +4921,53 @@
     try{await auth.signInWithEmailAndPassword(email,pw);}catch(e){err.textContent='Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại';console.warn(e);}
     }
     async function accountSignOut(){if(roomRef&&role==="student")await leaveClassroom();stopPresenceTimers();await auth.signOut();location.reload();}
+    let vqcClassUnsubscribe=null;
+    let vqcAutoJoining=false;
+    let vqcTeacherLiveClass='';
+    let vqcClassCurrentRoom='';
+    function vqcStopClassWatch(){if(vqcClassUnsubscribe){vqcClassUnsubscribe();vqcClassUnsubscribe=null;}vqcClassCurrentRoom='';}
+    async function vqcLoadTeacherClassSelector(){
+        const sel=document.getElementById('vqcTeacherClass'),p=window.accountProfile;
+        if(!sel||p?.role!=='teacher')return;
+        sel.style.display='inline-block';
+        try{const q=await db.collection('classes').where('teacherId','==',p.uid).limit(50).get();
+            const previous=sel.value;
+            sel.innerHTML='<option value="">Chọn lớp</option>'+q.docs.map(d=>'<option value="'+accountEsc(d.data().code)+'">'+accountEsc(d.data().name||d.data().code)+'</option>').join('');
+            if([...sel.options].some(o=>o.value===previous))sel.value=previous;
+            else if(q.size===1)sel.value=q.docs[0].data().code;
+        }catch(e){console.warn('Không tải được danh sách lớp:',e);}
+    }
+    function vqcStudentClassBanner(message){
+        const el=document.getElementById('vqcStudentClassHome'),p=window.accountProfile;
+        if(!el||p?.role!=='student')return;
+        el.style.display='block';
+        el.innerHTML='<b>🏫 Lớp '+accountEsc(p.classCode||'chưa được gán')+'</b><div>'+accountEsc(message)+'</div><button class="btn btn-blue" style="margin-top:8px" onclick="showAccountPanel();accountShowTab(\'progress\')">📚 Xem bài được giao</button>';
+    }
+    function vqcWatchStudentClass(){
+        vqcStopClassWatch();
+        const p=window.accountProfile;
+        if(p?.role!=='student')return;
+        if(!p.teacherId||!p.classCode){vqcStudentClassBanner('Tài khoản chưa được gán lớp. Hãy liên hệ giáo viên.');return;}
+        vqcStudentClassBanner('Đang tìm lớp và phòng học trực tiếp...');
+        vqcClassUnsubscribe=db.collection('classes').doc(p.teacherId+'_'+p.classCode).onSnapshot(async snap=>{
+            if(window.accountProfile?.uid!==p.uid)return;
+            if(!snap.exists){vqcStudentClassBanner('Chưa tìm thấy lớp được gán. Bạn vẫn có thể luyện tập và xem bài được giao.');return;}
+            const cls=snap.data();
+            const next=typeof cls.liveRoomCode==='string'?cls.liveRoomCode:'';
+            vqcStudentClassBanner('Lớp '+(cls.name||p.classCode)+(next?' · Phòng trực tiếp: '+next:' · Giáo viên chưa mở phòng. Bạn có thể xem bài được giao.'));
+            if(!next||vqcAutoJoining||room===next)return;
+            vqcAutoJoining=true;
+            try{
+                document.getElementById('roomCode').value=next;
+                await joinRoom();
+                if(roomRef&&room===next)vqcClassCurrentRoom=next;
+            }finally{vqcAutoJoining=false;}
+        },e=>{console.warn('Lỗi theo dõi lớp:',e);vqcStudentClassBanner('Không tải được lớp. Kiểm tra quyền Firestore và kết nối mạng.');});
+    }
     let accountProgressUnsub=null;
     auth.onAuthStateChanged(async user=>{
     if(accountProgressUnsub){accountProgressUnsub();accountProgressUnsub=null;}
+    vqcStopClassWatch();
     if(!user){window.accountProfile=null;document.getElementById('accountLoginArea').style.display='block';document.getElementById('accountLoggedArea').style.display='none';document.getElementById('accountUserLabel').textContent='Chưa đăng nhập';showAccountPanel();return;}
     try{
     const snap=await db.collection('users').doc(user.uid).get();
@@ -4917,6 +4981,8 @@
     document.getElementById('accountManageTab').style.display=window.accountProfile.role==='teacher'?'':'none';
     document.getElementById('accountClassTab').style.display=window.accountProfile.role==='teacher'?'':'none';
     accountShowTab('profile');hideAccountPanel();
+    if(window.accountProfile.role==='student')vqcWatchStudentClass();
+    else vqcLoadTeacherClassSelector();
     }catch(e){await auth.signOut();document.getElementById('accountLoginError').textContent=e.message;}
     });
     async function accountChangePassword(){const a=document.getElementById('newAccountPassword').value;if(a.length<10){accountMsg('Mật khẩu cần ít nhất 10 ký tự.',true);return;}try{await auth.currentUser.updatePassword(a);accountMsg('Đã đổi mật khẩu.');}catch(e){accountMsg('Vui lòng đăng nhập lại trước khi đổi mật khẩu.',true);}}
@@ -4988,7 +5054,7 @@
     const p=window.accountProfile;if(p?.role!=='teacher')return;
     const code=document.getElementById('newClassCode').value.trim().toUpperCase(),name=document.getElementById('newClassName').value.trim();
     if(!/^[A-Z0-9_-]{2,24}$/.test(code)||!name||name.length>100){accountMsg('Mã lớp phải có 2–24 ký tự hợp lệ và tên lớp không được để trống.',true);return;}
-    try{const ref=db.collection('classes').doc(p.uid+'_'+code);await ref.set({code,name,teacherId:p.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});accountMsg('Đã lưu lớp '+code+'.');accountLoadClasses();}catch(e){accountMsg(accountSparkError(e),true);}
+    try{const ref=db.collection('classes').doc(p.uid+'_'+code);await ref.set({code,name,teacherId:p.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});accountMsg('Đã lưu lớp '+code+'.');accountLoadClasses();vqcLoadTeacherClassSelector();}catch(e){accountMsg(accountSparkError(e),true);}
     }
     async function accountAssign(){
     const p=window.accountProfile;if(p?.role!=='teacher')return;
