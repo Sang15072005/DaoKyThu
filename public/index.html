@@ -4888,7 +4888,7 @@ async function pvpOfferDraw(){
 }
 
 
-/* ========== TÀI KHOẢN HỌC VIÊN: AUTH + CLOUD FUNCTIONS ========== */
+/* ========== TÀI KHOẢN HỌC VIÊN: AUTH + FIRESTORE (SPARK) ========== */
 window.accountProfile=null;
 const accountEsc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const accountMsg=(msg,error=false)=>{const el=document.getElementById('accountActionMessage');if(el){el.textContent=msg;el.style.color=error?'#b42318':'#397453';}};
@@ -4936,17 +4936,76 @@ async function accountShowTab(tab){
   if(p.role==='student')accountLoadProgress();else accountLoadProgressStudents();
  }
 }
-async function accountCall(name,data){return (await callable.httpsCallable(name)(data)).data;}
-async function accountCreateStudent(){
- const name=document.getElementById('newStudentName').value.trim(),code=document.getElementById('newStudentCode').value.trim().toUpperCase(),password=document.getElementById('newStudentPassword').value, classCode=document.getElementById('newStudentClass').value.trim().toUpperCase();
- try{const result=await accountCall('createStudent',{name,code,password,classCode});accountMsg('Đã tạo tài khoản '+result.code+'. Hãy chuyển mật khẩu riêng cho phụ huynh.');document.getElementById('newStudentPassword').value='';accountLoadStudents();}catch(e){accountMsg(e.message,true);}
+/* Spark: tài khoản phụ giúp tạo học viên mà không đăng xuất giáo viên. */
+function accountSparkError(e){
+ const code=e?.code||'';
+ if(code==='auth/email-already-in-use')return 'Mã học viên đã tồn tại. Hãy chọn mã khác.';
+ if(code==='auth/operation-not-allowed')return 'Hãy bật Email/Password trong Firebase Authentication → Sign-in method.';
+ if(code==='permission-denied')return 'Firestore chưa cho phép thao tác này. Hãy cập nhật Rules theo file hướng dẫn đi kèm.';
+ return e?.message||'Có lỗi xảy ra.';
 }
-async function accountLoadStudents(){const el=document.getElementById('accountStudentList');try{const s=await db.collection('users').where('teacherId','==',auth.currentUser.uid).limit(100).get();el.innerHTML=s.empty?'Chưa có học viên.':s.docs.map(d=>{const x=d.data();return '<div class="account-list-item"><b>'+accountEsc(x.name)+'</b> · '+accountEsc(x.code)+' · '+accountEsc(x.classCode||'Chưa xếp lớp')+'<div class="account-row"><button onclick="accountToggleStudent(\''+d.id+'\','+!x.active+')">'+(x.active===false?'Mở khóa':'Khóa')+'</button><button onclick="accountResetStudent(\''+d.id+'\')">Đặt lại mật khẩu</button></div></div>';}).join('');}catch(e){el.textContent='Không tải được danh sách: '+e.message;}}
-async function accountToggleStudent(uid,active){try{await accountCall('setStudentActive',{uid,active});accountMsg('Đã cập nhật tài khoản.');accountLoadStudents();}catch(e){accountMsg(e.message,true);}}
-async function accountResetStudent(uid){const password=prompt('Nhập mật khẩu mới (ít nhất 10 ký tự). Không gửi qua nhóm công khai.');if(!password)return;try{await accountCall('resetStudentPassword',{uid,password});accountMsg('Đã đặt lại mật khẩu.');}catch(e){accountMsg(e.message,true);}}
-async function accountCreateClass(){try{await accountCall('createClass',{code:document.getElementById('newClassCode').value.trim().toUpperCase(),name:document.getElementById('newClassName').value.trim()});accountMsg('Đã tạo lớp.');accountLoadClasses();}catch(e){accountMsg(e.message,true);}}
-async function accountAssign(){try{await accountCall('createAssignment',{classCode:document.getElementById('assignmentClass').value.trim().toUpperCase(),exercise:document.getElementById('assignmentExercise').value});accountMsg('Đã giao bài.');}catch(e){accountMsg(e.message,true);}}
-async function accountLoadClasses(){const el=document.getElementById('accountClassList');try{const s=await db.collection('classes').where('teacherId','==',auth.currentUser.uid).limit(50).get();el.innerHTML='<h3>Lớp của tôi</h3>'+s.docs.map(d=>'<p>'+accountEsc(d.data().code)+' — '+accountEsc(d.data().name)+'</p>').join('');}catch(e){el.textContent=e.message;}}
+function accountStudentEmail(code){return code+'@students.hoccovua.invalid';}
+async function accountCreateStudent(){
+ const p=window.accountProfile;
+ if(!p||p.role!=='teacher'||!auth.currentUser){accountMsg('Chỉ giáo viên đã đăng nhập mới được tạo học viên.',true);return;}
+ const name=document.getElementById('newStudentName').value.trim();
+ const code=document.getElementById('newStudentCode').value.trim().toUpperCase();
+ const password=document.getElementById('newStudentPassword').value;
+ const classCode=document.getElementById('newStudentClass').value.trim().toUpperCase();
+ if(!name||name.length>100||!/^[A-Z0-9_-]{3,24}$/.test(code)||password.length<10||password.length>128||(classCode&&!/^[A-Z0-9_-]{2,24}$/.test(classCode))){accountMsg('Nhập họ tên, mã học viên 3–24 ký tự (A–Z, 0–9, _ hoặc -), mật khẩu 10–128 ký tự và mã lớp hợp lệ.',true);return;}
+ let secondary=null,created=null;
+ try{
+  accountMsg('Đang tạo học viên...');
+  const appName='vqc-create-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+  secondary=firebase.initializeApp(firebaseConfig,appName);
+  created=await secondary.auth().createUserWithEmailAndPassword(accountStudentEmail(code),password);
+  const uid=created.user.uid;
+  await db.collection('users').doc(uid).set({uid,name,code,role:'student',teacherId:auth.currentUser.uid,classCode,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  document.getElementById('newStudentPassword').value='';
+  accountMsg('Đã tạo học viên '+code+'. Hãy gửi riêng mã và mật khẩu cho phụ huynh.');
+  await accountLoadStudents();
+ }catch(e){
+  if(created?.user){try{await created.user.delete();}catch(cleanup){console.warn('Tài khoản Auth cần dọn thủ công:',created.user.uid,cleanup);}}
+  accountMsg('Không tạo được học viên: '+accountSparkError(e),true);console.error(e);
+ }finally{if(secondary){try{await secondary.delete();}catch(e){console.warn(e);}}}
+}
+async function accountLoadStudents(){
+ const el=document.getElementById('accountStudentList');if(!el||!auth.currentUser)return;
+ try{const s=await db.collection('users').where('teacherId','==',auth.currentUser.uid).limit(100).get();
+ if(!document.getElementById('accountStudentList'))return;
+ el.innerHTML=s.empty?'Chưa có học viên.':s.docs.map(d=>{const x=d.data();return '<div class="account-list-item"><b>'+accountEsc(x.name)+'</b> · '+accountEsc(x.code)+' · '+accountEsc(x.classCode||'Chưa xếp lớp')+'<div class="account-row"><button onclick="accountToggleStudent(\''+d.id+'\','+!x.active+')">'+(x.active===false?'Mở khóa':'Khóa')+'</button><button onclick="accountResetStudent(\''+d.id+'\')">Hướng dẫn đổi mật khẩu</button></div></div>';}).join('');
+ }catch(e){el.textContent='Không tải được danh sách: '+accountSparkError(e);}
+}
+async function accountToggleStudent(uid,active){
+ try{const ref=db.collection('users').doc(uid);const snap=await ref.get();if(!snap.exists||snap.data().teacherId!==auth.currentUser?.uid)throw Error('Học viên không thuộc giáo viên này.');
+ await ref.update({active:!!active});accountMsg('Đã cập nhật trạng thái học viên.');accountLoadStudents();
+ }catch(e){accountMsg(accountSparkError(e),true);}
+}
+function accountResetStudent(uid){
+ accountMsg('Gói Spark không cho phép giáo viên đổi trực tiếp mật khẩu tài khoản khác. Học viên đăng nhập rồi dùng Hồ sơ → Đổi mật khẩu; nếu quên mật khẩu, giáo viên có thể hỗ trợ qua Firebase Console → Authentication.',true);
+}
+async function accountCreateClass(){
+ const p=window.accountProfile;if(p?.role!=='teacher')return;
+ const code=document.getElementById('newClassCode').value.trim().toUpperCase(),name=document.getElementById('newClassName').value.trim();
+ if(!/^[A-Z0-9_-]{2,24}$/.test(code)||!name||name.length>100){accountMsg('Mã lớp phải có 2–24 ký tự hợp lệ và tên lớp không được để trống.',true);return;}
+ try{const ref=db.collection('classes').doc(p.uid+'_'+code);await ref.set({code,name,teacherId:p.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});accountMsg('Đã lưu lớp '+code+'.');accountLoadClasses();}catch(e){accountMsg(accountSparkError(e),true);}
+}
+async function accountAssign(){
+ const p=window.accountProfile;if(p?.role!=='teacher')return;
+ const classCode=document.getElementById('assignmentClass').value.trim().toUpperCase(),exercise=document.getElementById('assignmentExercise').value;
+ if(!/^[A-Z0-9_-]{2,24}$/.test(classCode)||!/^basic_[RBQKNP]$|^mate2_(5[2-9]|6[01])$|^mate3_16[2-7]$/.test(exercise)){accountMsg('Mã lớp hoặc bài tập không hợp lệ.',true);return;}
+ try{
+  const cls=await db.collection('classes').doc(p.uid+'_'+classCode).get();if(!cls.exists){accountMsg('Hãy tạo lớp '+classCode+' trước khi giao bài.',true);return;}
+  const ref=db.collection('assignments').doc(p.uid+'_'+classCode+'_'+exercise);
+  await ref.set({teacherId:p.uid,classCode,exercise,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});accountMsg('Đã giao bài cho lớp '+classCode+'.');
+ }catch(e){accountMsg(accountSparkError(e),true);}
+}
+async function accountLoadClasses(){
+ const el=document.getElementById('accountClassList');if(!el||!auth.currentUser)return;
+ try{const s=await db.collection('classes').where('teacherId','==',auth.currentUser.uid).limit(50).get();if(!document.getElementById('accountClassList'))return;
+ el.innerHTML='<h3>Lớp của tôi</h3>'+(s.empty?'<p>Chưa có lớp.</p>':s.docs.map(d=>'<p>'+accountEsc(d.data().code)+' — '+accountEsc(d.data().name)+'</p>').join(''));
+ }catch(e){el.textContent=accountSparkError(e);}
+}
 /* Theo dõi tự động theo từng tài khoản học viên; không tính thao tác của giáo viên. */
 const vqcProgressExercises=[
  ...[['R','Xe'],['B','Tượng'],['Q','Hậu'],['K','Vua'],['N','Mã'],['P','Tốt']].map(([id,name])=>({id:'basic_'+id,name:'Luyện quân '+name,max:6})),
@@ -5004,7 +5063,7 @@ async function accountLoadProgress(){
   }).join('')).join('');
   const a=document.getElementById('accountAssignmentList');
   if(a&&p.role==='student'){
-   const t=await db.collection('assignments').where('classCode','==',p.classCode||'__none__').limit(50).get();
+   const t=await db.collection('assignments').where('teacherId','==',p.teacherId||'__none__').where('classCode','==',p.classCode||'__none__').limit(50).get();
    a.innerHTML=t.empty?'Chưa có bài được giao.':t.docs.map(d=>'<div class="account-progress">'+accountEsc(vqcProgressExercises.find(x=>x.id===d.data().exercise)?.name||d.data().exercise)+'</div>').join('');
   }else if(a){a.textContent='Kết quả trên được lưu tự động khi học viên luyện tập.';}
  }catch(e){el.textContent='Không tải được tiến độ: '+e.message;}
