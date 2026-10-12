@@ -1853,6 +1853,17 @@ button{
 .center.vqc-practice-active .board-shell{display:block}
 .center .board-toolbar{display:none!important}
 .center:not(.vqc-practice-active) #pieceGameBar{display:none!important}
+/* Bảng tiến độ học viên */
+.vqc-progress-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}
+.vqc-progress-summary>div{background:#edf7ff;border-radius:12px;padding:10px 5px;text-align:center}
+.vqc-progress-summary strong{display:block;font-size:19px;color:#2879b9}
+.vqc-progress-summary span{font-size:11px;color:#60788b}
+.vqc-progress-item{background:#f7fbfe;border:1px solid #e2eef7;border-radius:11px;padding:10px;margin-bottom:7px}
+.vqc-progress-line{display:flex;justify-content:space-between;gap:6px;font-size:12px;align-items:center}
+.vqc-progress-line b{font-size:11px;white-space:nowrap;color:#3d8968}
+.vqc-progress-track{height:7px;border-radius:10px;background:#dbe9f3;overflow:hidden;margin:7px 0}
+.vqc-progress-track>div{height:100%;background:#54a6df;border-radius:10px}
+.vqc-progress-item small{font-size:11px;color:#718096}
 </style>
 
 
@@ -4921,8 +4932,8 @@ async function accountShowTab(tab){
   root.innerHTML='<h3>Tạo lớp</h3><label>Mã lớp</label><input id="newClassCode" placeholder="CB01"><label>Tên lớp</label><input id="newClassName" placeholder="Cờ vua cơ bản"><button class="btn btn-blue" onclick="accountCreateClass()">Tạo lớp</button><h3>Giao bài</h3><label>Mã lớp</label><input id="assignmentClass" placeholder="CB01"><label>Bài tập</label><select id="assignmentExercise"><option value="basic_R">Quân Xe</option><option value="basic_B">Quân Tượng</option><option value="basic_Q">Quân Hậu</option><option value="basic_K">Quân Vua</option><option value="basic_N">Quân Mã</option><option value="basic_P">Quân Tốt</option>'+Array.from({length:10},(_,i)=>'<option value="mate2_'+(52+i)+'">Hình '+(52+i)+'</option>').join('')+Array.from({length:6},(_,i)=>'<option value="mate3_'+(162+i)+'">Hình '+(162+i)+'</option>').join('')+'</select><button class="btn btn-blue" onclick="accountAssign()">Giao bài</button><div id="accountClassList"></div>';
   accountLoadClasses();
  }else if(tab==='progress'){
-  root.innerHTML='<h3>Tiến độ học tập</h3>'+(p.role==='teacher'?'<label>Mã học viên cần xem</label><input id="progressStudentCode" placeholder="HV001"><button class="btn btn-blue" onclick="accountLoadProgress()">Xem kết quả</button>':'')+'<div id="accountProgressList">Đang tải...</div><h3>Bài được giao</h3><div id="accountAssignmentList"></div>';
-  if(p.role==='student')accountLoadProgress();
+  root.innerHTML='<h3>📊 Tiến độ học tập tự động</h3>'+(p.role==='teacher'?'<label>Chọn học viên</label><select id="progressStudentSelect" onchange="accountLoadProgress()"><option value="">Đang tải học viên...</option></select>':'')+'<div id="accountProgressList">Đang tải...</div><h3>Bài được giao</h3><div id="accountAssignmentList"></div>';
+  if(p.role==='student')accountLoadProgress();else accountLoadProgressStudents();
  }
 }
 async function accountCall(name,data){return (await callable.httpsCallable(name)(data)).data;}
@@ -4936,18 +4947,67 @@ async function accountResetStudent(uid){const password=prompt('Nhập mật kh�
 async function accountCreateClass(){try{await accountCall('createClass',{code:document.getElementById('newClassCode').value.trim().toUpperCase(),name:document.getElementById('newClassName').value.trim()});accountMsg('Đã tạo lớp.');accountLoadClasses();}catch(e){accountMsg(e.message,true);}}
 async function accountAssign(){try{await accountCall('createAssignment',{classCode:document.getElementById('assignmentClass').value.trim().toUpperCase(),exercise:document.getElementById('assignmentExercise').value});accountMsg('Đã giao bài.');}catch(e){accountMsg(e.message,true);}}
 async function accountLoadClasses(){const el=document.getElementById('accountClassList');try{const s=await db.collection('classes').where('teacherId','==',auth.currentUser.uid).limit(50).get();el.innerHTML='<h3>Lớp của tôi</h3>'+s.docs.map(d=>'<p>'+accountEsc(d.data().code)+' — '+accountEsc(d.data().name)+'</p>').join('');}catch(e){el.textContent=e.message;}}
+/* Theo dõi tự động theo từng tài khoản học viên; không tính thao tác của giáo viên. */
+const vqcProgressExercises=[
+ ...[['R','Xe'],['B','Tượng'],['Q','Hậu'],['K','Vua'],['N','Mã'],['P','Tốt']].map(([id,name])=>({id:'basic_'+id,name:'Luyện quân '+name,max:6})),
+ ...Array.from({length:10},(_,i)=>({id:'mate2_'+(52+i),name:'Chiếu hết 2 nước – Hình '+(52+i),max:1})),
+ ...Array.from({length:6},(_,i)=>({id:'mate3_'+(162+i),name:'Chiếu hết 3 nước – Hình '+(162+i),max:1}))
+];
 async function accountSaveProgress(exercise,completed,score){
- const p=window.accountProfile;if(!p||p.role!=='student'||!auth.currentUser)return;
- const key=auth.currentUser.uid+'_'+exercise;
- try{await db.collection('progress').doc(key).set({studentId:auth.currentUser.uid,teacherId:p.teacherId,exercise,completed:!!completed,score:Number(score)||0,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){console.warn('Chưa lưu được tiến độ:',e);}
-}
-async function accountLoadProgress(){
- const p=window.accountProfile,el=document.getElementById('accountProgressList');let uid=auth.currentUser.uid;
+ const p=window.accountProfile,user=auth.currentUser;
+ if(!p||p.role!=='student'||!user||!vqcProgressExercises.some(x=>x.id===exercise))return;
+ const ref=db.collection('progress').doc(user.uid+'_'+exercise),value=Math.max(0,Number(score)||0);
  try{
-  if(p.role==='teacher'){const code=document.getElementById('progressStudentCode').value.trim().toUpperCase();const s=await db.collection('users').where('teacherId','==',uid).where('code','==',code).limit(1).get();if(s.empty){el.textContent='Không tìm thấy học viên.';return;}uid=s.docs[0].id;}
-  const s=await db.collection('progress').where('studentId','==',uid).limit(100).get();el.innerHTML=s.empty?'Chưa có kết quả.':s.docs.map(d=>{const x=d.data();return '<div class="account-progress">'+accountEsc(x.exercise)+' · '+(x.completed?'✅ Hoàn thành':'Đang luyện tập')+' · '+Number(x.score||0)+' điểm</div>';}).join('');
-  const a=document.getElementById('accountAssignmentList');if(a&&p.role==='student'){const t=await db.collection('assignments').where('classCode','==',p.classCode||'__none__').limit(50).get();a.innerHTML=t.empty?'Chưa có bài được giao.':t.docs.map(d=>'<div class="account-progress">'+accountEsc(d.data().exercise)+'</div>').join('');}
- }catch(e){el.textContent='Không tải được: '+e.message;}
+  await db.runTransaction(async tx=>{
+   const snap=await tx.get(ref),old=snap.exists?snap.data():{},best=Math.max(Number(old.score)||0,value);
+   const done=old.completed===true||!!completed;
+   const patch={studentId:user.uid,teacherId:p.teacherId,exercise,completed:done,score:best,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+   if(done&&!old.completed)patch.completedAt=firebase.firestore.FieldValue.serverTimestamp();
+   tx.set(ref,patch,{merge:true});
+  });
+ }catch(e){console.warn('Chưa lưu được tiến độ:',e);}
+}
+async function accountLoadProgressStudents(){
+ const select=document.getElementById('progressStudentSelect');if(!select||!auth.currentUser)return;
+ try{
+  const s=await db.collection('users').where('teacherId','==',auth.currentUser.uid).limit(100).get();
+  if(!document.getElementById('progressStudentSelect'))return;
+  select.innerHTML=s.empty?'<option value="">Chưa có học viên</option>':s.docs.map(d=>'<option value="'+accountEsc(d.id)+'">'+accountEsc(d.data().name||d.data().code||'Học viên')+' ('+accountEsc(d.data().code||'')+')</option>').join('');
+  if(!s.empty)accountLoadProgress();else document.getElementById('accountProgressList').textContent='Hãy tạo tài khoản học viên để bắt đầu theo dõi.';
+ }catch(e){document.getElementById('accountProgressList').textContent='Không tải được học viên: '+e.message;}
+}
+function vqcProgressDate(value){try{return value&&value.toDate?value.toDate().toLocaleString('vi-VN'):'Chưa có';}catch(e){return 'Chưa có';}}
+async function accountLoadProgress(){
+ const p=window.accountProfile,el=document.getElementById('accountProgressList');if(!p||!el||!auth.currentUser)return;
+ let uid=auth.currentUser.uid;
+ if(p.role==='teacher'){
+  const sel=document.getElementById('progressStudentSelect');if(!sel||!sel.value)return;
+  uid=sel.value;
+  // Xác thực học viên thuộc giáo viên trước khi đọc tiến độ.
+  try{const owner=await db.collection('users').doc(uid).get();if(!owner.exists||owner.data().teacherId!==auth.currentUser.uid){el.textContent='Học viên không thuộc danh sách của bạn.';return;}}catch(e){el.textContent='Không kiểm tra được học viên: '+e.message;return;}
+ }
+ el.textContent='Đang tải kết quả...';
+ try{
+  const snap=await db.collection('progress').where('studentId','==',uid).limit(100).get();
+  if(!document.getElementById('accountProgressList'))return;
+  const records=new Map(snap.docs.map(d=>[d.data().exercise,d.data()]));
+  const completed=vqcProgressExercises.filter(x=>records.get(x.id)?.completed===true).length;
+  const basicDone=vqcProgressExercises.slice(0,6).filter(x=>records.get(x.id)?.completed===true).length;
+  const mateDone=completed-basicDone;
+  const last=snap.docs.map(d=>d.data().updatedAt).filter(Boolean).sort((a,b)=>(b.seconds||0)-(a.seconds||0))[0];
+  const summary='<div class="vqc-progress-summary"><div><strong>'+completed+'/22</strong><span>Bài hoàn thành</span></div><div><strong>'+basicDone+'/6</strong><span>Quân cờ</span></div><div><strong>'+mateDone+'/16</strong><span>Chiếu hết</span></div></div><p style="font-size:12px;color:#718096">Cập nhật gần nhất: '+accountEsc(vqcProgressDate(last))+'</p>';
+  const groups=[['♟️ Luyện tập 6 quân cờ',vqcProgressExercises.slice(0,6)],['♔ Chiếu hết trong 2 nước',vqcProgressExercises.slice(6,16)],['♛ Chiếu hết trong 3 nước',vqcProgressExercises.slice(16)]];
+  el.innerHTML=summary+groups.map(([title,items])=>'<h4 style="margin:18px 0 8px">'+title+'</h4>'+items.map(x=>{
+   const r=records.get(x.id),score=Math.min(x.max,Math.max(0,Number(r?.score)||0)),done=r?.completed===true;
+   const percent=Math.round(score/x.max*100);
+   return '<div class="vqc-progress-item"><div class="vqc-progress-line"><span>'+accountEsc(x.name)+'</span><b>'+(done?'✅ Hoàn thành':r?'Đang luyện':'Chưa học')+'</b></div><div class="vqc-progress-track"><div style="width:'+percent+'%"></div></div><small>'+score+'/'+x.max+(r?.completedAt?' · Hoàn thành: '+accountEsc(vqcProgressDate(r.completedAt)):'')+'</small></div>';
+  }).join('')).join('');
+  const a=document.getElementById('accountAssignmentList');
+  if(a&&p.role==='student'){
+   const t=await db.collection('assignments').where('classCode','==',p.classCode||'__none__').limit(50).get();
+   a.innerHTML=t.empty?'Chưa có bài được giao.':t.docs.map(d=>'<div class="account-progress">'+accountEsc(vqcProgressExercises.find(x=>x.id===d.data().exercise)?.name||d.data().exercise)+'</div>').join('');
+  }else if(a){a.textContent='Kết quả trên được lưu tự động khi học viên luyện tập.';}
+ }catch(e){el.textContent='Không tải được tiến độ: '+e.message;}
 }
 
 // Mở ngay bài thực hành quân Xe khi tải trang; không hiển thị màn hình chào mừng.
