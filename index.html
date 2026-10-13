@@ -2190,7 +2190,8 @@ button{
 
 
 
-    <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
+    <div class="lesson" id="captureMenu" role="button" tabindex="0" onclick="captureOpen(0)" onkeydown="if(event.key==='Enter')captureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân (5 bài)</div>
+<div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
 <div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước (6 bài)</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
 
 
@@ -5091,6 +5092,146 @@ if(document.readyState === 'loading'){
     <div><button type="button" class="reward-close" onclick="closeStarReward()">Tiếp tục học ♟️</button></div>
   </div>
 </div>
+<style>
+.capture-overlay{position:fixed;inset:0;z-index:8100;background:#122b43b9;display:none;align-items:center;justify-content:center;padding:12px}.capture-overlay.open{display:flex}
+.capture-dialog{width:min(1150px,98vw);max-height:96vh;overflow:auto;background:white;border-radius:19px;padding:17px;box-shadow:0 20px 70px #122b4366}
+.capture-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:17px;align-items:center}
+.capture-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:min(100%,72vh);aspect-ratio:1;margin:auto;border-radius:12px;overflow:hidden;border:3px solid #d6e8f4}
+.capture-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;min-width:0;min-height:0}.capture-cell:nth-child(16n+1),.capture-cell:nth-child(16n+3),.capture-cell:nth-child(16n+5),.capture-cell:nth-child(16n+7),.capture-cell:nth-child(16n+10),.capture-cell:nth-child(16n+12),.capture-cell:nth-child(16n+14),.capture-cell:nth-child(16n+16){background:#f0d9b5}.capture-cell{background:#b58863}
+.capture-cell img,.capture-cell svg{width:83%;height:83%;object-fit:contain;pointer-events:none}.capture-cell.capture-reply-from{box-shadow:inset 0 0 0 5px #ffb64b}.capture-cell.capture-reply-to{box-shadow:inset 0 0 0 5px #dc3d3d}.capture-cell.selected{box-shadow:inset 0 0 0 5px #ffd54b}.capture-cell.target{box-shadow:inset 0 0 0 5px #6fc58e}
+.capture-coordinate{position:absolute;font-size:11px;font-weight:800;color:#fff5e6;pointer-events:none}.capture-rank{top:2px;right:3px}.capture-file{bottom:2px;left:4px}
+.capture-side{border:1px solid #d6e5f0;border-radius:13px;overflow:hidden;text-align:center}.capture-side h2{margin:0;background:#2078cf;color:white;padding:18px 8px}.capture-side p{padding:13px;min-height:74px}.capture-feedback{background:#c93030;color:white;padding:16px 8px;font-size:23px;font-weight:800}.capture-feedback.good{background:#238b62}.capture-feedback[hidden]{display:none}.capture-stars{display:grid;grid-template-columns:repeat(5,1fr)}.capture-stars button{border:0;background:#81a849;color:white;padding:9px 0;font-size:21px}.capture-stars button.active{background:#1979d0}.capture-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:13px}.capture-controls button{border:1px solid #bad9ef;background:#edf7ff;border-radius:9px;padding:9px 12px;font-weight:700}
+@media(max-width:750px){.capture-layout{grid-template-columns:1fr}.capture-board{width:min(100%,65vh)}.capture-side p{min-height:0}}
+</style>
+<div class="capture-overlay" id="captureOverlay" role="dialog" aria-modal="true" aria-label="Bài tập ăn quân">
+ <div class="capture-dialog"><div class="mate-top"><strong>🎯 Ăn quân — 5 bài tập</strong><button class="btn btn-soft" onclick="captureClose()">✕ Đóng</button></div>
+ <div class="capture-layout"><div id="captureBoard" class="capture-board"></div><div class="capture-side"><h2>🏹 Ăn quân</h2><p id="captureInstruction">Hãy ăn quân đen!</p><div id="captureFeedback" class="capture-feedback" hidden></div><div class="capture-stars" id="captureStars"></div><div class="capture-controls"><button onclick="captureOpen(captureIndex-1)">← Bài trước</button><button onclick="captureReset()">↻ Thử lại</button><button onclick="captureOpen(captureIndex+1)">Bài tiếp →</button></div></div></div>
+ </div>
+</div>
+<script>
+// Mỗi thế cờ là một bài tập nhận biết cách ăn quân, không phải ván cờ đầy đủ.
+const CAPTURE_TASKS=[
+ {pieces:{c3:'R',c7:'p',f7:'p'},from:'c3',to:'c7',tip:'Dùng Xe trắng ăn quân Tốt đen. Xe đi theo hàng hoặc cột.'},
+ {pieces:{f4:'Q',c7:'r',f7:'p'},from:'f4',to:'f7',tip:'Hậu trắng có thể ăn Tốt ở f7. Hãy chọn quân cần ăn.'},
+ {pieces:{d3:'B',b5:'r',f5:'p',f7:'r'},from:'d3',to:'f5',tip:'Tượng trắng đi theo đường chéo. Hãy ăn quân Tốt ở f5.'},
+ {pieces:{g3:'Q',d5:'n',f6:'p',g5:'p',f7:'b'},from:'g3',to:'g5',tip:'Hậu trắng đi thẳng theo cột g để ăn Tốt ở g5.'},
+ {pieces:{f4:'N',d5:'p',f6:'q',d7:'b',c6:'p'},from:'f4',to:'d5',tip:'Mã trắng đi theo hình chữ L. Hãy ăn Tốt ở d5.'}
+];
+let captureIndex=0,captureSelected=null,captureSolved=false,captureBusy=false,capturePosition=null,captureReply=null,captureTimer=null,captureWhiteSquare=null;
+const captureDone=new Set();
+function captureOpen(i){
+ if(captureTimer)clearTimeout(captureTimer);
+ captureIndex=(i+CAPTURE_TASKS.length)%CAPTURE_TASKS.length;
+ captureReset();document.getElementById('captureOverlay').classList.add('open');
+ document.getElementById('vqcHomeHero')?.setAttribute('hidden','');
+}
+function captureClose(){if(captureTimer)clearTimeout(captureTimer);captureTimer=null;captureBusy=false;document.getElementById('captureOverlay').classList.remove('open');}
+function captureReset(){
+ if(captureTimer)clearTimeout(captureTimer);captureTimer=null;
+ captureSelected=null;captureSolved=false;captureBusy=false;captureReply=null;
+ capturePosition={...CAPTURE_TASKS[captureIndex].pieces};
+ captureWhiteSquare=CAPTURE_TASKS[captureIndex].from;
+ document.getElementById('captureInstruction').textContent=CAPTURE_TASKS[captureIndex].tip;
+ const fb=document.getElementById('captureFeedback');fb.hidden=true;fb.className='capture-feedback';
+ captureRender();
+}
+function captureRender(){
+ const task=CAPTURE_TASKS[captureIndex],board=document.getElementById('captureBoard');board.innerHTML='';
+ for(let rank=8;rank>=1;rank--){for(const file of 'abcdefgh'){
+  const sq=file+rank,cell=document.createElement('div');
+  cell.className='capture-cell'+(captureSelected===sq?' selected':'')+(captureSelected&&sq===task.to?' target':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
+  cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label','Ô '+sq);
+  if(capturePosition[sq])cell.innerHTML=pieceSvgMarkup(capturePosition[sq]);
+  if(file==='a')cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-rank">'+rank+'</span>');
+  if(rank===1)cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-file">'+file+'</span>');
+  cell.onclick=()=>captureClick(sq);cell.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();captureClick(sq);}};
+  board.appendChild(cell);
+ }}
+ const stars=document.getElementById('captureStars');stars.innerHTML='';CAPTURE_TASKS.forEach((_,i)=>{
+  const b=document.createElement('button');b.textContent=(captureDone.has(i)?'⭐':'☆')+' '+(i+1);
+  b.className=i===captureIndex?'active':'';b.onclick=()=>captureOpen(i);stars.appendChild(b);
+ });
+}
+function captureCoordinates(sq){return ['abcdefgh'.indexOf(sq[0]),Number(sq[1])-1];}
+function captureCanAttack(piece,from,to,position){
+ const [fx,fy]=captureCoordinates(from),[tx,ty]=captureCoordinates(to);
+ const dx=tx-fx,dy=ty-fy,ax=Math.abs(dx),ay=Math.abs(dy),kind=piece.toLowerCase();
+ if(!dx&&!dy)return false;
+ if(kind==='n')return ax===1&&ay===2||ax===2&&ay===1;
+ if(kind==='k')return ax<=1&&ay<=1;
+ if(kind==='p')return ay===1&&ax===1&&(piece===piece.toLowerCase()?dy===-1:dy===1);
+ if(kind==='r'&&dx&&dy)return false;
+ if(kind==='b'&&ax!==ay)return false;
+ if(kind==='q'&&!(dx===0||dy===0||ax===ay))return false;
+ if(!['r','b','q'].includes(kind))return false;
+ const sx=Math.sign(dx),sy=Math.sign(dy);
+ for(let x=fx+sx,y=fy+sy;x!==tx||y!==ty;x+=sx,y+=sy){
+  if(position['abcdefgh'[x]+(y+1)])return false;
+ }
+ return true;
+}
+function captureBlackCountermove(whiteSquare){
+ const candidates=Object.keys(capturePosition).filter(sq=>{
+  const piece=capturePosition[sq];return piece&&piece===piece.toLowerCase()&&captureCanAttack(piece,sq,whiteSquare,capturePosition);
+ });
+ // Chọn một quân đen thực sự có thể ăn quân trắng sau nước đi sai.
+ return candidates.length?candidates[0]:null;
+}
+function captureClick(sq){
+ if(captureSolved||captureBusy)return;
+ const task=CAPTURE_TASKS[captureIndex];
+ const whiteFrom=captureWhiteSquare;
+ const moving=capturePosition[whiteFrom];
+ if(!captureSelected){
+  if(sq===whiteFrom){captureSelected=sq;captureRender();}
+  else captureHint('Hãy chọn quân trắng trước.');
+  return;
+ }
+ if(sq===whiteFrom){captureSelected=null;captureRender();return;}
+ const target=capturePosition[sq];
+ // Chỉ cho phép nước đi hợp lệ và không ăn quân cùng màu.
+ if(!captureCanAttack(moving,whiteFrom,sq,capturePosition)||(target&&target===target.toUpperCase())){
+  captureSelected=null;
+  captureHint('Nước đi chưa hợp lệ. Em hãy chọn nước khác để tiếp tục.');
+  captureRender();return;
+ }
+ const correctCapture=sq===task.to && !!target && target===target.toLowerCase();
+ capturePosition[sq]=moving;delete capturePosition[whiteFrom];
+ captureWhiteSquare=sq;captureSelected=null;captureReply=null;
+ if(correctCapture){
+  captureSolved=true;captureDone.add(captureIndex);
+  const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback good';fb.textContent='✅ Chính xác!';
+  document.getElementById('captureInstruction').textContent='Giỏi lắm! Em đã ăn quân đúng. Chọn Bài tiếp để luyện thêm.';
+  captureRender();return;
+ }
+ captureBusy=true;captureRender();
+ const blackFrom=captureBlackCountermove(sq);
+ if(!blackFrom){
+  captureBusy=false;
+  captureHint('Quân đen chưa thể ăn quân của em. Hãy tiếp tục tìm cách ăn quân mục tiêu!');
+  return;
+ }
+ document.getElementById('captureInstruction').textContent='Hãy quan sát nước đáp trả của quân đen…';
+ captureTimer=setTimeout(()=>{
+  capturePosition[sq]=capturePosition[blackFrom];delete capturePosition[blackFrom];
+  captureWhiteSquare=null;
+  captureReply={from:blackFrom,to:sq};captureRender();
+  captureWrong('Quân đen đã ăn lại quân trắng! Hãy quan sát ô bị tấn công.');
+  document.getElementById('captureInstruction').textContent='Nhấn THỬ LẠI để xếp lại thế cờ.';
+  captureBusy=false;captureTimer=null;
+ },650);
+}
+function captureHint(message){
+ const fb=document.getElementById('captureFeedback');
+ fb.hidden=true;fb.className='capture-feedback';
+ document.getElementById('captureInstruction').textContent=message;
+}
+
+function captureWrong(message){
+ const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback';
+ fb.innerHTML='<div>Giải sai!</div><div style="font-size:14px;font-weight:600;margin:6px 10px">'+message+'</div><button type="button" onclick="captureReset()" style="background:white;color:#c93030;border:0;border-radius:9px;padding:9px 16px;margin-top:6px;font-size:20px;font-weight:900;cursor:pointer">THỬ LẠI</button>';
+}
+</script>
 </body>
 
 </html>
