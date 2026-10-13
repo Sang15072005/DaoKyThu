@@ -1864,6 +1864,10 @@ button{
 .vqc-progress-track{height:7px;border-radius:10px;background:#dbe9f3;overflow:hidden;margin:7px 0}
 .vqc-progress-track>div{height:100%;background:#54a6df;border-radius:10px}
 .vqc-progress-item small{font-size:11px;color:#718096}
+
+/* Chấm gợi ý nước đi trong bài Ăn quân: chỉ hiện khi chọn quân trắng. */
+.capture-cell .capture-move-dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:25%;height:25%;border-radius:50%;background:rgba(73,108,65,.65);pointer-events:none;z-index:4}
+.capture-cell .capture-take-ring{position:absolute;inset:6%;border:5px solid rgba(73,108,65,.7);border-radius:50%;pointer-events:none;z-index:4}
 </style>
 
 
@@ -5114,11 +5118,11 @@ if(document.readyState === 'loading'){
 <script>
 // Mỗi thế cờ là một bài tập nhận biết cách ăn quân, không phải ván cờ đầy đủ.
 const CAPTURE_TASKS=[
- {pieces:{c3:'R',c7:'p',f7:'p'},from:'c3',to:'c7',tip:'Dùng Xe trắng ăn quân Tốt đen. Xe đi theo hàng hoặc cột.'},
- {pieces:{f4:'Q',c7:'r',f7:'p'},from:'f4',to:'f7',tip:'Hậu trắng có thể ăn Tốt ở f7. Hãy chọn quân cần ăn.'},
- {pieces:{d3:'B',b5:'r',f5:'p',f7:'r'},from:'d3',to:'f5',tip:'Tượng trắng đi theo đường chéo. Hãy ăn quân Tốt ở f5.'},
- {pieces:{g3:'Q',d5:'n',f6:'p',g5:'p',f7:'b'},from:'g3',to:'g5',tip:'Hậu trắng đi thẳng theo cột g để ăn Tốt ở g5.'},
- {pieces:{f4:'N',d5:'p',f6:'q',d7:'b',c6:'p'},from:'f4',to:'d5',tip:'Mã trắng đi theo hình chữ L. Hãy ăn Tốt ở d5.'}
+ {pieces:{c3:'R',c7:'p',f7:'p'},from:'c3',tip:'Dùng Xe trắng ăn hết cả 2 quân Tốt đen. Xe đi theo hàng hoặc cột.'},
+ {pieces:{f4:'Q',c7:'r',f7:'p'},from:'f4',tip:'Dùng Hậu trắng ăn hết Xe và Tốt đen. Hãy quan sát nguy cơ bị ăn lại.'},
+ {pieces:{d3:'B',b5:'r',e8:'p'},from:'d3',tip:'Dùng Tượng trắng ăn hết 2 quân đen theo đường chéo.'},
+ {pieces:{g3:'Q',g5:'p',e5:'p',c5:'n'},from:'g3',tip:'Dùng Hậu trắng ăn hết 3 quân đen. Cẩn thận các nước đáp trả.'},
+ {pieces:{f4:'N',d5:'p',c7:'b',e8:'r'},from:'f4',tip:'Dùng Mã trắng ăn hết 3 quân đen bằng những bước nhảy hình chữ L.'}
 ];
 let captureIndex=0,captureSelected=null,captureSolved=false,captureBusy=false,capturePosition=null,captureReply=null,captureTimer=null,captureWhiteSquare=null;
 const captureDone=new Set();
@@ -5142,9 +5146,18 @@ function captureRender(){
  const task=CAPTURE_TASKS[captureIndex],board=document.getElementById('captureBoard');board.innerHTML='';
  for(let rank=8;rank>=1;rank--){for(const file of 'abcdefgh'){
   const sq=file+rank,cell=document.createElement('div');
-  cell.className='capture-cell '+(((8-rank+'abcdefgh'.indexOf(file))%2)===0?'light':'dark')+(captureSelected===sq?' selected':'')+(captureSelected&&sq===task.to?' target':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
+  cell.className='capture-cell '+(((8-rank+'abcdefgh'.indexOf(file))%2)===0?'light':'dark')+(captureSelected===sq?' selected':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
   cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label','Ô '+sq);
   if(capturePosition[sq])cell.innerHTML=pieceSvgMarkup(capturePosition[sq]);
+  // Gợi ý các ô hợp lệ theo đúng luật đi của quân trắng và vật cản hiện tại.
+  if(captureSelected===captureWhiteSquare && !captureBusy && !captureSolved){
+   const moving=capturePosition[captureWhiteSquare],occupant=capturePosition[sq];
+   if(moving && captureCanAttack(moving,captureWhiteSquare,sq,capturePosition) && !(occupant && occupant===occupant.toUpperCase())){
+    const hint=document.createElement('span');
+    hint.className=occupant?'capture-take-ring':'capture-move-dot';
+    hint.setAttribute('aria-hidden','true');cell.appendChild(hint);
+   }
+  }
   if(file==='a')cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-rank">'+rank+'</span>');
   if(rank===1)cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-file">'+file+'</span>');
   cell.onclick=()=>captureClick(sq);cell.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();captureClick(sq);}};
@@ -5198,20 +5211,21 @@ function captureClick(sq){
   captureHint('Nước đi chưa hợp lệ. Em hãy chọn nước khác để tiếp tục.');
   captureRender();return;
  }
- const correctCapture=sq===task.to && !!target && target===target.toLowerCase();
+ const capturedBlack=!!target&&target===target.toLowerCase();
  capturePosition[sq]=moving;delete capturePosition[whiteFrom];
  captureWhiteSquare=sq;captureSelected=null;captureReply=null;
- if(correctCapture){
+ const remainingBlack=Object.values(capturePosition).filter(p=>p===p.toLowerCase()).length;
+ if(remainingBlack===0){
   captureSolved=true;captureDone.add(captureIndex);
-  const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback good';fb.textContent='✅ Chính xác!';
-  document.getElementById('captureInstruction').textContent='Giỏi lắm! Em đã ăn quân đúng. Chọn Bài tiếp để luyện thêm.';
+  const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback good';fb.textContent='✅ Chính xác! Hoàn thành!';
+  document.getElementById('captureInstruction').textContent='Xuất sắc! Em đã ăn hết tất cả quân đen. Chọn Bài tiếp để luyện thêm.';
   captureRender();return;
  }
  captureBusy=true;captureRender();
  const blackFrom=captureBlackCountermove(sq);
  if(!blackFrom){
   captureBusy=false;
-  captureHint('Quân đen chưa thể ăn quân của em. Hãy tiếp tục tìm cách ăn quân mục tiêu!');
+  captureHint('Quân đen chưa thể ăn quân của em. Còn '+remainingBlack+' quân đen — hãy tiếp tục ăn hết!');
   return;
  }
  document.getElementById('captureInstruction').textContent='Hãy quan sát nước đáp trả của quân đen…';
