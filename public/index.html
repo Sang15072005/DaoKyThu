@@ -5096,12 +5096,15 @@ if(document.readyState === 'loading'){
 .capture-overlay{position:fixed;inset:0;z-index:8100;background:#122b43b9;display:none;align-items:center;justify-content:center;padding:12px}.capture-overlay.open{display:flex}
 .capture-dialog{width:min(1150px,98vw);max-height:96vh;overflow:auto;background:white;border-radius:19px;padding:17px;box-shadow:0 20px 70px #122b4366}
 .capture-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:17px;align-items:center}
-.capture-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:min(100%,72vh);aspect-ratio:1;margin:auto;border-radius:12px;overflow:hidden;border:3px solid #d6e8f4}
-.capture-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;min-width:0;min-height:0}.capture-cell:nth-child(16n+1),.capture-cell:nth-child(16n+3),.capture-cell:nth-child(16n+5),.capture-cell:nth-child(16n+7),.capture-cell:nth-child(16n+10),.capture-cell:nth-child(16n+12),.capture-cell:nth-child(16n+14),.capture-cell:nth-child(16n+16){background:#f0d9b5}.capture-cell{background:#b58863}
+.capture-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:min(100%,calc(96vh - 125px));aspect-ratio:1;margin:auto;border:5px solid #e0eaf4;border-radius:13px;overflow:hidden;align-content:stretch}
+.capture-cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;min-width:0;min-height:0;width:100%;height:100%;overflow:hidden}
+/* Dùng đúng màu và kiểu ô cờ của bàn cờ chính trên website. */
+.capture-cell.light{background:var(--board-light)}
+.capture-cell.dark{background:var(--board-dark)}
 .capture-cell img,.capture-cell svg{width:83%;height:83%;object-fit:contain;pointer-events:none}.capture-cell.capture-reply-from{box-shadow:inset 0 0 0 5px #ffb64b}.capture-cell.capture-reply-to{box-shadow:inset 0 0 0 5px #dc3d3d}.capture-cell.selected{box-shadow:inset 0 0 0 5px #ffd54b}.capture-cell.target{box-shadow:inset 0 0 0 5px #6fc58e}
-.capture-coordinate{position:absolute;font-size:11px;font-weight:800;color:#fff5e6;pointer-events:none}.capture-rank{top:2px;right:3px}.capture-file{bottom:2px;left:4px}
+.capture-coordinate{position:absolute;z-index:6;font-size:clamp(10px,1vw,14px);font-weight:800;line-height:1;color:#285a83;pointer-events:none;text-shadow:0 1px 1px #fff8}.capture-rank{top:3px;left:3px}.capture-file{bottom:3px;right:3px}
 .capture-side{border:1px solid #d6e5f0;border-radius:13px;overflow:hidden;text-align:center}.capture-side h2{margin:0;background:#2078cf;color:white;padding:18px 8px}.capture-side p{padding:13px;min-height:74px}.capture-feedback{background:#c93030;color:white;padding:16px 8px;font-size:23px;font-weight:800}.capture-feedback.good{background:#238b62}.capture-feedback[hidden]{display:none}.capture-stars{display:grid;grid-template-columns:repeat(5,1fr)}.capture-stars button{border:0;background:#81a849;color:white;padding:9px 0;font-size:21px}.capture-stars button.active{background:#1979d0}.capture-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:13px}.capture-controls button{border:1px solid #bad9ef;background:#edf7ff;border-radius:9px;padding:9px 12px;font-weight:700}
-@media(max-width:750px){.capture-layout{grid-template-columns:1fr}.capture-board{width:min(100%,65vh)}.capture-side p{min-height:0}}
+@media(max-width:750px){.capture-layout{grid-template-columns:1fr}.capture-board{width:min(100%,calc(96vh - 220px))}.capture-side p{min-height:0}}
 </style>
 <div class="capture-overlay" id="captureOverlay" role="dialog" aria-modal="true" aria-label="Bài tập ăn quân">
  <div class="capture-dialog"><div class="mate-top"><strong>🎯 Ăn quân — 5 bài tập</strong><button class="btn btn-soft" onclick="captureClose()">✕ Đóng</button></div>
@@ -5139,7 +5142,7 @@ function captureRender(){
  const task=CAPTURE_TASKS[captureIndex],board=document.getElementById('captureBoard');board.innerHTML='';
  for(let rank=8;rank>=1;rank--){for(const file of 'abcdefgh'){
   const sq=file+rank,cell=document.createElement('div');
-  cell.className='capture-cell'+(captureSelected===sq?' selected':'')+(captureSelected&&sq===task.to?' target':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
+  cell.className='capture-cell '+(((8-rank+'abcdefgh'.indexOf(file))%2)===0?'light':'dark')+(captureSelected===sq?' selected':'')+(captureSelected&&sq===task.to?' target':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
   cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label','Ô '+sq);
   if(capturePosition[sq])cell.innerHTML=pieceSvgMarkup(capturePosition[sq]);
   if(file==='a')cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-rank">'+rank+'</span>');
