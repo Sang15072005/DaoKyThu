@@ -4054,13 +4054,16 @@ function listenToRoom(){
         }
       }
     }
-    vqcReceiveView(data.activeView);
-    if(data.captureExercise)vqcReceiveCapture(data.captureExercise);
-    if(data.defenseExercise)vqcReceiveDefense(data.defenseExercise);
-    if(data.checkOneExercise)vqcReceiveCheckOne(data.checkOneExercise);
-    if(data.escapeExercise)vqcReceiveEscape(data.escapeExercise);
-    if(data.mate3Exercise)vqcReceiveMate3(data.mate3Exercise);
-    if(data.mateExercise)receiveMateExercise(data.mateExercise);
+    // Chỉ áp dụng trạng thái của dạng bài đang mở. Dữ liệu bài cũ không được
+    // tự mở lại cửa sổ hoặc ghi đè bài mới khi hai máy chuyển bài khác thời điểm.
+    const active=data.activeView||{};
+    vqcReceiveView(active);
+    if(active.view==='capture' && data.captureExercise && data.captureExercise.index===active.index)vqcReceiveCapture(data.captureExercise);
+    if(active.view==='defense' && data.defenseExercise && data.defenseExercise.index===active.index)vqcReceiveDefense(data.defenseExercise);
+    if(active.view==='check1' && data.checkOneExercise && data.checkOneExercise.index===active.index)vqcReceiveCheckOne(data.checkOneExercise);
+    if(active.view==='escape' && data.escapeExercise && data.escapeExercise.index===active.index)vqcReceiveEscape(data.escapeExercise);
+    if(active.view==='mate3' && data.mate3Exercise && data.mate3Exercise.index===active.index)vqcReceiveMate3(data.mate3Exercise);
+    if(active.view==='mate2' && data.mateExercise && data.mateExercise.index===active.index)receiveMateExercise(data.mateExercise);
     pvpReceive(data.pvp||null);
     // Chỉ nhận dữ liệu từ máy khác hoặc bản đã xác nhận, không xóa nước đi đang chọn.
     if(Array.isArray(data.state)&&data.state.length===64){
@@ -5310,9 +5313,9 @@ function vqcExerciseWrite(field,value){
 }
 function vqcCaptureState(){return {index:captureIndex,position:{...capturePosition},whiteSquare:captureWhiteSquare,solved:captureSolved,busy:captureBusy,reply:captureReply,done:[...captureDone],instruction:document.getElementById('captureInstruction').textContent,feedback:document.getElementById('captureFeedback').innerHTML,feedbackClass:document.getElementById('captureFeedback').className,feedbackHidden:document.getElementById('captureFeedback').hidden};}
 function vqcPublishCapture(){
- if(!roomRef||vqcApplyingExercise||vqcNavApplying||!capturePosition)return;
+ if(!roomRef||vqcApplyingExercise||vqcNavApplying||!capturePosition||!document.getElementById('captureOverlay').classList.contains('open'))return;
  clearTimeout(vqcCapturePublishTimer);
- vqcCapturePublishTimer=setTimeout(()=>vqcExerciseWrite('captureExercise',vqcCaptureState()),80);
+ vqcCapturePublishTimer=setTimeout(()=>{if(document.getElementById('captureOverlay').classList.contains('open'))vqcExerciseWrite('captureExercise',vqcCaptureState());},80);
 }
 function vqcReceiveCapture(d){
  if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=CAPTURE_TASKS.length)return;
@@ -5342,7 +5345,7 @@ function vqcMate3State(){return {index:mate3Index,fen:mate3Chess.fen(),white:mat
 function vqcPublishMate3(){
  if(!roomRef||vqcApplyingExercise||vqcNavApplying||!mate3Chess)return;
  clearTimeout(vqcMate3PublishTimer);
- vqcMate3PublishTimer=setTimeout(()=>vqcExerciseWrite('mate3Exercise',vqcMate3State()),100);
+ vqcMate3PublishTimer=setTimeout(()=>{if(document.getElementById('mate3Overlay').classList.contains('open'))vqcExerciseWrite('mate3Exercise',vqcMate3State());},100);
 }
 function vqcReceiveMate3(d){
  if(!d||d.clientId===vqcExerciseClientId||typeof Chess==='undefined'||typeof d.fen!=='string'||!Number.isInteger(d.index)||d.index<0||d.index>=6)return;
