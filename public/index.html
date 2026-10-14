@@ -1895,6 +1895,27 @@ button{
 @media(max-width:750px){:is(.capture-dialog,.defense-dialog,.checkone-dialog,.escape-dialog){padding:12px}}
 @media(prefers-reduced-motion:reduce){:is(.capture-side,.defense-side,.checkone-side,.escape-side) button{transition:none}}
 </style>
+
+<style id="vqc-beautiful-star-game">
+/* Sao vàng 3D sắc nét, đồng nhất cho cả sáu thử thách nhặt sao. */
+.board .square.has-star{isolation:isolate}
+.board .board-star{position:absolute;inset:auto;left:50%;top:50%;width:76%;height:76%;display:flex;align-items:center;justify-content:center;font-size:0;line-height:0;pointer-events:none;z-index:2;transform:translate(-50%,-50%);filter:drop-shadow(0 3px 3px rgba(128,85,10,.22));animation:vqcStarHover 2.3s ease-in-out infinite!important;will-change:transform}
+.board .board-star .vqc-star-svg{display:block;width:100%;height:100%;overflow:visible;filter:none;pointer-events:none}
+.board .square .piece{position:relative;z-index:4}
+/* Lichess: ô có mục tiêu hiển thị vòng tròn ở mép ô, không đặt chấm lên sao. */
+.board .square.has-star .move-hint{
+  left:50%;top:50%;width:100%;height:100%;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:transparent!important;box-shadow:none!important;
+  border:clamp(5px,.9vw,9px) solid rgba(54,92,61,.68);
+  z-index:5;pointer-events:none;
+}
+.board .square.has-star .board-star{z-index:3}
+.board .square.has-star .board-star.collected{animation:vqcStarPickup .34s ease-out forwards!important}
+@keyframes vqcStarHover{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-53%) scale(1.045)}}
+@keyframes vqcStarPickup{0%{transform:translate(-50%,-50%) scale(1);opacity:1}60%{transform:translate(-50%,-75%) scale(1.4);opacity:1}100%{transform:translate(-50%,-115%) scale(.3);opacity:0}}
+@media(prefers-reduced-motion:reduce){.board .board-star{animation:none!important}}
+</style>
 </head>
 
 
@@ -3221,7 +3242,7 @@ function renderBoard(){
                 square.classList.add("has-star");
                 const starElement = document.createElement("span");
                 starElement.className = "board-star";
-                starElement.textContent = "⭐";
+                starElement.innerHTML = `<svg class="vqc-star-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><defs><linearGradient id="vqcStarGold" x1="0" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#fff6a0"/><stop offset=".36" stop-color="#ffe365"/><stop offset=".72" stop-color="#ffbe29"/><stop offset="1" stop-color="#ed9514"/></linearGradient><filter id="vqcStarShadow" x="-40%" y="-40%" width="180%" height="190%"><feGaussianBlur in="SourceAlpha" stdDeviation="2.3"/><feOffset dy="2"/><feComponentTransfer><feFuncA type="linear" slope=".28"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 9 L62.6 35.4 L91.5 39.2 L70.5 59.7 L75.7 88.5 L50 74.6 L24.3 88.5 L29.5 59.7 L8.5 39.2 L37.4 35.4 Z" fill="url(#vqcStarGold)" stroke="#e5a128" stroke-width="2.7" stroke-linejoin="round" filter="url(#vqcStarShadow)"/><path d="M50 17 L60.4 39 L84 42 L66.7 59 L71 81" fill="none" stroke="#fff9cb" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/><ellipse cx="39" cy="43" rx="6" ry="3" transform="rotate(-28 39 43)" fill="#fffbe4" opacity=".85"/></svg>`;
                 starElement.setAttribute("aria-label", "Ngôi sao");
                 square.appendChild(starElement);
             }
