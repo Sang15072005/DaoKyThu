@@ -1918,6 +1918,17 @@ button{
 /* Trải nghiệm nhặt sao tĩnh, không nhấp nháy hoặc chuyển động. */
 .board .board-star,.board .board-star.collected{animation:none!important;transition:none!important;will-change:auto!important}
 </style>
+<style id="pawn-games-style">
+.pawn-game-overlay{position:fixed;inset:0;z-index:6100;background:#122b46aa;display:none;align-items:center;justify-content:center;padding:12px;backdrop-filter:blur(3px)}.pawn-game-overlay.open{display:flex}
+.pawn-game-dialog{width:min(1080px,98vw);max-height:96vh;overflow:auto;background:#fff;border-radius:22px;padding:18px;box-shadow:0 24px 65px #10273c55}
+.pawn-game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.pawn-game-top h2{margin:0;color:#246da9;font-size:21px}
+.pawn-game-layout{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:20px;align-items:start}.pawn-game-board{width:min(100%,calc(96vh - 140px));aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:5px solid #dfebf6;border-radius:13px;overflow:hidden;margin:auto}
+.pawn-game-cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;cursor:pointer}.pawn-game-cell.light{background:#fff0c7}.pawn-game-cell.dark{background:#79b7e8}.pawn-game-cell.selected{box-shadow:inset 0 0 0 5px #f9c54a}.pawn-game-cell.hint:after{content:'';position:absolute;left:38%;top:38%;width:24%;height:24%;border-radius:50%;background:#426c5480;pointer-events:none}.pawn-game-cell.hint:has(img):after{inset:5%;width:auto;height:auto;background:transparent;border:5px solid #426c5480}
+.pawn-game-cell img,.pawn-game-cell svg{width:87%;height:87%;object-fit:contain;position:relative;z-index:1;pointer-events:none}.pawn-game-coord{position:absolute;font-size:11px;font-weight:800;color:#235c85;z-index:4;pointer-events:none}.pawn-game-coord.rank{left:3px;top:2px}.pawn-game-coord.file{right:3px;bottom:2px}
+.pawn-game-side{display:flex;flex-direction:column;gap:10px}.pawn-game-side button,.pawn-game-top button{padding:12px;border:1px solid #c6dff3;border-radius:11px;background:#eef7ff;color:#28547b;font-weight:750;cursor:pointer}.pawn-game-side button.active{background:#2378c7;color:white}.pawn-game-status{padding:15px;border-radius:13px;background:#f0f7fd;line-height:1.6}.pawn-game-rules{font-size:14px;line-height:1.6;color:#52697b}
+@media(max-width:700px){.pawn-game-layout{grid-template-columns:1fr}.pawn-game-board{width:min(100%,calc(96vh - 310px))}.pawn-game-side{display:grid;grid-template-columns:1fr 1fr}.pawn-game-status,.pawn-game-rules{grid-column:1/-1}}
+.pawn-game-assign{padding:12px;background:#f0f8ff;border:1px solid #c9e2f4;border-radius:13px;line-height:1.5}.pawn-game-choice{display:grid;gap:7px;margin:8px 0}.pawn-game-choice button.active{background:#2376c9!important;color:white!important;border-color:#2376c9!important}.pawn-game-assign small{color:#5c7084}.pawn-game-roles{padding:12px;border-radius:12px;background:#e8f8ef;color:#23664a;font-weight:800;text-align:center}
+</style>
 </head>
 
 
@@ -2243,7 +2254,10 @@ button{
 
     <div class="lesson" id="escapeMenu" role="button" tabindex="0" onclick="escapeOpen(0)" onkeydown="if(event.key==='Enter')escapeOpen(0)"><div class="lesson-icon">🛡️</div> Thoát chiếu (7 bài)</div>
     <div class="lesson" id="checkOneMenu" role="button" tabindex="0" onclick="checkOneOpen(0)" onkeydown="if(event.key==='Enter')checkOneOpen(0)"><div class="lesson-icon">⚡</div> Chiếu trong 1 nước (7 bài)</div>
+    <div class="lesson" id="pawnGamesMenu" role="button" tabindex="0" onclick="pawnGameOpen(0)" onkeydown="if(event.key==='Enter')pawnGameOpen(0)"><div class="lesson-icon">♟️</div> Trò chơi Tốt và Mã (2 trò)</div>
+    <div class="lesson" id="defenseAttackMenu" role="button" tabindex="0" onclick="defenseOpenNew(0)" onkeydown="if(event.key==='Enter')defenseOpenNew(0)"><div class="lesson-icon">🛡️</div> Phòng thủ quân bị tấn công (6 bài)</div>
     <div class="lesson" id="defenseMenu" role="button" tabindex="0" onclick="defenseOpen(0)" onkeydown="if(event.key==='Enter')defenseOpen(0)"><div class="lesson-icon">🛡️</div> Phòng thủ (8 bài)</div>
+<div class="lesson" id="freeCaptureMenu" role="button" tabindex="0" onclick="freeCaptureOpen(0)" onkeydown="if(event.key==='Enter')freeCaptureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân không được bảo vệ (8 bài)</div>
 <div class="lesson" id="captureMenu" role="button" tabindex="0" onclick="captureOpen(0)" onkeydown="if(event.key==='Enter')captureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân (5 bài)</div>
 <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước (10 bài)</div>
 <div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước (6 bài)</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
@@ -3938,7 +3952,9 @@ function vqcCloseOtherViews(target){
   if(target!=='mate3')document.getElementById('mate3Overlay')?.classList.remove('open');
   if(target!=='pvp')document.getElementById('pvpOverlay')?.classList.remove('open');
   if(target!=='capture')document.getElementById('captureOverlay')?.classList.remove('open');
+  if(target!=='freecapture')document.getElementById('freeCaptureOverlay')?.classList.remove('open');
   if(target!=='defense')document.getElementById('defenseOverlay')?.classList.remove('open');
+  if(target!=='pawngame')document.getElementById('pawnGameOverlay')?.classList.remove('open');
   if(target!=='check1')document.getElementById('checkOneOverlay')?.classList.remove('open');
   if(target!=='escape')document.getElementById('escapeOverlay')?.classList.remove('open');
 }
@@ -3960,7 +3976,9 @@ function vqcReceiveView(data){
     else if(view==='mate3')openMate3(index);
     else if(view==='pvp')openPvp();
     else if(view==='capture')captureOpen(index);
+    else if(view==='freecapture')freeCaptureOpen(index);
     else if(view==='defense')defenseOpen(index);
+    else if(view==='pawngame')pawnGameOpen(index);
     else if(view==='check1')checkOneOpen(index);
     else if(view==='escape')escapeOpen(index);
     else if(view==='piece'&&pieceGameNames[data.piece]){
@@ -4086,8 +4104,10 @@ function listenToRoom(){
     // tự mở lại cửa sổ hoặc ghi đè bài mới khi hai máy chuyển bài khác thời điểm.
     const active=data.activeView||{};
     vqcReceiveView(active);
+    if(active.view==='freecapture' && data.freeCaptureExercise && data.freeCaptureExercise.index===active.index)vqcReceiveFreeCapture(data.freeCaptureExercise);
     if(active.view==='capture' && data.captureExercise && data.captureExercise.index===active.index)vqcReceiveCapture(data.captureExercise);
     if(active.view==='defense' && data.defenseExercise && data.defenseExercise.index===active.index)vqcReceiveDefense(data.defenseExercise);
+    if(active.view==='pawngame' && data.pawnGameExercise && data.pawnGameExercise.index===active.index)pawnGameReceive(data.pawnGameExercise);
     if(active.view==='check1' && data.checkOneExercise && data.checkOneExercise.index===active.index)vqcReceiveCheckOne(data.checkOneExercise);
     if(active.view==='escape' && data.escapeExercise && data.escapeExercise.index===active.index)vqcReceiveEscape(data.escapeExercise);
     if(active.view==='mate3' && data.mate3Exercise && data.mate3Exercise.index===active.index)vqcReceiveMate3(data.mate3Exercise);
@@ -5432,7 +5452,7 @@ mateReset=function(){vqcMate2ResetOriginal();if(!vqcNavApplying)syncMateExercise
 .defense-side{display:flex;flex-direction:column;gap:11px}.defense-side h2{margin:0;background:#2077cf;color:white;border-radius:13px;padding:17px}.defense-side p{background:#f0f7ff;padding:13px;border-radius:12px;line-height:1.55}.defense-side button{border:1px solid #c4def0;background:#eef7ff;border-radius:10px;padding:10px;font-weight:750;cursor:pointer}.defense-stars{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.defense-stars button.active{background:#2077cf;color:white}.defense-feedback{padding:12px;border-radius:12px;background:#fff0df;color:#b45309;font-weight:700}.defense-feedback.good{background:#e8f9ee;color:#23734b}.defense-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:750px){.defense-layout{grid-template-columns:1fr}.defense-board{width:min(100%,calc(96vh - 250px))}}
 </style>
-<div class="defense-overlay" id="defenseOverlay" role="dialog" aria-modal="true" aria-label="Bài tập phòng thủ"><div class="defense-dialog"><div class="mate-top"><strong>🛡️ Phòng thủ — 8 bài tập</strong><button class="btn btn-soft" onclick="defenseClose()">✕ Đóng</button></div><div class="defense-layout"><div class="defense-board" id="defenseBoard"></div><div class="defense-side"><h2>🛡️ Phòng thủ</h2><p id="defenseInstruction"></p><div id="defenseFeedback" class="defense-feedback" hidden></div><div id="defenseStars" class="defense-stars"></div><div class="defense-controls"><button onclick="defenseOpen(defenseIndex-1)">← Bài trước</button><button onclick="defenseOpen(defenseIndex+1)">Bài tiếp →</button><button onclick="defenseReset()">↻ Thử lại</button><button onclick="defenseShowThreats()">👁 Ô nguy hiểm</button></div></div></div></div></div>
+<div class="defense-overlay" id="defenseOverlay" role="dialog" aria-modal="true" aria-label="Bài tập phòng thủ"><div class="defense-dialog"><div class="mate-top"><strong id="defenseTitle">🛡️ Phòng thủ — 8 bài tập</strong><button class="btn btn-soft" onclick="defenseClose()">✕ Đóng</button></div><div class="defense-layout"><div class="defense-board" id="defenseBoard"></div><div class="defense-side"><h2>🛡️ Phòng thủ</h2><p id="defenseInstruction"></p><div id="defenseFeedback" class="defense-feedback" hidden></div><div id="defenseStars" class="defense-stars"></div><div class="defense-controls"><button onclick="defenseOpen(defenseIndex===defenseTaskRange()[0]?defenseTaskRange()[1]-1:defenseIndex-1)">← Bài trước</button><button onclick="defenseOpen(defenseIndex+1===defenseTaskRange()[1]?defenseTaskRange()[0]:defenseIndex+1)">Bài tiếp →</button><button onclick="defenseReset()">↻ Thử lại</button><button onclick="defenseShowThreats()">👁 Ô nguy hiểm</button></div></div></div></div></div>
 <script>
 // 8 tình huống phòng thủ từ ảnh tham khảo; mục tiêu là tìm một nước giải nguy.
 const DEFENSE_TASKS=[
@@ -5445,13 +5465,69 @@ const DEFENSE_TASKS=[
  {pieces:{a8:'r',b8:'r',d7:'q',e6:'n',a1:'R',b2:'B',d2:'N',e5:'P',f2:'P',g2:'P',g1:'K',g5:'B',h4:'P',a3:'P'},tip:'Hãy quan sát các mối đe dọa và tìm một nước phòng thủ chủ động.',solutions:['g5f6']},
  {pieces:{d7:'q',b5:'N',f5:'R',c3:'P',d3:'B'},tip:'Hậu đen d7 đang đe dọa các quân trắng. Hãy tìm nước chống lại đòn tấn công.',solutions:['d3e4']}
 ];
+
+// Bài học 3 — sáu thế cờ phòng thủ quân bị tấn công (Hình 51–56).
+// Dấu chấm đen: Đen đi, dấu chấm trắng: Trắng đi.
+const DEFENSE_ATTACK_TASKS=[
+ {figure:51,side:'b',focus:['d4','c3'],pieces:{d7:'k',g7:'b',b6:'p',f6:'p',h6:'p',b5:'p',d4:'n',c3:'b',a2:'P',d5:'P',e4:'B',f4:'P',d1:'K'},tip:'Hình 51 · Đen đi. Hãy bảo vệ quân đen đang bị tấn công bằng một biện pháp phòng thủ hợp lệ.'},
+ {figure:52,side:'b',focus:['e4','b6'],pieces:{b8:'k',d8:'r',a7:'p',b7:'p',b6:'n',c6:'p',f6:'p',g5:'p',e4:'b',a2:'P',d4:'P',e3:'P',f3:'N',d2:'B',f2:'P',h2:'P',g4:'P',e1:'R',g1:'K'},tip:'Hình 52 · Đen đi. Tìm một nước phòng thủ để bảo vệ quân đang bị đe dọa.'},
+ {figure:53,side:'b',focus:['d6','c5'],pieces:{a7:'p',c7:'p',e7:'k',h7:'p',d6:'n',f6:'p',g6:'p',c5:'b',a6:'P',a5:'P',d5:'R',b3:'K',f3:'P',h3:'N',g2:'P'},tip:'Hình 53 · Đen đi. Có thể di chuyển, yểm trợ, chặn đòn hoặc phản công để phòng thủ.'},
+ {figure:54,side:'b',focus:['d7','b8'],pieces:{a8:'r',b8:'n',h8:'k',a7:'p',d7:'n',g7:'p',h6:'p',d4:'P',e4:'Q',a2:'P',g2:'P',h3:'P',h2:'K'},tip:'Hình 54 · Đen đi. Hãy chọn biện pháp bảo vệ quân đen đang bị tấn công.'},
+ {figure:55,side:'b',focus:['b8','c8','d8'],pieces:{b8:'r',c8:'b',d8:'n',c7:'p',g7:'k',h7:'p',g6:'p',c6:'N',b3:'P',f3:'B',h3:'P',a2:'P',f2:'K',f1:'R'},tip:'Hình 55 · Đen đi. Quan sát quân bị tấn công và tìm một nước phòng thủ phù hợp.'},
+ {figure:56,side:'w',focus:['e6','h1'],pieces:{g8:'r',e7:'k',g7:'p',b6:'p',d6:'b',h6:'p',d4:'p',a2:'P',g2:'P',h2:'P',b1:'K',h1:'R',e6:'N',e4:'P'},tip:'Hình 56 · Trắng đi. Tìm một nước giúp quân trắng thoát nguy hiểm hoặc được bảo vệ.'}
+];
+const DEFENSE_ALL_TASKS=DEFENSE_TASKS.concat(DEFENSE_ATTACK_TASKS);
+function defenseCurrentTask(){return DEFENSE_ALL_TASKS[defenseIndex];}
+function defenseCurrentSide(){return defenseCurrentTask().side||'w';}
+function defenseIsFriendly(piece){return !!piece&&(defenseCurrentSide()==='w'?piece===piece.toUpperCase():piece===piece.toLowerCase());}
+function defenseIsEnemy(piece){return !!piece&&!defenseIsFriendly(piece);}
+function defenseAttackersOf(sq,pos,enemy){return Object.keys(pos).filter(from=>pos[from]&&(enemy?!defenseIsFriendly(pos[from]):defenseIsFriendly(pos[from]))&&captureCanAttack(pos[from],from,sq,pos));}
+function defenseGuardCount(sq,pos){return Object.keys(pos).filter(from=>from!==sq&&pos[from]&&defenseIsFriendly(pos[from])&&captureCanAttack(pos[from],from,sq,pos)).length;}
+function defenseNewTaskAccepted(before,after,from,to){
+ const task=defenseCurrentTask();
+ const threatened=(task.focus||[]).filter(sq=>before[sq]&&defenseIsFriendly(before[sq])&&defenseAttackersOf(sq,before,true).length);
+ for(const sq of threatened){
+  const dest=sq===from?to:sq;
+  if(after[dest]!==before[sq])continue;
+  const afterAttack=defenseAttackersOf(dest,after,true);
+  if(!afterAttack.length)return true;
+  if(defenseGuardCount(dest,after)>defenseGuardCount(sq,before))return true;
+ }
+ return false;
+}
+function defenseTaskRange(){return defenseIndex<DEFENSE_TASKS.length?[0,DEFENSE_TASKS.length]:[DEFENSE_TASKS.length,DEFENSE_ALL_TASKS.length];}
+function defenseOpenNew(i=0){defenseOpen(DEFENSE_TASKS.length+i);}
+
 let defenseIndex=0,defensePosition={},defenseSelected=null,defenseSolved=false,defenseThreats=false;
 const defenseDone=new Set();let vqcDefenseLastReceived='';
-function defenseOpen(i){defenseIndex=(i+DEFENSE_TASKS.length)%DEFENSE_TASKS.length;vqcCloseOtherViews('defense');defenseReset();document.getElementById('defenseOverlay').classList.add('open');document.getElementById('vqcHomeHero')?.setAttribute('hidden','');vqcBroadcastView('defense',defenseIndex);vqcPublishDefense();}
+function defenseOpen(i){defenseIndex=((i%DEFENSE_ALL_TASKS.length)+DEFENSE_ALL_TASKS.length)%DEFENSE_ALL_TASKS.length;vqcCloseOtherViews('defense');defenseReset();document.getElementById('defenseOverlay').classList.add('open');document.getElementById('vqcHomeHero')?.setAttribute('hidden','');vqcBroadcastView('defense',defenseIndex);vqcPublishDefense();}
 function defenseClose(){document.getElementById('defenseOverlay').classList.remove('open');vqcBroadcastView('board');}
-function defenseReset(){defensePosition={...DEFENSE_TASKS[defenseIndex].pieces};defenseSelected=null;defenseSolved=false;defenseThreats=false;document.getElementById('defenseInstruction').textContent=DEFENSE_TASKS[defenseIndex].tip;document.getElementById('defenseFeedback').hidden=true;defenseRender();vqcPublishDefense();}
+function defenseReset(){defensePosition={...defenseCurrentTask().pieces};defenseSelected=null;defenseSolved=false;defenseThreats=false;document.getElementById('defenseInstruction').textContent=defenseCurrentTask().tip;document.getElementById('defenseFeedback').hidden=true;defenseRender();vqcPublishDefense();}
 function defenseShowThreats(){defenseThreats=!defenseThreats;defenseRender();}
-function defenseRender(){const board=document.getElementById('defenseBoard');board.innerHTML='';for(let r=8;r>=1;r--)for(const f of 'abcdefgh'){const sq=f+r,p=defensePosition[sq],cell=document.createElement('div');cell.className='defense-cell '+((8-r+'abcdefgh'.indexOf(f))%2?'dark':'light')+(defenseSelected===sq?' selected':'');if(p)cell.innerHTML=pieceSvgMarkup(p);if(defenseSelected&&defensePosition[defenseSelected]&&vqcExerciseLegalMove(defensePosition[defenseSelected],defenseSelected,sq,defensePosition)&&(!p||p===p.toLowerCase()))cell.insertAdjacentHTML('beforeend',p?'<span class="capture-take-ring"></span>':'<span class="capture-move-dot"></span>');if(defenseThreats&&p&&p===p.toUpperCase()&&Object.keys(defensePosition).some(k=>defensePosition[k]===defensePosition[k].toLowerCase()&&captureCanAttack(defensePosition[k],k,sq,defensePosition)))cell.style.boxShadow='inset 0 0 0 5px #e14d55';if(f==='a')cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-rank">'+r+'</span>');if(r===1)cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-file">'+f+'</span>');cell.onclick=()=>defenseClick(sq);board.appendChild(cell);}const stars=document.getElementById('defenseStars');stars.innerHTML='';DEFENSE_TASKS.forEach((_,i)=>{const b=document.createElement('button');b.textContent=(defenseDone.has(i)?'⭐':'☆')+' '+(i+1);b.className=i===defenseIndex?'active':'';b.onclick=()=>defenseOpen(i);stars.appendChild(b);});}
+function defenseRender(){
+ const board=document.getElementById('defenseBoard');board.innerHTML='';
+ const black=defenseCurrentSide()==='b';
+ const ranks=black?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];
+ const files=black?'hgfedcba':'abcdefgh';
+ for(const r of ranks)for(const f of files){
+  const sq=f+r,p=defensePosition[sq],cell=document.createElement('div');
+  cell.className='defense-cell '+(('abcdefgh'.indexOf(f)+r)%2?'light':'dark')+(defenseSelected===sq?' selected':'');
+  if(p)cell.innerHTML=pieceSvgMarkup(p);
+  if(defenseSelected&&defensePosition[defenseSelected]&&vqcExerciseLegalMove(defensePosition[defenseSelected],defenseSelected,sq,defensePosition)&&(!p||defenseIsEnemy(p)))cell.insertAdjacentHTML('beforeend',p?'<span class="capture-take-ring"></span>':'<span class="capture-move-dot"></span>');
+  if(defenseThreats&&p&&defenseIsFriendly(p)&&defenseAttackersOf(sq,defensePosition,true).length)cell.style.boxShadow='inset 0 0 0 5px #e14d55';
+  if(f===files[0])cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-rank">'+r+'</span>');
+  if(r===ranks[7])cell.insertAdjacentHTML('beforeend','<span class="capture-coordinate capture-file">'+f+'</span>');
+  cell.onclick=()=>defenseClick(sq);board.appendChild(cell);
+ }
+ const stars=document.getElementById('defenseStars');stars.innerHTML='';
+ const [first,last]=defenseTaskRange();
+ for(let i=first;i<last;i++){
+  const b=document.createElement('button');b.textContent=(defenseDone.has(i)?'⭐':'☆')+' '+(i-first+1);
+  b.className=i===defenseIndex?'active':'';b.onclick=()=>defenseOpen(i);stars.appendChild(b);
+ }
+ const title=document.getElementById('defenseTitle');if(title)title.textContent=defenseIndex<DEFENSE_TASKS.length?'🛡️ Phòng thủ — 8 bài tập':'🛡️ Phòng thủ quân bị tấn công — Hình 51–56';
+}
+
 function defenseBlackAttackers(sq,pos){return Object.keys(pos).filter(from=>{const p=pos[from];return p&&p===p.toLowerCase()&&captureCanAttack(p,from,sq,pos);});}
 // Đánh giá theo hiệu quả phòng thủ, không giới hạn trong một danh sách nước mẫu.
 function defenseWhiteDefenders(sq,pos){
@@ -5484,14 +5560,14 @@ function defenseIsSuccessful(before,after,from,to){
 function defenseClick(sq){
  if(defenseSolved)return;
  const p=defensePosition[sq];
- if(!defenseSelected){if(p&&p===p.toUpperCase()){defenseSelected=sq;defenseRender();}return;}
+ if(!defenseSelected){if(defenseIsFriendly(p)){defenseSelected=sq;defenseRender();}return;}
  const from=defenseSelected,moving=defensePosition[from];
  if(sq===from){defenseSelected=null;defenseRender();return;}
- if(p&&p===p.toUpperCase()){defenseSelected=sq;defenseRender();return;}
+ if(defenseIsFriendly(p)){defenseSelected=sq;defenseRender();return;}
  if(!vqcExerciseLegalMove(moving,from,sq,defensePosition)){defenseSelected=null;defenseRender();return;}
  const before={...defensePosition};
  const next={...before};delete next[from];next[sq]=moving;
- const accepted=defenseIsSuccessful(before,next,from,sq);
+ const accepted=defenseIndex<DEFENSE_TASKS.length?defenseIsSuccessful(before,next,from,sq):defenseNewTaskAccepted(before,next,from,sq);
  defensePosition=next;defenseSelected=null;
  const fb=document.getElementById('defenseFeedback');fb.hidden=false;
  if(accepted){
@@ -5506,7 +5582,7 @@ function defenseClick(sq){
  defenseRender();vqcPublishDefense();
 }
 function vqcPublishDefense(){if(typeof vqcExerciseWrite!=='function'||!roomRef||vqcApplyingExercise||vqcNavApplying)return;vqcExerciseWrite('defenseExercise',{index:defenseIndex,position:{...defensePosition},solved:defenseSolved,done:[...defenseDone],instruction:document.getElementById('defenseInstruction').textContent,feedback:document.getElementById('defenseFeedback').innerHTML,feedbackClass:document.getElementById('defenseFeedback').className,feedbackHidden:document.getElementById('defenseFeedback').hidden});}
-function vqcReceiveDefense(d){if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=DEFENSE_TASKS.length)return;const key=JSON.stringify(d);if(key===vqcDefenseLastReceived)return;vqcDefenseLastReceived=key;vqcApplyingExercise=true;try{defenseIndex=d.index;defensePosition={...d.position};defenseSelected=null;defenseSolved=!!d.solved;defenseDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x))defenseDone.add(x)});document.getElementById('defenseInstruction').textContent=d.instruction||DEFENSE_TASKS[d.index].tip;const fb=document.getElementById('defenseFeedback');fb.innerHTML=d.feedback||'';fb.className=d.feedbackClass||'defense-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('defenseOverlay').classList.contains('open'))defenseRender();}finally{vqcApplyingExercise=false;}}
+function vqcReceiveDefense(d){if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=DEFENSE_ALL_TASKS.length)return;const key=JSON.stringify(d);if(key===vqcDefenseLastReceived)return;vqcDefenseLastReceived=key;vqcApplyingExercise=true;try{defenseIndex=d.index;defensePosition={...d.position};defenseSelected=null;defenseSolved=!!d.solved;defenseDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x))defenseDone.add(x)});document.getElementById('defenseInstruction').textContent=d.instruction||DEFENSE_ALL_TASKS[d.index].tip;const fb=document.getElementById('defenseFeedback');fb.innerHTML=d.feedback||'';fb.className=d.feedbackClass||'defense-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('defenseOverlay').classList.contains('open'))defenseRender();}finally{vqcApplyingExercise=false;}}
 </script>
 <style>
 .checkone-overlay{position:fixed;inset:0;z-index:8200;background:#122b43b9;display:none;align-items:center;justify-content:center;padding:12px}.checkone-overlay.open{display:flex}
@@ -5707,6 +5783,170 @@ function vqcReceiveEscape(d){if(!d||d.clientId===vqcExerciseClientId||!d.positio
   observer.observe(el,{childList:true,subtree:false});update(id,getPos);
  });
 })();
+
+</script>
+<style>
+/* Bài tập mới: ăn quân không được bảo vệ */
+.freecapture-overlay{position:fixed;inset:0;z-index:5450;display:none;align-items:center;justify-content:center;padding:12px;background:#142a42b9;backdrop-filter:blur(4px)}
+.freecapture-overlay.open{display:flex}.freecapture-dialog{width:min(1170px,98vw);max-height:96vh;overflow:auto;background:white;border-radius:22px;padding:18px;box-shadow:0 24px 70px #112a4355}
+.freecapture-layout{display:grid;grid-template-columns:minmax(0,1fr) 265px;gap:20px;align-items:start}.freecapture-board{width:min(100%,calc(96vh - 135px));aspect-ratio:1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:5px solid #dcebf6;border-radius:13px;overflow:hidden;margin:auto}
+.freecapture-cell{position:relative;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;cursor:pointer}.freecapture-cell.light{background:#fff0c7}.freecapture-cell.dark{background:#79b7e8}.freecapture-cell.selected{box-shadow:inset 0 0 0 5px #ffd15b}.freecapture-cell img,.freecapture-cell svg{width:86%;height:86%;object-fit:contain;pointer-events:none}.freecapture-cell .capture-move-dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24%;height:24%;border-radius:50%;background:#41694d80;pointer-events:none}.freecapture-cell .capture-take-ring{position:absolute;inset:5%;border:5px solid #41694d9c;border-radius:50%;pointer-events:none}
+.freecapture-coord{position:absolute;z-index:4;font-size:clamp(10px,1vw,14px);font-weight:800;color:#285a83;pointer-events:none}.freecapture-rank{left:3px;top:2px}.freecapture-file{right:3px;bottom:2px}
+.freecapture-side{display:flex;flex-direction:column;gap:12px}.freecapture-side h2{margin:0;padding:17px 12px;text-align:center;border-radius:14px;background:#2078cf;color:white}.freecapture-info,.freecapture-feedback{border-radius:13px;padding:14px;line-height:1.6;background:#edf5fc;color:#34495d}.freecapture-feedback.good{background:#e1f5e9;color:#176442}.freecapture-feedback.bad{background:#fff0e2;color:#a64d10}.freecapture-controls,.freecapture-numbers{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.freecapture-numbers{grid-template-columns:repeat(4,1fr)}.freecapture-side button{padding:10px 5px;border:1px solid #b9d9f0;border-radius:10px;background:#eff7ff;font-weight:750;cursor:pointer}.freecapture-side button.active{background:#2078cf;color:white}
+@media(max-width:750px){.freecapture-layout{grid-template-columns:1fr}.freecapture-board{width:min(100%,calc(96vh - 280px))}.freecapture-side{gap:7px}}
+</style>
+<div class="freecapture-overlay" id="freeCaptureOverlay" role="dialog" aria-modal="true" aria-label="Ăn quân không được bảo vệ"><div class="freecapture-dialog">
+<div class="mate-top"><strong>🎯 Ăn quân không được bảo vệ — Hình 43–50</strong><button class="btn btn-soft" onclick="freeCaptureClose()">✕ Đóng</button></div>
+<div class="freecapture-layout"><div class="freecapture-board" id="freeCaptureBoard"></div><div class="freecapture-side"><h2>🎯 Tìm quân có thể ăn</h2><div id="freeCaptureInstruction" class="freecapture-info"></div><div id="freeCaptureFeedback" class="freecapture-feedback" hidden></div><div id="freeCaptureNumbers" class="freecapture-numbers"></div><div class="freecapture-controls"><button onclick="freeCaptureOpen(freeCaptureIndex-1)">← Bài trước</button><button onclick="freeCaptureOpen(freeCaptureIndex+1)">Bài tiếp →</button><button onclick="freeCaptureReset()">↻ Thử lại</button><button onclick="freeCaptureShowHint()">💡 Gợi ý</button></div></div></div></div></div>
+<script>
+// Tái hiện các thế cờ Hình 43–50. Chấm trắng: Trắng đi; chấm đen: Đen đi.
+const FREE_CAPTURE_TASKS=[
+ {number:43,turn:'w',pieces:{e8:'r',g8:'k',b7:'p',f7:'p',g7:'p',c6:'p',d6:'n',h4:'P',f3:'B',g3:'P',b2:'P',f2:'P',g2:'K',d1:'R'}},
+ {number:44,turn:'w',pieces:{a8:'r',f7:'k',g7:'p',f6:'p',d5:'b',a4:'p',a3:'P',c3:'N',g3:'P',f2:'P',e1:'R',g1:'K'}},
+ {number:45,turn:'b',pieces:{e8:'n',g8:'k',b7:'p',f7:'q',g7:'b',h7:'p',c6:'p',h5:'N',h3:'P',b3:'P',a2:'P',g2:'P',h2:'K',f1:'B'}},
+ {number:46,turn:'b',pieces:{d8:'r',f8:'b',g8:'k',f7:'N',g7:'p',h7:'p',b6:'p',c6:'p',b4:'P',c3:'P',f2:'P',g2:'P',h2:'P',e1:'R',g1:'K'}},
+ {number:47,turn:'b',pieces:{a8:'r',d6:'k',a5:'p',d5:'p',d4:'P',e4:'n',c3:'P',g3:'P',d2:'B',g2:'K',c1:'R'}},
+ {number:48,turn:'w',pieces:{h8:'k',e7:'q',g7:'p',c6:'p',h6:'r',a5:'r',b5:'p',h3:'P',c2:'P',d2:'Q',g2:'P',d1:'R',f1:'R',g1:'K'}},
+ {number:49,turn:'b',pieces:{a8:'r',e8:'k',h8:'r',b7:'p',e7:'q',f7:'p',g7:'p',h7:'p',a6:'p',c6:'n',f6:'n',b5:'B',c5:'b',e5:'p',e4:'P',f3:'N',a2:'P',b2:'P',c2:'Q',f2:'P',g2:'P',h2:'P',a1:'R',c1:'B',e1:'K',h1:'R'}},
+ {number:50,turn:'w',pieces:{a8:'r',d8:'r',g8:'k',c7:'q',e7:'b',f7:'p',h7:'p',c6:'p',d6:'N',g6:'p',a5:'p',b5:'p',e5:'P',e4:'b',f4:'P',h4:'n',a3:'P',c3:'B',b2:'P',c2:'P',e2:'B',f2:'Q',g2:'P',h2:'P',b1:'K',d1:'R',h1:'R'}}
+];
+let freeCaptureIndex=0,freeCapturePosition={},freeCaptureSelected=null,freeCaptureSolved=false,freeCaptureFailed=false;
+const freeCaptureDone=new Set();
+function freeCaptureOpen(i){
+ vqcCloseOtherViews('freecapture');freeCaptureIndex=(i+FREE_CAPTURE_TASKS.length)%FREE_CAPTURE_TASKS.length;
+ document.getElementById('freeCaptureOverlay').classList.add('open');freeCaptureReset();vqcBroadcastView('freecapture',freeCaptureIndex);
+}
+function freeCaptureClose(){document.getElementById('freeCaptureOverlay').classList.remove('open');vqcBroadcastView('board');}
+function freeCaptureReset(){freeCapturePosition={...FREE_CAPTURE_TASKS[freeCaptureIndex].pieces};freeCaptureSelected=null;freeCaptureSolved=false;freeCaptureFailed=false;
+ const task=FREE_CAPTURE_TASKS[freeCaptureIndex];document.getElementById('freeCaptureInstruction').textContent='Hình '+task.number+' · Lượt '+(task.turn==='w'?'Trắng':'Đen')+' đi. Hãy ăn một quân đối phương không được quân khác bảo vệ.';
+ const fb=document.getElementById('freeCaptureFeedback');fb.hidden=true;fb.textContent='';fb.className='freecapture-feedback';freeCaptureRender();vqcPublishFreeCapture();}
+function freeCaptureIsOwn(p){const white=FREE_CAPTURE_TASKS[freeCaptureIndex].turn==='w';return !!p&&(p===p.toUpperCase())===white;}
+function freeCaptureSafeCapture(from,to){const moving=freeCapturePosition[from],target=freeCapturePosition[to];if(!moving||!target||freeCaptureIsOwn(target)||target.toLowerCase()==='k')return false;
+ if(!vqcExerciseLegalMove(moving,from,to,freeCapturePosition))return false;
+ const next={...freeCapturePosition};delete next[from];next[to]=moving;
+ return !Object.keys(next).some(sq=>sq!==to&&next[sq]&&!freeCaptureIsOwn(next[sq])&&captureCanAttack(next[sq],sq,to,next));
+}
+function freeCaptureSolutions(){const sol=[];for(const from of Object.keys(freeCapturePosition)){if(!freeCaptureIsOwn(freeCapturePosition[from]))continue;for(const to of Object.keys(freeCapturePosition)){if(freeCaptureSafeCapture(from,to))sol.push([from,to]);}}return sol;}
+function freeCaptureRender(){const board=document.getElementById('freeCaptureBoard');board.innerHTML='';const blackBottom=FREE_CAPTURE_TASKS[freeCaptureIndex].turn==='b';const ranks=blackBottom?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];const files=blackBottom?'hgfedcba':'abcdefgh';for(const rank of ranks){for(const file of files){
+ const sq=file+rank,cell=document.createElement('div');cell.className='freecapture-cell '+(((8-rank+'abcdefgh'.indexOf(file))%2)===0?'light':'dark')+(freeCaptureSelected===sq?' selected':'');
+ if(freeCapturePosition[sq])cell.innerHTML=pieceSvgMarkup(freeCapturePosition[sq]);
+ if(freeCaptureSelected&&vqcExerciseLegalMove(freeCapturePosition[freeCaptureSelected],freeCaptureSelected,sq,freeCapturePosition)){
+ const hint=document.createElement('span');hint.className=freeCapturePosition[sq]?'capture-take-ring':'capture-move-dot';cell.appendChild(hint);}
+ if(file===(blackBottom?'h':'a'))cell.insertAdjacentHTML('beforeend','<span class="freecapture-coord freecapture-rank">'+rank+'</span>');
+ if(rank===(blackBottom?8:1))cell.insertAdjacentHTML('beforeend','<span class="freecapture-coord freecapture-file">'+file+'</span>');
+ cell.onclick=()=>freeCaptureClick(sq);board.appendChild(cell);
+ }}const numbers=document.getElementById('freeCaptureNumbers');numbers.innerHTML='';FREE_CAPTURE_TASKS.forEach((t,i)=>{const b=document.createElement('button');b.className=i===freeCaptureIndex?'active':'';b.textContent=(freeCaptureDone.has(i)?'⭐ ':'')+t.number;b.onclick=()=>freeCaptureOpen(i);numbers.appendChild(b);});}
+function freeCaptureClick(sq){if(freeCaptureSolved||freeCaptureFailed)return;const p=freeCapturePosition[sq];if(freeCaptureIsOwn(p)){freeCaptureSelected=sq;freeCaptureRender();return;}if(!freeCaptureSelected)return;
+ const from=freeCaptureSelected,moving=freeCapturePosition[from],target=freeCapturePosition[sq];freeCaptureSelected=null;
+ if(!vqcExerciseLegalMove(moving,from,sq,freeCapturePosition)){freeCaptureFeedback('Nước đi không hợp lệ theo luật cờ vua. Em hãy chọn lại.','bad');freeCaptureRender();return;}
+ if(!target){freeCaptureFeedback('Bài này yêu cầu ăn quân đối phương. Hãy tìm quân có thể ăn.','bad');freeCaptureRender();return;}
+ const safe=freeCaptureSafeCapture(from,sq);freeCapturePosition[sq]=moving;delete freeCapturePosition[from];
+ if(safe){freeCaptureSolved=true;freeCaptureDone.add(freeCaptureIndex);freeCaptureFeedback('✅ Chính xác! '+from+' → '+sq+': Em đã ăn quân không được bảo vệ.','good');}
+ else{freeCaptureFailed=true;freeCaptureFeedback('❌ Sai! Quân vừa ăn có thể bị đối phương ăn lại. Nhấn Thử lại để làm lại.','bad');}
+ freeCaptureRender();vqcPublishFreeCapture();}
+function freeCaptureFeedback(msg,type){const fb=document.getElementById('freeCaptureFeedback');fb.hidden=false;fb.className='freecapture-feedback '+type;fb.textContent=msg;}
+function freeCaptureShowHint(){const solutions=freeCaptureSolutions();const fb=document.getElementById('freeCaptureFeedback');fb.hidden=false;fb.className='freecapture-feedback';fb.textContent=solutions.length?'Gợi ý: Hãy quan sát quân ở '+solutions[0][0]+' và đường ăn quân của nó.':'Chưa tìm thấy nước ăn quân không được bảo vệ trong thế cờ này. Hãy kiểm tra lại hình gốc.';}
+function vqcPublishFreeCapture(){if(typeof vqcExerciseWrite!=='function'||!roomRef||vqcApplyingExercise||vqcNavApplying||!document.getElementById('freeCaptureOverlay').classList.contains('open'))return;vqcExerciseWrite('freeCaptureExercise',{index:freeCaptureIndex,position:{...freeCapturePosition},solved:freeCaptureSolved,failed:freeCaptureFailed,done:[...freeCaptureDone],feedback:document.getElementById('freeCaptureFeedback').textContent,feedbackClass:document.getElementById('freeCaptureFeedback').className,feedbackHidden:document.getElementById('freeCaptureFeedback').hidden});}
+function vqcReceiveFreeCapture(d){if(!d||d.clientId===vqcExerciseClientId||!Number.isInteger(d.index)||d.index<0||d.index>=FREE_CAPTURE_TASKS.length||!d.position)return;vqcApplyingExercise=true;try{freeCaptureIndex=d.index;freeCapturePosition={...d.position};freeCaptureSolved=!!d.solved;freeCaptureFailed=!!d.failed;freeCaptureSelected=null;freeCaptureDone.clear();(d.done||[]).forEach(i=>freeCaptureDone.add(i));const fb=document.getElementById('freeCaptureFeedback');fb.textContent=d.feedback||'';fb.className=d.feedbackClass||'freecapture-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('freeCaptureOverlay').classList.contains('open'))freeCaptureRender();}finally{vqcApplyingExercise=false;}}
+</script>
+
+<div id="pawnGameOverlay" class="pawn-game-overlay" role="dialog" aria-modal="true" aria-label="Trò chơi Tốt và Mã">
+ <div class="pawn-game-dialog"><div class="pawn-game-top"><h2>♟️ Trò chơi Tốt và Mã</h2><button onclick="pawnGameClose()">✕ Đóng</button></div>
+ <div class="pawn-game-layout"><div id="pawnGameBoard" class="pawn-game-board"></div><div class="pawn-game-side">
+ <button id="pawnGameTab0" onclick="pawnGameOpen(0)">1. Cờ Tốt</button><button id="pawnGameTab1" onclick="pawnGameOpen(1)">2. Mã chống Tốt</button>
+ <div id="pawnGameAssign" class="pawn-game-assign"><strong>Giáo viên chọn bên chơi</strong><div class="pawn-game-choice"><button id="pawnGameChooseW" onclick="pawnGameChoose('w')">♙ GV chơi Trắng / Mã</button><button id="pawnGameChooseB" onclick="pawnGameChoose('b')">♟ GV chơi Đen / Tốt</button></div><small>Học sinh tự động nhận bên còn lại. Chỉ giáo viên được đổi bên và bắt đầu ván mới.</small></div><div id="pawnGameRoles" class="pawn-game-roles"></div><div id="pawnGameRules" class="pawn-game-rules"></div><div id="pawnGameStatus" class="pawn-game-status" aria-live="polite"></div>
+ <button onclick="pawnGameReset()">↻ Chơi lại</button><button onclick="pawnGameFlip()">⇅ Đảo bàn cờ</button></div></div></div>
+ <div id="pawnGamePromotion" class="pawn-promotion-overlay" role="dialog" aria-modal="true" aria-label="Chọn quân phong cấp" hidden><div class="pawn-promotion-card"><h3>♟️ Phong cấp Tốt</h3><p>Chọn quân em muốn phong cấp trước khi kết thúc ván đấu.</p><div id="pawnGamePromotionChoices" class="pawn-promotion-choices"></div></div></div></div>
+
+<style id="pawn-promotion-style">
+.pawn-promotion-overlay[hidden]{display:none!important}
+.pawn-promotion-overlay{position:fixed;inset:0;z-index:12500;background:rgba(18,37,56,.62);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+.pawn-promotion-card{width:min(440px,100%);padding:24px;border-radius:23px;background:#fff;box-shadow:0 24px 75px #102d4b60;text-align:center;border:2px solid #e3eff8}
+.pawn-promotion-card h3{font-size:24px;color:#2877b5;margin:0 0 7px}.pawn-promotion-card p{color:#65798a;margin:0 0 19px;line-height:1.5}
+.pawn-promotion-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pawn-promotion-option{min-width:0;background:#f0f8ff;border:2px solid #d3e6f6;border-radius:14px;padding:10px 3px;display:flex;align-items:center;flex-direction:column;gap:7px;color:#2e628c;font-weight:800;cursor:pointer}
+.pawn-promotion-option:hover,.pawn-promotion-option:focus-visible{border-color:#328cd0;background:#e0f1ff;outline-offset:2px}
+.pawn-promotion-option svg,.pawn-promotion-option img{width:min(68px,100%);height:70px;object-fit:contain}
+.pawn-promotion-option span{font-size:13px}
+</style>
+<script id="pawn-games-script">
+/* Hai trò chơi theo hình 71–72: cờ Tốt và Mã chống ba Tốt. */
+let pawnGameIndex=0,pawnGamePosition={},pawnGameTurn='w',pawnGameSelected=null,pawnGameFinished='',pawnGameFlipped=false,pawnGameLastKey='',pawnGameTeacherColor='w',pawnGameStarted=false,pawnGamePendingPromotion=null,pawnGameSyncPending=false,pawnGameWriteSequence=0;
+function pawnGameInitial(i){const p={};if(i===0){for(const f of 'abcdefgh'){p[f+'2']='P';p[f+'7']='p';}}else{p.e1='N';for(const f of 'def')p[f+'7']='p';}return p;}
+function pawnGameOpen(i=0){if(roomRef&&role!=='teacher'&&!vqcNavApplying){vqcNotify('Giáo viên chọn trò chơi cho cả lớp.','warning');return;}pawnGameIndex=i===1?1:0;vqcCloseOtherViews('pawngame');document.getElementById('pawnGameOverlay').classList.add('open');if(!vqcNavApplying){if(role==='teacher'||!roomRef){pawnGameStarted=false;pawnGameReset();}else{pawnGameSelected=null;pawnGameRender();}}else{pawnGameSelected=null;pawnGameRender();}vqcBroadcastView('pawngame',pawnGameIndex);if(!vqcNavApplying&&role==='teacher')pawnGamePublish();}
+function pawnGameClose(){pawnGamePendingPromotion=null;document.getElementById('pawnGameOverlay').classList.remove('open');vqcBroadcastView('board');}
+function pawnGameReset(){if(roomRef&&role!=='teacher')return;if(pawnGameSyncPending)return;pawnGamePosition=pawnGameInitial(pawnGameIndex);pawnGameTurn='w';pawnGameSelected=null;pawnGameFinished='';pawnGamePendingPromotion=null;pawnGameStarted=true;pawnGameFlipped=false;pawnGameRender();pawnGamePublish();}
+function pawnGameChoose(color){if(roomRef&&role!=='teacher')return;if(pawnGameSyncPending)return;pawnGameTeacherColor=color==='b'?'b':'w';pawnGameReset();}
+function pawnGameMine(){return role==='teacher'?pawnGameTeacherColor:(pawnGameTeacherColor==='w'?'b':'w');}
+function pawnGameFlip(){pawnGameFlipped=!pawnGameFlipped;pawnGameRender();} // Góc nhìn là tùy chọn riêng từng máy, không ghi đè góc nhìn của đối phương.
+function pawnGameSide(p){return p===p.toUpperCase()?'w':'b';}
+function pawnGameMoves(from){if(pawnGamePendingPromotion)return [];const p=pawnGamePosition[from];if(!p||pawnGameSide(p)!==pawnGameTurn||pawnGameFinished)return [];const x='abcdefgh'.indexOf(from[0]),y=Number(from[1]),out=[];function add(nx,ny,capture){if(nx<0||nx>7||ny<1||ny>8)return;const sq='abcdefgh'[nx]+ny,t=pawnGamePosition[sq];if(capture?(t&&pawnGameSide(t)!==pawnGameTurn):!t)out.push(sq);}
+ if(p.toLowerCase()==='p'){const dir=p==='P'?1:-1;add(x,y+dir,false);const front='abcdefgh'[x]+(y+dir);if((y===(p==='P'?2:7))&&!pawnGamePosition[front])add(x,y+dir*2,false);for(const dx of [-1,1])add(x+dx,y+dir,true);}
+ if(p.toLowerCase()==='n')for(const [dx,dy] of [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<8&&ny>=1&&ny<=8){const sq='abcdefgh'[nx]+ny,t=pawnGamePosition[sq];if(!t||pawnGameSide(t)!==pawnGameTurn)out.push(sq);}}
+ return out;}
+function pawnGameRender(){const board=document.getElementById('pawnGameBoard');if(!board)return;board.innerHTML='';const blackBelow=(roomRef?pawnGameMine()==='b':false)!==pawnGameFlipped,ranks=blackBelow?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],files=blackBelow?'hgfedcba':'abcdefgh',hints=pawnGameSelected?pawnGameMoves(pawnGameSelected):[];
+ for(let ri=0;ri<8;ri++)for(let fi=0;fi<8;fi++){const f=files[fi],r=ranks[ri],sq=f+r,cell=document.createElement('div');cell.className='pawn-game-cell '+((('abcdefgh'.indexOf(f)+r)%2)?'light':'dark')+(sq===pawnGameSelected?' selected':'')+(hints.includes(sq)?' hint':'');const p=pawnGamePosition[sq];if(p)cell.innerHTML=pieceSvgMarkup(p);if(fi===0)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord rank">'+r+'</span>');if(ri===7)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord file">'+f+'</span>');cell.onclick=()=>pawnGameClick(sq);board.appendChild(cell);}
+ for(let i=0;i<2;i++)document.getElementById('pawnGameTab'+i).classList.toggle('active',i===pawnGameIndex);
+ document.getElementById('pawnGameRules').textContent=pawnGameIndex===0?'Mỗi bên có 8 Tốt. Ai đưa Tốt đến hàng cuối được chọn Hậu, Xe, Tượng hoặc Mã để phong cấp và giành chiến thắng.':'Trắng điều khiển Mã, Đen điều khiển 3 Tốt. Mã thắng khi ăn hết 3 Tốt; Đen thắng khi phong cấp một Tốt ở hàng 1.';
+ const mine=pawnGameMine(),myTurn=mine===pawnGameTurn;document.getElementById('pawnGameAssign').style.display=role==='teacher'||!roomRef?'block':'none';document.getElementById('pawnGameChooseW').classList.toggle('active',pawnGameTeacherColor==='w');document.getElementById('pawnGameChooseB').classList.toggle('active',pawnGameTeacherColor==='b');document.getElementById('pawnGameRoles').textContent=(role==='teacher'?'Giáo viên':'Học sinh')+' chơi '+(mine==='w'?(pawnGameIndex===1?'Mã trắng':'Trắng'):(pawnGameIndex===1?'3 Tốt đen':'Đen'))+' · '+(myTurn?'Đến lượt bạn':'Chờ đối phương');pawnGameRenderPromotion();document.getElementById('pawnGameStatus').textContent=(pawnGameSyncPending?'⏳ Đang đồng bộ nước đi với phòng học…':pawnGameFinished)||(pawnGamePendingPromotion?'♟️ Tốt đã tới hàng cuối! Đang chờ người chơi chọn quân phong cấp.':('Đến lượt '+(pawnGameTurn==='w'?'Trắng':'Đen')+(roomRef?(myTurn?' — bạn được đi.':' — chờ đối phương đi.'):' — chọn quân để đi.')));}
+function pawnGameClick(sq){if(pawnGameSyncPending||!pawnGameStarted||pawnGamePendingPromotion||pawnGameFinished||(roomRef&&pawnGameTurn!==pawnGameMine()))return;const p=pawnGamePosition[sq];if(pawnGameSelected&&pawnGameMoves(pawnGameSelected).includes(sq)){const from=pawnGameSelected,mover=pawnGamePosition[from];delete pawnGamePosition[from];pawnGamePosition[sq]=mover;pawnGameSelected=null;
+ if((mover==='P'&&sq[1]==='8')||(mover==='p'&&sq[1]==='1')){pawnGamePendingPromotion={square:sq,color:mover==='P'?'w':'b'};pawnGameRender();pawnGamePublish();return;}
+ if(pawnGameIndex===1&&!Object.values(pawnGamePosition).includes('p'))pawnGameFinished='🏆 Trắng thắng! Mã đã ăn hết ba Tốt.';
+ if(!pawnGameFinished){pawnGameTurn=pawnGameTurn==='w'?'b':'w';if(!Object.keys(pawnGamePosition).some(k=>pawnGameSide(pawnGamePosition[k])===pawnGameTurn&&pawnGameMoves(k).length)){pawnGameFinished='Ván kết thúc: bên '+(pawnGameTurn==='w'?'Trắng':'Đen')+' không còn nước đi hợp lệ.';}}
+ pawnGameRender();pawnGamePublish();return;}
+ pawnGameSelected=p&&pawnGameSide(p)===pawnGameTurn?sq:null;pawnGameRender();}
+
+function pawnGameRenderPromotion(){
+ const overlay=document.getElementById('pawnGamePromotion'),choices=document.getElementById('pawnGamePromotionChoices');
+ if(!overlay||!choices)return;
+ const pending=pawnGamePendingPromotion;
+ // Only the player who made the move can choose; the other screen waits for synchronization.
+ const canChoose=!!pending&&(!roomRef||pawnGameMine()===pending.color);
+ overlay.hidden=!canChoose;
+ if(!canChoose){choices.replaceChildren();return;}
+ choices.replaceChildren();
+ for(const [letter,name] of [['q','Hậu'],['r','Xe'],['b','Tượng'],['n','Mã']]){
+  const btn=document.createElement('button');btn.type='button';btn.className='pawn-promotion-option';
+  btn.innerHTML=pieceSvgMarkup(pending.color==='w'?letter.toUpperCase():letter)+'<span>'+name+'</span>';
+  btn.onclick=()=>pawnGamePromote(letter);choices.appendChild(btn);
+ }
+}
+function pawnGamePromote(letter){
+ const pending=pawnGamePendingPromotion;
+ if(!pending||pawnGameSyncPending||!['q','r','b','n'].includes(letter)||(roomRef&&pawnGameMine()!==pending.color))return;
+ const old=pawnGamePosition[pending.square];
+ if(old!==(pending.color==='w'?'P':'p'))return;
+ pawnGamePosition[pending.square]=pending.color==='w'?letter.toUpperCase():letter;
+ pawnGamePendingPromotion=null;
+ const winner=pending.color==='w'?'Trắng':'Đen';
+ const name={q:'Hậu',r:'Xe',b:'Tượng',n:'Mã'}[letter];
+ pawnGameFinished='🏆 '+winner+' chiến thắng! Tốt đã phong cấp thành '+name+'.';
+ pawnGameSelected=null;pawnGameRender();pawnGamePublish();
+}
+function pawnGamePublish(){
+ if(!document.getElementById('pawnGameOverlay')?.classList.contains('open')||!roomRef||vqcApplyingExercise||vqcNavApplying)return;
+ // Khoá thao tác cho tới khi Firebase xác nhận đã ghi, tránh hai nước đi nối tiếp bị ghi đè.
+ const sequence=++pawnGameWriteSequence;
+ pawnGameSyncPending=true;
+ pawnGameRender();
+ const payload={index:pawnGameIndex,position:{...pawnGamePosition},turn:pawnGameTurn,finished:pawnGameFinished,teacherColor:pawnGameTeacherColor,started:pawnGameStarted,pendingPromotion:pawnGamePendingPromotion,clientId:vqcExerciseClientId,sequence};
+ roomRef.update({pawnGameExercise:payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+  .then(()=>{if(sequence===pawnGameWriteSequence){pawnGameSyncPending=false;pawnGameRender();}})
+  .catch(e=>{console.error('Không đồng bộ được trò chơi:',e);if(sequence===pawnGameWriteSequence){pawnGameSyncPending=false;pawnGameRender();}vqcNotify('Chưa đồng bộ được nước đi. Hãy kiểm tra kết nối trước khi chơi tiếp.','warning');});
+}
+function pawnGameReceive(d){
+ if(!d||d.clientId===vqcExerciseClientId||d.index!==pawnGameIndex||!d.position)return;
+ const key=JSON.stringify(d);if(key===pawnGameLastKey)return;
+ // Không thay đổi ván đang có nước đi chưa được xác nhận trên máy này.
+ if(pawnGameSyncPending)return;
+ pawnGameLastKey=key;vqcApplyingExercise=true;
+ try{
+  pawnGamePosition={...d.position};pawnGameTurn=d.turn==='b'?'b':'w';pawnGameFinished=d.finished||'';
+  pawnGameTeacherColor=d.teacherColor==='b'?'b':'w';pawnGameStarted=!!d.started;
+  pawnGamePendingPromotion=d.pendingPromotion&&/^[a-h][18]$/.test(d.pendingPromotion.square)?{square:d.pendingPromotion.square,color:d.pendingPromotion.color==='b'?'b':'w'}:null;
+  pawnGameSelected=null;pawnGameRender();
+ }finally{vqcApplyingExercise=false;}
+}
 
 </script>
 </body>
