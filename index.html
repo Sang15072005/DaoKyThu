@@ -3960,6 +3960,8 @@ function vqcCloseOtherViews(target){
 }
 function vqcBroadcastView(view,index=0){
   if(vqcNavApplying||!roomRef)return;
+  // Giáo viên điều khiển trang học chung; học sinh nhận thay đổi qua Firebase.
+  if(role!=='teacher'){vqcNotify('Giáo viên điều khiển bài học chung của lớp.','warning');return;}
   const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+(window.accountProfile?.role||role);
   vqcNavSeen=stamp;
   roomRef.update({activeView:{view,index,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
@@ -5118,7 +5120,7 @@ async function accountSaveProgress(exercise,completed,score){
    if(done&&!old.completed)patch.completedAt=firebase.firestore.FieldValue.serverTimestamp();
    tx.set(ref,patch,{merge:true});
   });
- }catch(e){console.warn('Chưa lưu được tiến độ:',e);}
+ }catch(e){console.warn('Chưa lưu được tiến độ:',e);vqcNotify('Không lưu được tiến độ lên Firebase. Kiểm tra mạng và quyền Firestore.','warning');}
 }
 async function accountLoadProgressStudents(){
  const select=document.getElementById('progressStudentSelect');if(!select||!auth.currentUser)return;
@@ -5153,7 +5155,7 @@ async function accountLoadProgress(){
   const mateDone=vqcProgressExercises.slice(6,22).filter(x=>records.get(x.id)?.completed===true).length;
   const last=snap.docs.map(d=>d.data().updatedAt).filter(Boolean).sort((a,b)=>(b.seconds||0)-(a.seconds||0))[0];
   const summary='<div class="vqc-progress-summary"><div><strong>'+completed+'/'+vqcProgressExercises.length+'</strong><span>Bài hoàn thành</span></div><div><strong>'+basicDone+'/6</strong><span>Quân cờ</span></div><div><strong>'+mateDone+'/16</strong><span>Chiếu hết</span></div></div><p style="font-size:12px;color:#718096">Cập nhật gần nhất: '+accountEsc(vqcProgressDate(last))+' · Tự cập nhật theo thời gian thực</p>';
-  const groups=[['♟️ Luyện tập 6 quân cờ',vqcProgressExercises.slice(0,6)],['♔ Chiếu hết trong 2 nước',vqcProgressExercises.slice(6,16)],['♛ Chiếu hết trong 3 nước',vqcProgressExercises.slice(16,22)],['🎯 Ăn quân',vqcProgressExercises.slice(22,27)],['🛡️ Phòng thủ',vqcProgressExercises.slice(27,41)],['⚡ Chiếu trong 1 nước',vqcProgressExercises.slice(41,48)],['♔ Thoát chiếu',vqcProgressExercises.slice(48,55)],['🎯 Ăn quân không bảo vệ',vqcProgressExercises.slice(55,63)]];
+  const groups=[['♟️ Luyện tập 6 quân cờ',vqcProgressExercises.slice(0,6)],['♔ Chiếu hết trong 2 nước',vqcProgressExercises.slice(6,16)],['♛ Chiếu hết trong 3 nước',vqcProgressExercises.slice(16,22)],['🎯 Ăn quân',vqcProgressExercises.slice(22,27)],['🛡️ Phòng thủ',vqcProgressExercises.slice(27,41)],['⚡ Chiếu trong 1 nước',vqcProgressExercises.slice(41,48)],['♔ Thoát chiếu',vqcProgressExercises.slice(48,61)],['🎯 Ăn quân không bảo vệ',vqcProgressExercises.slice(61,69)]];
   el.innerHTML=summary+groups.map(([title,items])=>'<h4 style="margin:18px 0 8px">'+title+'</h4>'+items.map(x=>{
    const r=records.get(x.id),score=Math.min(x.max,Math.max(0,Number(r?.score)||0)),done=r?.completed===true;
    const percent=Math.round(score/x.max*100);
