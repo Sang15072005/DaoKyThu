@@ -5009,6 +5009,7 @@ auth.onAuthStateChanged(async user=>{
 });
 async function accountChangePassword(){const a=document.getElementById('newAccountPassword').value;if(a.length<10){accountMsg('Mật khẩu cần ít nhất 10 ký tự.',true);return;}try{await auth.currentUser.updatePassword(a);accountMsg('Đã đổi mật khẩu.');}catch(e){accountMsg('Vui lòng đăng nhập lại trước khi đổi mật khẩu.',true);}}
 async function accountShowTab(tab){
+ if(tab!=='progress'&&accountProgressUnsub){accountProgressUnsub();accountProgressUnsub=null;}
  const root=document.getElementById('accountTabBody'),p=window.accountProfile;if(!p)return;
  accountMsg('');
  if(tab==='profile'){
@@ -5098,7 +5099,12 @@ async function accountLoadClasses(){
 const vqcProgressExercises=[
  ...[['R','Xe'],['B','Tượng'],['Q','Hậu'],['K','Vua'],['N','Mã'],['P','Tốt']].map(([id,name])=>({id:'basic_'+id,name:'Luyện quân '+name,max:6})),
  ...Array.from({length:10},(_,i)=>({id:'mate2_'+(52+i),name:'Chiếu hết 2 nước – Hình '+(52+i),max:1})),
- ...Array.from({length:6},(_,i)=>({id:'mate3_'+(162+i),name:'Chiếu hết 3 nước – Hình '+(162+i),max:1}))
+ ...Array.from({length:6},(_,i)=>({id:'mate3_'+(162+i),name:'Chiếu hết 3 nước – Hình '+(162+i),max:1})),
+ ...Array.from({length:5},(_,i)=>({id:'capture_'+i,name:'Ăn quân – Bài '+(i+1),max:1})),
+ ...Array.from({length:14},(_,i)=>({id:'defense_'+i,name:(i<8?'Phòng thủ – Bài '+(i+1):'Phòng thủ quân bị tấn công – Hình '+(51+i-8)),max:1})),
+ ...Array.from({length:7},(_,i)=>({id:'checkone_'+i,name:'Chiếu trong 1 nước – Bài '+(i+1),max:1})),
+ ...Array.from({length:13},(_,i)=>({id:'escape_'+i,name:i<7?'Thoát chiếu – Bài '+(i+1):'Thoát chiếu – Hình '+(56+i),max:1})),
+ ...Array.from({length:8},(_,i)=>({id:'freecapture_'+i,name:'Ăn quân không bảo vệ – Hình '+(43+i),max:1}))
 ];
 async function accountSaveProgress(exercise,completed,score){
  const p=window.accountProfile,user=auth.currentUser;
@@ -5133,17 +5139,21 @@ async function accountLoadProgress(){
   // Xác thực học viên thuộc giáo viên trước khi đọc tiến độ.
   try{const owner=await db.collection('users').doc(uid).get();if(!owner.exists||owner.data().teacherId!==auth.currentUser.uid){el.textContent='Học viên không thuộc danh sách của bạn.';return;}}catch(e){el.textContent='Không kiểm tra được học viên: '+e.message;return;}
  }
- el.textContent='Đang tải kết quả...';
+ el.textContent='Đang đồng bộ tiến độ...';
+ if(accountProgressUnsub){accountProgressUnsub();accountProgressUnsub=null;}
+ const progressUid=uid;
  try{
-  const snap=await db.collection('progress').where('studentId','==',uid).limit(100).get();
+  accountProgressUnsub=db.collection('progress').where('studentId','==',uid).limit(100).onSnapshot(async snap=>{
+  if(!document.getElementById('accountProgressList'))return;
+  if(p.role==='teacher'&&document.getElementById('progressStudentSelect')?.value!==progressUid)return;
   if(!document.getElementById('accountProgressList'))return;
   const records=new Map(snap.docs.map(d=>[d.data().exercise,d.data()]));
   const completed=vqcProgressExercises.filter(x=>records.get(x.id)?.completed===true).length;
   const basicDone=vqcProgressExercises.slice(0,6).filter(x=>records.get(x.id)?.completed===true).length;
-  const mateDone=completed-basicDone;
+  const mateDone=vqcProgressExercises.slice(6,22).filter(x=>records.get(x.id)?.completed===true).length;
   const last=snap.docs.map(d=>d.data().updatedAt).filter(Boolean).sort((a,b)=>(b.seconds||0)-(a.seconds||0))[0];
-  const summary='<div class="vqc-progress-summary"><div><strong>'+completed+'/22</strong><span>Bài hoàn thành</span></div><div><strong>'+basicDone+'/6</strong><span>Quân cờ</span></div><div><strong>'+mateDone+'/16</strong><span>Chiếu hết</span></div></div><p style="font-size:12px;color:#718096">Cập nhật gần nhất: '+accountEsc(vqcProgressDate(last))+'</p>';
-  const groups=[['♟️ Luyện tập 6 quân cờ',vqcProgressExercises.slice(0,6)],['♔ Chiếu hết trong 2 nước',vqcProgressExercises.slice(6,16)],['♛ Chiếu hết trong 3 nước',vqcProgressExercises.slice(16)]];
+  const summary='<div class="vqc-progress-summary"><div><strong>'+completed+'/'+vqcProgressExercises.length+'</strong><span>Bài hoàn thành</span></div><div><strong>'+basicDone+'/6</strong><span>Quân cờ</span></div><div><strong>'+mateDone+'/16</strong><span>Chiếu hết</span></div></div><p style="font-size:12px;color:#718096">Cập nhật gần nhất: '+accountEsc(vqcProgressDate(last))+' · Tự cập nhật theo thời gian thực</p>';
+  const groups=[['♟️ Luyện tập 6 quân cờ',vqcProgressExercises.slice(0,6)],['♔ Chiếu hết trong 2 nước',vqcProgressExercises.slice(6,16)],['♛ Chiếu hết trong 3 nước',vqcProgressExercises.slice(16,22)],['🎯 Ăn quân',vqcProgressExercises.slice(22,27)],['🛡️ Phòng thủ',vqcProgressExercises.slice(27,41)],['⚡ Chiếu trong 1 nước',vqcProgressExercises.slice(41,48)],['♔ Thoát chiếu',vqcProgressExercises.slice(48,55)],['🎯 Ăn quân không bảo vệ',vqcProgressExercises.slice(55,63)]];
   el.innerHTML=summary+groups.map(([title,items])=>'<h4 style="margin:18px 0 8px">'+title+'</h4>'+items.map(x=>{
    const r=records.get(x.id),score=Math.min(x.max,Math.max(0,Number(r?.score)||0)),done=r?.completed===true;
    const percent=Math.round(score/x.max*100);
@@ -5154,6 +5164,7 @@ async function accountLoadProgress(){
    const t=await db.collection('assignments').where('teacherId','==',p.teacherId||'__none__').where('classCode','==',p.classCode||'__none__').limit(50).get();
    a.innerHTML=t.empty?'Chưa có bài được giao.':t.docs.map(d=>'<div class="account-progress">'+accountEsc(vqcProgressExercises.find(x=>x.id===d.data().exercise)?.name||d.data().exercise)+'</div>').join('');
   }else if(a){a.textContent='Kết quả trên được lưu tự động khi học viên luyện tập.';}
+  },e=>{if(document.getElementById('accountProgressList'))el.textContent='Không đồng bộ được tiến độ: '+e.message;});
  }catch(e){el.textContent='Không tải được tiến độ: '+e.message;}
 }
 
@@ -5339,7 +5350,7 @@ function captureClick(sq){
  captureWhiteSquare=sq;captureSelected=null;captureReply=null;
  const remainingBlack=Object.values(capturePosition).filter(p=>p===p.toLowerCase()).length;
  if(remainingBlack===0){
-  captureSolved=true;captureDone.add(captureIndex);
+  captureSolved=true;captureDone.add(captureIndex);accountSaveProgress('capture_'+captureIndex,true,1);
   const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback good';fb.textContent='✅ Chính xác! Hoàn thành!';
   document.getElementById('captureInstruction').textContent='Xuất sắc! Em đã ăn hết tất cả quân đen. Chọn Bài tiếp để luyện thêm.';
   captureRender();vqcPublishCapture();return;
@@ -5571,7 +5582,7 @@ function defenseClick(sq){
  defensePosition=next;defenseSelected=null;
  const fb=document.getElementById('defenseFeedback');fb.hidden=false;
  if(accepted){
-  defenseSolved=true;defenseDone.add(defenseIndex);
+  defenseSolved=true;defenseDone.add(defenseIndex);accountSaveProgress('defense_'+defenseIndex,true,1);
   fb.className='defense-feedback good';
   fb.textContent='✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
   document.getElementById('defenseInstruction').textContent='Hoàn thành! Chọn bài tiếp theo để luyện tập.';
@@ -5661,7 +5672,7 @@ function checkOneClick(sq){
       fb.textContent='❌ Sai! Quân đen '+attacker+' đã ăn quân vừa chiếu tại '+sq+'. Nhấn “Thử lại” để làm lại bài.';
       document.getElementById('checkOneInstruction').textContent='Quân chiếu bị đối phương ăn lại. Hãy tìm nước chiếu an toàn hơn!';
     }else{
-      checkOnePosition=next;checkOneSolved=true;checkOneDone.add(checkOneIndex);
+      checkOnePosition=next;checkOneSolved=true;checkOneDone.add(checkOneIndex);accountSaveProgress('checkone_'+checkOneIndex,true,1);
       fb.className='checkone-feedback good';
       fb.textContent='✅ Chính xác! Em đã chiếu Vua đen trong 1 nước mà không bị ăn lại!';
       document.getElementById('checkOneInstruction').textContent='Hoàn thành! Hãy thử bài tiếp theo.';
@@ -5684,7 +5695,7 @@ function vqcReceiveCheckOne(d){if(!d||d.clientId===vqcExerciseClientId||!d.posit
 .escape-side{display:flex;flex-direction:column;gap:11px}.escape-side h2{margin:0;background:#2077cf;color:white;border-radius:13px;padding:17px}.escape-side p{background:#f0f7ff;padding:13px;border-radius:12px;line-height:1.55}.escape-side button{border:1px solid #c4def0;background:#eef7ff;border-radius:10px;padding:10px;font-weight:750;cursor:pointer}.escape-stars{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.escape-stars button.active{background:#2077cf;color:white}.escape-feedback{padding:12px;border-radius:12px;background:#fff0df;color:#b45309;font-weight:700}.escape-feedback.good{background:#e8f9ee;color:#23734b}.escape-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:750px){.escape-layout{grid-template-columns:1fr}.escape-board{width:min(100%,calc(96vh - 250px))}}
 </style>
-<div class="escape-overlay" id="escapeOverlay" role="dialog" aria-modal="true" aria-label="Bài tập thoát chiếu"><div class="escape-dialog"><div class="mate-top"><strong>🛡️ Thoát chiếu — 7 bài</strong><button class="btn btn-soft" onclick="escapeClose()">✕ Đóng</button></div><div class="escape-layout"><div class="escape-board" id="escapeBoard"></div><div class="escape-side"><h2>🛡️ Thoát chiếu</h2><p id="escapeInstruction">Hãy bảo vệ Vua trắng!</p><div id="escapeFeedback" class="escape-feedback" hidden></div><div id="escapeStars" class="escape-stars"></div><div class="escape-controls"><button onclick="escapeOpen(escapeIndex-1)">← Bài trước</button><button onclick="escapeOpen(escapeIndex+1)">Bài tiếp →</button><button onclick="escapeReset()">↻ Thử lại</button></div></div></div></div></div>
+<div class="escape-overlay" id="escapeOverlay" role="dialog" aria-modal="true" aria-label="Bài tập thoát chiếu"><div class="escape-dialog"><div class="mate-top"><strong>🛡️ Thoát chiếu — 13 bài</strong><button class="btn btn-soft" onclick="escapeClose()">✕ Đóng</button></div><div class="escape-layout"><div class="escape-board" id="escapeBoard"></div><div class="escape-side"><h2>🛡️ Thoát chiếu</h2><p id="escapeInstruction">Hãy bảo vệ Vua trắng!</p><div id="escapeFeedback" class="escape-feedback" hidden></div><div id="escapeStars" class="escape-stars"></div><div class="escape-controls"><button onclick="escapeOpen(escapeIndex-1)">← Bài trước</button><button onclick="escapeOpen(escapeIndex+1)">Bài tiếp →</button><button onclick="escapeReset()">↻ Thử lại</button></div></div></div></div></div>
 <script>
 // Bảy thế cờ từ thoat-chieu.pdf (trang 1–4). Chữ hoa: trắng, chữ thường: đen.
 const ESCAPE_TASKS=[
@@ -5694,22 +5705,28 @@ const ESCAPE_TASKS=[
  {pieces:{a2:'K',b1:'R',b2:'B',c2:'n',d5:'b',e3:'N'},tip:'Hãy dùng một quân trắng chặn hoặc loại bỏ đòn chiếu Vua.'},
  {pieces:{e1:'K',d1:'Q',f1:'B',g1:'N',d2:'P',e2:'P',f2:'P',e8:'q',f3:'n',g3:'b',h1:'r'},tip:'Quân đen đang tấn công Vua trắng. Hãy tìm một nước hóa giải.'},
  {pieces:{c3:'K',b3:'N',d3:'P',d2:'R',c5:'q',f4:'n',h3:'r',h6:'p'},tip:'Hãy chạy Vua hoặc chặn nước chiếu bằng một nước hợp lệ.'},
- {pieces:{c3:'K',d3:'N',d2:'P',f4:'P',a4:'q',g7:'b'},tip:'Vua trắng bị Hậu đen chiếu. Hãy tìm cách thoát chiếu.'}
+ {pieces:{c3:'K',d3:'N',d2:'P',f4:'P',a4:'q',g7:'b'},tip:'Vua trắng bị Hậu đen chiếu. Hãy tìm cách thoát chiếu.'},
+ // Hình 63–68, trang sách người dùng cung cấp. Dấu chấm đen = Đen đi, trắng = Trắng đi.
+ {turn:'b',figure:63,pieces:{a8:'r',h8:'k',b7:'p',d7:'q',h7:'p',a6:'p',b5:'n',e5:'Q',b3:'B',f3:'P',a2:'P',b2:'p',b1:'K',e1:'R'},tip:'Hình 63 – Đen đi. Hãy hóa giải đòn chiếu vào Vua đen.'},
+ {turn:'w',figure:64,pieces:{e8:'k',b7:'p',f7:'p',g7:'p',h7:'p',a6:'p',e6:'r',f6:'n',b4:'b',a2:'P',b2:'P',e2:'N',f2:'P',g2:'P',h2:'P',d1:'N',e1:'K',f1:'R'},tip:'Hình 64 – Trắng đi. Hãy hóa giải đòn chiếu vào Vua trắng.'},
+ {turn:'b',figure:65,pieces:{a8:'r',d8:'q',e8:'k',f8:'b',g8:'n',h8:'r',b7:'p',e7:'p',f7:'p',g7:'p',h7:'p',a6:'p',b5:'B',c5:'p',d5:'p',e5:'P',e3:'P',a2:'P',b2:'P',c2:'P',f2:'P',g2:'P',h2:'P',a1:'R',c1:'B',d1:'Q',e1:'K',h1:'R'},tip:'Hình 65 – Đen đi. Hãy bảo vệ Vua đen khỏi đòn chiếu của Tượng.'},
+ {turn:'b',figure:66,pieces:{c8:'R',f8:'r',g8:'k',a7:'p',d6:'n',g6:'P',h6:'p',b5:'p',b4:'P',f4:'p',g4:'P',a3:'P',b3:'B',d3:'p',e3:'b',f3:'P',b2:'B',g2:'K',a1:'R',f1:'R'},tip:'Hình 66 – Đen đi. Hãy tìm nước hóa giải thế chiếu Vua đen.'},
+ {turn:'w',figure:67,pieces:{a8:'r',f8:'r',g8:'k',a7:'p',c7:'q',f7:'p',g7:'p',h7:'p',b6:'p',c5:'b',h5:'P',c4:'P',b3:'P',f3:'P',a2:'P',b2:'B',f2:'K',d1:'R',g1:'Q',h1:'R'},tip:'Hình 67 – Trắng đi. Hãy cứu Vua trắng khỏi đòn chiếu của Tượng đen.'},
+ {turn:'w',figure:68,pieces:{d8:'r',f8:'r',g8:'k',a7:'p',d7:'q',f7:'p',h7:'p',g6:'p',d5:'p',f5:'b',d4:'P',h4:'P',b3:'N',a2:'P',b2:'P',e2:'Q',g2:'P',b1:'K',c1:'R',f1:'R'},tip:'Hình 68 – Trắng đi. Hãy hóa giải đòn chiếu vào Vua trắng.'}
 ];
 let escapeIndex=0,escapePosition={},escapeSelected=null,escapeSolved=false;
 const escapeDone=new Set();let vqcEscapeLastReceived='';
-function escapeBlackAttacks(pos,sq){return Object.keys(pos).some(from=>{const piece=pos[from];if(!piece||piece!==piece.toLowerCase())return false;
- if(piece==='p'){const [fx,fy]=captureCoordinates(from),[tx,ty]=captureCoordinates(sq);return Math.abs(fx-tx)===1&&ty===fy-1;}
- return captureCanAttack(piece,from,sq,pos);
-});}
-function escapeInCheck(pos){const king=Object.keys(pos).find(k=>pos[k]==='K');return !king||escapeBlackAttacks(pos,king);}
-function escapeLegal(piece,from,to,pos){return !!piece&&piece===piece.toUpperCase()&&vqcExerciseLegalMove(piece,from,to,pos);}
+function escapeTurn(){return ESCAPE_TASKS[escapeIndex].turn==='b'?'b':'w';}
+function escapeOwnPiece(piece){return !!piece&&(escapeTurn()==='w'?piece===piece.toUpperCase():piece===piece.toLowerCase());}
+function escapeAttacked(pos,sq,byWhite){return Object.keys(pos).some(from=>{const p=pos[from];return p&&((p===p.toUpperCase())===byWhite)&&captureCanAttack(p,from,sq,pos);});}
+function escapeInCheck(pos){const white=escapeTurn()==='w',king=Object.keys(pos).find(s=>pos[s]===(white?'K':'k'));return !king||escapeAttacked(pos,king,!white);}
+function escapeLegal(piece,from,to,pos){return escapeOwnPiece(piece)&&vqcExerciseLegalMove(piece,from,to,pos);}
 function escapeSafeMove(from,to){const piece=escapePosition[from];if(!escapeLegal(piece,from,to,escapePosition))return false;const next={...escapePosition};delete next[from];next[to]=piece;return !escapeInCheck(next);}
 function escapeOpen(i){escapeIndex=(i+ESCAPE_TASKS.length)%ESCAPE_TASKS.length;vqcCloseOtherViews('escape');escapeReset();document.getElementById('escapeOverlay').classList.add('open');document.getElementById('vqcHomeHero')?.setAttribute('hidden','');vqcBroadcastView('escape',escapeIndex);vqcPublishEscape();}
 function escapeClose(){document.getElementById('escapeOverlay').classList.remove('open');vqcBroadcastView('board');}
 function escapeReset(){escapePosition={...ESCAPE_TASKS[escapeIndex].pieces};escapeSelected=null;escapeSolved=false;document.getElementById('escapeInstruction').textContent=ESCAPE_TASKS[escapeIndex].tip;const fb=document.getElementById('escapeFeedback');fb.hidden=true;fb.textContent='';escapeRender();vqcPublishEscape();}
-function escapeRender(){const board=document.getElementById('escapeBoard');board.innerHTML='';const king=Object.keys(escapePosition).find(s=>escapePosition[s]==='K');for(let r=8;r>=1;r--)for(const f of 'abcdefgh'){const sq=f+r,p=escapePosition[sq],cell=document.createElement('div');cell.className='escape-cell '+((8-r+'abcdefgh'.indexOf(f))%2?'dark':'light')+(escapeSelected===sq?' selected':'')+(sq===king&&escapeInCheck(escapePosition)?' escape-checked':'');if(p)cell.innerHTML=pieceSvgMarkup(p);if(escapeSelected&&escapeSafeMove(escapeSelected,sq))cell.insertAdjacentHTML('beforeend',p?'<span class="escape-ring"></span>':'<span class="escape-dot"></span>');if(f==='a')cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-rank">'+r+'</span>');if(r===1)cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-file">'+f+'</span>');cell.onclick=()=>escapeClick(sq);board.appendChild(cell);}const stars=document.getElementById('escapeStars');stars.innerHTML='';ESCAPE_TASKS.forEach((_,i)=>{const b=document.createElement('button');b.textContent=(escapeDone.has(i)?'⭐':'☆')+' '+(i+1);b.className=i===escapeIndex?'active':'';b.onclick=()=>escapeOpen(i);stars.appendChild(b);});}
-function escapeClick(sq){if(escapeSolved)return;const p=escapePosition[sq];if(!escapeSelected){if(p&&p===p.toUpperCase()){escapeSelected=sq;escapeRender();}return;}const from=escapeSelected,piece=escapePosition[from];if(sq===from){escapeSelected=null;escapeRender();return;}if(p&&p===p.toUpperCase()){escapeSelected=sq;escapeRender();return;}if(!escapeLegal(piece,from,sq,escapePosition)){escapeSelected=null;escapeRender();return;}escapeSelected=null;const fb=document.getElementById('escapeFeedback');fb.hidden=false;if(escapeInCheck(escapePosition)&&escapeSafeMove(from,sq)){delete escapePosition[from];escapePosition[sq]=piece;escapeSolved=true;escapeDone.add(escapeIndex);fb.className='escape-feedback good';fb.textContent='✅ Chính xác! Vua trắng đã thoát chiếu.';document.getElementById('escapeInstruction').textContent='Hoàn thành! Hãy thử bài tiếp theo.';}else{fb.className='escape-feedback';fb.textContent='❌ Vua vẫn bị chiếu sau nước này. Hãy chọn phương án khác!';}escapeRender();vqcPublishEscape();}
+function escapeRender(){const board=document.getElementById('escapeBoard');board.innerHTML='';const king=Object.keys(escapePosition).find(s=>escapePosition[s]===(escapeTurn()==='w'?'K':'k'));const ranks=escapeTurn()==='b'?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],files=escapeTurn()==='b'?'hgfedcba':'abcdefgh';for(const r of ranks)for(const f of files){const sq=f+r,p=escapePosition[sq],cell=document.createElement('div');cell.className='escape-cell '+((8-r+'abcdefgh'.indexOf(f))%2?'dark':'light')+(escapeSelected===sq?' selected':'')+(sq===king&&escapeInCheck(escapePosition)?' escape-checked':'');if(p)cell.innerHTML=pieceSvgMarkup(p);if(escapeSelected&&escapeSafeMove(escapeSelected,sq))cell.insertAdjacentHTML('beforeend',p?'<span class="escape-ring"></span>':'<span class="escape-dot"></span>');if(f===files[0])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-rank">'+r+'</span>');if(r===ranks[7])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-file">'+f+'</span>');cell.onclick=()=>escapeClick(sq);board.appendChild(cell);}const stars=document.getElementById('escapeStars');stars.innerHTML='';ESCAPE_TASKS.forEach((_,i)=>{const b=document.createElement('button');b.textContent=(escapeDone.has(i)?'⭐':'☆')+' '+(ESCAPE_TASKS[i].figure||i+1);b.className=i===escapeIndex?'active':'';b.onclick=()=>escapeOpen(i);stars.appendChild(b);});}
+function escapeClick(sq){if(escapeSolved)return;const p=escapePosition[sq];if(!escapeSelected){if(escapeOwnPiece(p)){escapeSelected=sq;escapeRender();}return;}const from=escapeSelected,piece=escapePosition[from];if(sq===from){escapeSelected=null;escapeRender();return;}if(escapeOwnPiece(p)){escapeSelected=sq;escapeRender();return;}if(!escapeLegal(piece,from,sq,escapePosition)){escapeSelected=null;escapeRender();return;}escapeSelected=null;const fb=document.getElementById('escapeFeedback');fb.hidden=false;if(escapeInCheck(escapePosition)&&escapeSafeMove(from,sq)){delete escapePosition[from];escapePosition[sq]=piece;escapeSolved=true;escapeDone.add(escapeIndex);accountSaveProgress('escape_'+escapeIndex,true,1);fb.className='escape-feedback good';fb.textContent='✅ Chính xác! Vua '+(escapeTurn()==='w'?'trắng':'đen')+' đã thoát chiếu.';document.getElementById('escapeInstruction').textContent='Hoàn thành! Hãy thử bài tiếp theo.';}else{fb.className='escape-feedback';fb.textContent='❌ Vua vẫn bị chiếu sau nước này. Hãy chọn phương án khác!';}escapeRender();vqcPublishEscape();}
 function vqcPublishEscape(){if(typeof vqcExerciseWrite!=='function'||!roomRef||vqcApplyingExercise||vqcNavApplying)return;const fb=document.getElementById('escapeFeedback');vqcExerciseWrite('escapeExercise',{index:escapeIndex,position:{...escapePosition},solved:escapeSolved,done:[...escapeDone],instruction:document.getElementById('escapeInstruction').textContent,feedback:fb.textContent,feedbackClass:fb.className,feedbackHidden:fb.hidden});}
 function vqcReceiveEscape(d){if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=ESCAPE_TASKS.length)return;const key=JSON.stringify(d);if(key===vqcEscapeLastReceived)return;vqcEscapeLastReceived=key;vqcApplyingExercise=true;try{escapeIndex=d.index;escapePosition={...d.position};escapeSelected=null;escapeSolved=!!d.solved;escapeDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x)&&x>=0&&x<ESCAPE_TASKS.length)escapeDone.add(x)});document.getElementById('escapeInstruction').textContent=d.instruction||ESCAPE_TASKS[d.index].tip;const fb=document.getElementById('escapeFeedback');fb.textContent=d.feedback||'';fb.className=d.feedbackClass||'escape-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('escapeOverlay').classList.contains('open'))escapeRender();}finally{vqcApplyingExercise=false;}}
 </script>
@@ -5841,7 +5858,7 @@ function freeCaptureClick(sq){if(freeCaptureSolved||freeCaptureFailed)return;con
  if(!vqcExerciseLegalMove(moving,from,sq,freeCapturePosition)){freeCaptureFeedback('Nước đi không hợp lệ theo luật cờ vua. Em hãy chọn lại.','bad');freeCaptureRender();return;}
  if(!target){freeCaptureFeedback('Bài này yêu cầu ăn quân đối phương. Hãy tìm quân có thể ăn.','bad');freeCaptureRender();return;}
  const safe=freeCaptureSafeCapture(from,sq);freeCapturePosition[sq]=moving;delete freeCapturePosition[from];
- if(safe){freeCaptureSolved=true;freeCaptureDone.add(freeCaptureIndex);freeCaptureFeedback('✅ Chính xác! '+from+' → '+sq+': Em đã ăn quân không được bảo vệ.','good');}
+ if(safe){freeCaptureSolved=true;freeCaptureDone.add(freeCaptureIndex);accountSaveProgress('freecapture_'+freeCaptureIndex,true,1);freeCaptureFeedback('✅ Chính xác! '+from+' → '+sq+': Em đã ăn quân không được bảo vệ.','good');}
  else{freeCaptureFailed=true;freeCaptureFeedback('❌ Sai! Quân vừa ăn có thể bị đối phương ăn lại. Nhấn Thử lại để làm lại.','bad');}
  freeCaptureRender();vqcPublishFreeCapture();}
 function freeCaptureFeedback(msg,type){const fb=document.getElementById('freeCaptureFeedback');fb.hidden=false;fb.className='freecapture-feedback '+type;fb.textContent=msg;}
