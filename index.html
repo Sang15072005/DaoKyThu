@@ -4854,7 +4854,7 @@ function renderPvp(){
  squares.forEach((sq,i)=>{
   const pc=chess.get(sq),cell=document.createElement('div');
   const f=sq.charCodeAt(0)-97,r=Number(sq[1]);
-  cell.className='pvp-cell '+((f+r)%2?'light':'dark');
+  cell.className='pvp-cell '+((f+r)%2?'dark':'light');
   if(sq===pvpSelected)cell.classList.add('selected');
   if(allowed.includes(sq))cell.classList.add('legal');
   if(pc){const key=pc.color+pc.type.toUpperCase();const img=document.createElement('img');img.src=CHESS_PIECE_IMAGES[key];img.alt=key;img.draggable=false;cell.appendChild(img);}
@@ -5524,7 +5524,7 @@ function defenseRender(){
  const files=black?'hgfedcba':'abcdefgh';
  for(const r of ranks)for(const f of files){
   const sq=f+r,p=defensePosition[sq],cell=document.createElement('div');
-  cell.className='defense-cell '+(('abcdefgh'.indexOf(f)+r)%2?'light':'dark')+(defenseSelected===sq?' selected':'');
+  cell.className='defense-cell '+(('abcdefgh'.indexOf(f)+r)%2?'dark':'light')+(defenseSelected===sq?' selected':'');
   if(p)cell.innerHTML=pieceSvgMarkup(p);
   if(defenseSelected&&defensePosition[defenseSelected]&&vqcExerciseLegalMove(defensePosition[defenseSelected],defenseSelected,sq,defensePosition)&&(!p||defenseIsEnemy(p)))cell.insertAdjacentHTML('beforeend',p?'<span class="capture-take-ring"></span>':'<span class="capture-move-dot"></span>');
   if(defenseThreats&&p&&defenseIsFriendly(p)&&defenseAttackersOf(sq,defensePosition,true).length)cell.style.boxShadow='inset 0 0 0 5px #e14d55';
@@ -5935,7 +5935,7 @@ function pawnGameMoves(from){if(pawnGamePendingPromotion)return [];const p=pawnG
  if(p.toLowerCase()==='n')for(const [dx,dy] of [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<8&&ny>=1&&ny<=8){const sq='abcdefgh'[nx]+ny,t=pawnGamePosition[sq];if(!t||pawnGameSide(t)!==pawnGameTurn)out.push(sq);}}
  return out;}
 function pawnGameRender(){const board=document.getElementById('pawnGameBoard');if(!board)return;board.innerHTML='';const blackBelow=(roomRef?pawnGameMine()==='b':false)!==pawnGameFlipped,ranks=blackBelow?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],files=blackBelow?'hgfedcba':'abcdefgh',hints=pawnGameSelected?pawnGameMoves(pawnGameSelected):[];
- for(let ri=0;ri<8;ri++)for(let fi=0;fi<8;fi++){const f=files[fi],r=ranks[ri],sq=f+r,cell=document.createElement('div');cell.className='pawn-game-cell '+((('abcdefgh'.indexOf(f)+r)%2)?'light':'dark')+(sq===pawnGameSelected?' selected':'')+(hints.includes(sq)?' hint':'');const p=pawnGamePosition[sq];if(p)cell.innerHTML=pieceSvgMarkup(p);if(fi===0)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord rank">'+r+'</span>');if(ri===7)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord file">'+f+'</span>');cell.onclick=()=>pawnGameClick(sq);board.appendChild(cell);}
+ for(let ri=0;ri<8;ri++)for(let fi=0;fi<8;fi++){const f=files[fi],r=ranks[ri],sq=f+r,cell=document.createElement('div');cell.className='pawn-game-cell '+((('abcdefgh'.indexOf(f)+r)%2)?'dark':'light')+(sq===pawnGameSelected?' selected':'')+(hints.includes(sq)?' hint':'');const p=pawnGamePosition[sq];if(p)cell.innerHTML=pieceSvgMarkup(p);if(fi===0)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord rank">'+r+'</span>');if(ri===7)cell.insertAdjacentHTML('beforeend','<span class="pawn-game-coord file">'+f+'</span>');cell.onclick=()=>pawnGameClick(sq);board.appendChild(cell);}
  for(let i=0;i<2;i++)document.getElementById('pawnGameTab'+i).classList.toggle('active',i===pawnGameIndex);
  document.getElementById('pawnGameRules').textContent=pawnGameIndex===0?'Mỗi bên có 8 Tốt. Có luật bắt Tốt qua đường ngay nước kế tiếp khi đối phương vừa tiến hai ô. Ai đưa Tốt đến hàng cuối được chọn Hậu, Xe, Tượng hoặc Mã để phong cấp và giành chiến thắng.':'Trắng điều khiển Mã, Đen điều khiển 3 Tốt. Mã thắng khi ăn hết 3 Tốt; Đen thắng khi phong cấp một Tốt ở hàng 1.';
  const mine=pawnGameMine(),myTurn=mine===pawnGameTurn;document.getElementById('pawnGameAssign').style.display=role==='teacher'||!roomRef?'block':'none';document.getElementById('pawnGameChooseW').classList.toggle('active',pawnGameTeacherColor==='w');document.getElementById('pawnGameChooseB').classList.toggle('active',pawnGameTeacherColor==='b');document.getElementById('pawnGameRoles').textContent=(role==='teacher'?'Giáo viên':'Học sinh')+' chơi '+(mine==='w'?(pawnGameIndex===1?'Mã trắng':'Trắng'):(pawnGameIndex===1?'3 Tốt đen':'Đen'))+' · '+(myTurn?'Đến lượt bạn':'Chờ đối phương');pawnGameRenderPromotion();document.getElementById('pawnGameStatus').textContent=(pawnGameSyncPending?'⏳ Đang đồng bộ nước đi với phòng học…':pawnGameFinished)||(pawnGamePendingPromotion?'♟️ Tốt đã tới hàng cuối! Đang chờ người chơi chọn quân phong cấp.':('Đến lượt '+(pawnGameTurn==='w'?'Trắng':'Đen')+(roomRef?(myTurn?' — bạn được đi.':' — chờ đối phương đi.'):' — chọn quân để đi.')));}
