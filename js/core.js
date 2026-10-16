@@ -1342,6 +1342,14 @@ function vqcReceiveView(data){
   }finally{vqcNavApplying=false;}
 }
 // Gói các hàm hiện có để đồng bộ thao tác, không thay đổi luật chơi.
+// Đồng bộ nút Đóng của ba cửa sổ: GV đóng thì HS nhận activeView='board'.
+// Không phát lại sự kiện khi đang áp dụng trạng thái nhận từ Firebase.
+const vqcOldCloseMate2=closeMateExercises;
+closeMateExercises=function(){vqcOldCloseMate2();vqcBroadcastView('board');};
+const vqcOldCloseMate3=closeMate3;
+closeMate3=function(){vqcOldCloseMate3();vqcBroadcastView('board');};
+const vqcOldClosePvp=closePvp;
+closePvp=function(){vqcOldClosePvp();vqcBroadcastView('board');};
 const vqcOldMate2=openMateExercises;
 openMateExercises=function(i){vqcCloseOtherViews('mate2');vqcOldMate2(i);vqcBroadcastView('mate2',(i+MATE_EXERCISES.length)%MATE_EXERCISES.length);};
 const vqcOldMate3=openMate3;
