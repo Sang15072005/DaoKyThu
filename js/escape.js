@@ -48,41 +48,40 @@ function escapeDrawCheckArrow(board,king,files,ranks){
  if(!attackers.length)return;
  const coords=sq=>({x:(files.indexOf(sq[0])+.5)*100,y:(ranks.indexOf(Number(sq[1]))+.5)*100});
  const dest=coords(king);
- // Điểm đích nằm trên đầu Vua, phía trên tâm ô khoảng 20% chiều cao.
- const tip={x:dest.x,y:dest.y-19};
+ // Mũi tên kiểu Chess.com: thân dày và đầu tam giác lớn, đỏ trong suốt.
+ // Đầu nhọn dừng tại vương miện của Vua (không đâm xuyên quân).
+ const tip={x:dest.x,y:dest.y-22};
  const ns='http://www.w3.org/2000/svg';
  const svg=document.createElementNS(ns,'svg');
  svg.setAttribute('viewBox','0 0 800 800');
  svg.setAttribute('class','escape-check-arrows');
  svg.setAttribute('aria-hidden','true');
- const defs=document.createElementNS(ns,'defs');
- const marker=document.createElementNS(ns,'marker');
- marker.setAttribute('id','escape-king-arrowhead');
- marker.setAttribute('viewBox','0 0 16 16');
- marker.setAttribute('refX','13');
- marker.setAttribute('refY','8');
- marker.setAttribute('markerWidth','18');
- marker.setAttribute('markerHeight','18');
- marker.setAttribute('markerUnits','userSpaceOnUse');
- marker.setAttribute('orient','auto');
- const head=document.createElementNS(ns,'path');
- head.setAttribute('d','M 1 1 L 15 8 L 1 15 Z');
- head.setAttribute('fill','#c83c3c');
- marker.appendChild(head);defs.appendChild(marker);svg.appendChild(defs);
+ const color='#e53935';
  for(const from of attackers){
   const a=coords(from),dx=tip.x-a.x,dy=tip.y-a.y,len=Math.hypot(dx,dy);
-  if(len<1)continue;
-  const line=document.createElementNS(ns,'line');
-  line.setAttribute('x1',a.x+dx/len*23);
-  line.setAttribute('y1',a.y+dy/len*23);
-  line.setAttribute('x2',tip.x);
-  line.setAttribute('y2',tip.y);
-  line.setAttribute('stroke','#c83c3c');
-  line.setAttribute('stroke-width','11');
-  line.setAttribute('stroke-opacity','.75');
-  line.setAttribute('stroke-linecap','round');
-  line.setAttribute('marker-end','url(#escape-king-arrowhead)');
-  svg.appendChild(line);
+  if(len<65)continue;
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux;
+  const headLength=44,headHalfWidth=30,shaftHalfWidth=11;
+  const headBase={x:tip.x-ux*headLength,y:tip.y-uy*headLength};
+  const tail={x:a.x+ux*30,y:a.y+uy*30};
+  // Một hình duy nhất tránh khoảng hở giữa thân và đầu mũi tên.
+  const points=[
+   [tail.x+px*shaftHalfWidth,tail.y+py*shaftHalfWidth],
+   [headBase.x+px*shaftHalfWidth,headBase.y+py*shaftHalfWidth],
+   [headBase.x+px*headHalfWidth,headBase.y+py*headHalfWidth],
+   [tip.x,tip.y],
+   [headBase.x-px*headHalfWidth,headBase.y-py*headHalfWidth],
+   [headBase.x-px*shaftHalfWidth,headBase.y-py*shaftHalfWidth],
+   [tail.x-px*shaftHalfWidth,tail.y-py*shaftHalfWidth]
+  ];
+  const arrow=document.createElementNS(ns,'polygon');
+  arrow.setAttribute('points',points.map(p=>p.join(',')).join(' '));
+  arrow.setAttribute('fill',color);
+  arrow.setAttribute('fill-opacity','.82');
+  arrow.setAttribute('stroke',color);
+  arrow.setAttribute('stroke-width','1.5');
+  arrow.setAttribute('stroke-linejoin','round');
+  svg.appendChild(arrow);
  }
  board.appendChild(svg);
 }
