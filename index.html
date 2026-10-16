@@ -5472,7 +5472,7 @@ const DEFENSE_TASKS=[
  {pieces:{a1:'R',a2:'P',d1:'K',d2:'P',e5:'b',f5:'b'},tip:'Xe a1 đang bị Tượng e5 tấn công. Hãy di chuyển Xe ra khỏi đường chéo nguy hiểm.',solutions:['a1c1']},
  {pieces:{c6:'q',f6:'N'},tip:'Mã f6 bị Hậu c6 tấn công theo hàng ngang. Hãy đưa Mã đến ô an toàn.',solutions:['f6g4','f6h5','f6h7','f6g8']},
  {pieces:{a7:'N',d7:'q',g2:'R'},tip:'Mã a7 bị Hậu d7 tấn công. Hãy đưa Xe từ g2 đến a2 để bảo vệ Mã trên cột a.',solutions:['g2a2']},
- {pieces:{b6:'B',c6:'q',c4:'P'},tip:'Tượng b6 bị Hậu c6 đe dọa. Hãy đưa Tượng tới ô không bị Hậu tấn công.',solutions:['b6a5']},
+ {pieces:{b6:'B',c6:'q',c4:'P'},tip:'Hậu đen c6 đang đe dọa cả Tượng b6 và Tốt c4. Hãy tìm một nước để hai quân trắng bảo vệ lẫn nhau.',solutions:['c4c5']},
  {pieces:{b8:'r',f6:'b',a1:'R',a2:'P',d2:'P',f3:'N'},tip:'Xe a1 đang bị Tượng f6 tấn công. Hãy tìm nước giúp Xe thoát nguy hiểm.',solutions:['a1c1']},
  {pieces:{b7:'b',a1:'r',d3:'P',f2:'N',g2:'R',h2:'P'},tip:'Xe đen a1 đe dọa quân trắng. Hãy tìm nước bảo vệ đội quân của mình.',solutions:['g2g3']},
  {pieces:{a8:'r',b8:'r',d7:'q',e6:'n',a1:'R',b2:'B',d2:'N',e5:'P',f2:'P',g2:'P',g1:'K',g5:'B',h4:'P',a3:'P'},tip:'Hãy quan sát các mối đe dọa và tìm một nước phòng thủ chủ động.',solutions:['g5f6']},
@@ -5548,10 +5548,17 @@ function defenseWhiteDefenders(sq,pos){
 }
 function defenseFocusSquares(pos){
  // Quân cần bảo vệ của từng tình huống; các quân phụ vẫn có thể dùng để yểm trợ.
- const focus=[['a1'],['f6'],['a7'],['b6'],['a1'],['g2','f2','h2','d3'],['d2','g5','b2'],['b5','f5','d3']][defenseIndex]||[];
+ const focus=[['a1'],['f6'],['a7'],['b6','c4'],['a1'],['g2','f2','h2','d3'],['d2','g5','b2'],['b5','f5','d3']][defenseIndex]||[];
  return focus.filter(sq=>pos[sq]&&pos[sq]===pos[sq].toUpperCase());
 }
 function defenseIsSuccessful(before,after,from,to){
+ // Bài 4: Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5.
+ // Không chấp nhận chỉ di chuyển Tượng để thoát đòn mà bỏ Tốt không được bảo vệ.
+ if(defenseIndex===3){
+  return from==='c4'&&to==='c5'&&after.b6==='B'&&after.c5==='P'&&
+    defenseWhiteDefenders('b6',after).includes('c5')&&
+    defenseWhiteDefenders('c5',after).includes('b6');
+ }
  const focus=defenseFocusSquares(before);
  for(const oldSq of focus){
   const piece=before[oldSq];
@@ -5586,11 +5593,11 @@ function defenseClick(sq){
  if(accepted){
   defenseSolved=true;defenseDone.add(defenseIndex);accountSaveProgress('defense_'+defenseIndex,true,1);
   fb.className='defense-feedback good';
-  fb.textContent='✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
+  fb.textContent=defenseIndex===3?'✅ Chính xác! Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5. Hai quân cùng được yểm trợ.':'✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
   document.getElementById('defenseInstruction').textContent='Hoàn thành! Chọn bài tiếp theo để luyện tập.';
  }else{
   fb.className='defense-feedback';
-  fb.innerHTML='❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
+  fb.innerHTML=defenseIndex===3?'❌ Chưa đúng! Cần bảo vệ đồng thời cả Tượng và Tốt. <button onclick="defenseReset()">↻ Thử lại</button>':'❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
  }
  defenseRender();vqcPublishDefense();
 }
