@@ -18,7 +18,7 @@ const DEFENSE_ATTACK_TASKS=[
  {figure:52,side:'w',focus:['f3','d4'],pieces:{b8:'k',d8:'r',a7:'p',b7:'p',b6:'n',c6:'p',f6:'p',g5:'p',e4:'b',a2:'P',d4:'P',e3:'P',f3:'N',d2:'B',f2:'P',h2:'P',g4:'P',e1:'R',g1:'K'},tip:'Hình 52 · Trắng đi. Hãy bảo vệ Mã f3 hoặc Tốt d4 đang bị quân đen tấn công.'},
  {figure:53,side:'b',focus:['d6','c5'],pieces:{a7:'p',c7:'p',e7:'k',h7:'p',d6:'n',f6:'p',g6:'p',c5:'b',a6:'P',a5:'P',d5:'R',b3:'K',f3:'P',h3:'N',g2:'P'},tip:'Hình 53 · Đen đi. Có thể di chuyển, yểm trợ, chặn đòn hoặc phản công để phòng thủ.'},
  {figure:54,side:'b',focus:['a8'],pieces:{a8:'r',b8:'n',h8:'k',a7:'p',d7:'n',g7:'p',h6:'p',d4:'P',e4:'Q',a2:'P',g2:'P',h3:'P',h2:'K'},tip:'Hình 54 · Đen đi. Hậu trắng e4 đang tấn công Xe đen a8. Hãy tìm nước bảo vệ Xe mà không mất quân.'},
- {figure:55,side:'b',focus:['b8','c8','d8'],pieces:{b8:'r',c8:'b',d8:'n',c7:'p',g7:'k',h7:'p',g6:'p',c6:'N',b3:'P',f3:'B',h3:'P',a2:'P',f2:'K',f1:'R'},tip:'Hình 55 · Đen đi. Quan sát quân bị tấn công và tìm một nước phòng thủ phù hợp.'},
+ {figure:55,side:'b',focus:['b8','c8','d8'],pieces:{b8:'r',c8:'b',d8:'n',c7:'p',g7:'k',h7:'p',g6:'p',c6:'N',b3:'P',f3:'B',h3:'P',a2:'P',f2:'K',f1:'R'},tip:'Hình 55 · Đen đi. Mã trắng c6 đang tấn công cả Xe b8 và Mã d8. Hãy hóa giải đòn tấn công đôi mà không mất quân.'},
  {figure:56,side:'w',focus:['e6','h1'],pieces:{g8:'r',e7:'k',g7:'p',b6:'p',d6:'b',h6:'p',d4:'p',a2:'P',g2:'P',h2:'P',b1:'K',h1:'R',e6:'N',e4:'P'},tip:'Hình 56 · Trắng đi. Tìm một nước giúp quân trắng thoát nguy hiểm hoặc được bảo vệ.'}
 ];
 const DEFENSE_ALL_TASKS=DEFENSE_TASKS.concat(DEFENSE_ATTACK_TASKS);
@@ -49,6 +49,10 @@ function defenseNewTaskAccepted(before,after,from,to){
  // Hình 54: Mã d7-b6 yểm trợ Xe a8. Mã b8-c6 chỉ chắn đòn
  // nhưng Hậu e4 có thể ăn Mã c6, nên không được tính là đáp án đúng.
  if(task.figure===54)return from==='d7'&&to==='b6'&&defenseGuardCount('a8',after)>defenseGuardCount('a8',before);
+ // Hình 55: Mã trắng c6 chĩa đồng thời Xe b8 và Mã d8.
+ // Chỉ d8xc6 loại bỏ đòn đôi, đổi Mã ngang giá nếu Tượng f3 ăn lại.
+ // Những nước cứu một quân nhưng bỏ quân còn lại không được tính đúng.
+ if(task.figure===55)return from==='d8'&&to==='c6'&&before.c6==='N'&&after.c6==='n';
  const threatened=(task.focus||[]).filter(sq=>before[sq]&&defenseIsFriendly(before[sq])&&defenseAttackersOf(sq,before,true).length);
  for(const sq of threatened){
   const dest=sq===from?to:sq;
