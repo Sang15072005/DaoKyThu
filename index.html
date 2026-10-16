@@ -5552,6 +5552,12 @@ function defenseFocusSquares(pos){
  return focus.filter(sq=>pos[sq]&&pos[sq]===pos[sq].toUpperCase());
 }
 function defenseIsSuccessful(before,after,from,to){
+ // Bài 5: Không hy sinh Mã 3 điểm để chắn đường Tượng đang tấn công Xe.
+ // Chỉ chấp nhận đưa Xe từ a1 tới c1, nơi Xe thoát đòn và không mất Mã.
+ if(defenseIndex===4){
+  return from==='a1'&&to==='c1'&&after.c1==='R'&&after.f3==='N'&&
+    defenseBlackAttackers('c1',after).length===0;
+ }
  // Bài 4: Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5.
  // Không chấp nhận chỉ di chuyển Tượng để thoát đòn mà bỏ Tốt không được bảo vệ.
  if(defenseIndex===3){
@@ -5593,11 +5599,11 @@ function defenseClick(sq){
  if(accepted){
   defenseSolved=true;defenseDone.add(defenseIndex);accountSaveProgress('defense_'+defenseIndex,true,1);
   fb.className='defense-feedback good';
-  fb.textContent=defenseIndex===3?'✅ Chính xác! Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5. Hai quân cùng được yểm trợ.':'✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
+  fb.textContent=defenseIndex===4?'✅ Chính xác! Xe a1 đến c1 thoát đòn Tượng mà không phải hy sinh Mã.':defenseIndex===3?'✅ Chính xác! Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5. Hai quân cùng được yểm trợ.':'✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
   document.getElementById('defenseInstruction').textContent='Hoàn thành! Chọn bài tiếp theo để luyện tập.';
  }else{
   fb.className='defense-feedback';
-  fb.innerHTML=defenseIndex===3?'❌ Chưa đúng! Cần bảo vệ đồng thời cả Tượng và Tốt. <button onclick="defenseReset()">↻ Thử lại</button>':'❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
+  fb.innerHTML=defenseIndex===4?'❌ Chưa đúng! Đưa Mã lên chắn sẽ bị Tượng ăn và mất Mã 3 điểm. Hãy tìm cách đưa Xe thoát đòn mà không thiệt quân. <button onclick="defenseReset()">↻ Thử lại</button>':defenseIndex===3?'❌ Chưa đúng! Cần bảo vệ đồng thời cả Tượng và Tốt. <button onclick="defenseReset()">↻ Thử lại</button>':'❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
  }
  defenseRender();vqcPublishDefense();
 }
