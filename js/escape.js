@@ -36,7 +36,57 @@ function escapeSafeMove(from,to){const piece=escapePosition[from];if(!escapeLega
 function escapeOpen(i){escapeIndex=(i+ESCAPE_TASKS.length)%ESCAPE_TASKS.length;vqcCloseOtherViews('escape');escapeReset();document.getElementById('escapeOverlay').classList.add('open');document.getElementById('vqcHomeHero')?.setAttribute('hidden','');vqcBroadcastView('escape',escapeIndex);vqcPublishEscape();}
 function escapeClose(){document.getElementById('escapeOverlay').classList.remove('open');vqcBroadcastView('board');}
 function escapeReset(){escapePosition={...ESCAPE_TASKS[escapeIndex].pieces};escapeSelected=null;escapeSolved=false;escapeFailed=false;document.getElementById('escapeInstruction').textContent=ESCAPE_TASKS[escapeIndex].tip;const fb=document.getElementById('escapeFeedback');fb.hidden=true;fb.textContent='';delete fb.dataset.message;escapeRender();vqcPublishEscape();}
-function escapeRender(){const board=document.getElementById('escapeBoard');board.innerHTML='';const king=Object.keys(escapePosition).find(s=>escapePosition[s]===(escapeTurn()==='w'?'K':'k'));const ranks=escapeTurn()==='b'?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],files=escapeTurn()==='b'?'hgfedcba':'abcdefgh';for(const r of ranks)for(const f of files){const sq=f+r,p=escapePosition[sq],cell=document.createElement('div');cell.dataset.square=sq;cell.className='escape-cell '+((8-r+'abcdefgh'.indexOf(f))%2?'dark':'light')+(escapeSelected===sq?' selected':'')+(sq===king&&escapeInCheck(escapePosition)?' escape-checked':'');if(p)cell.innerHTML=pieceSvgMarkup(p);if(escapeSelected&&escapeLegal(escapePosition[escapeSelected],escapeSelected,sq,escapePosition))cell.insertAdjacentHTML('beforeend',p?'<span class="escape-ring"></span>':'<span class="escape-dot"></span>');if(f===files[0])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-rank">'+r+'</span>');if(r===ranks[7])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-file">'+f+'</span>');cell.onclick=()=>{if(Date.now()>=escapeSuppressClickUntil)escapeClick(sq);};board.appendChild(cell);}escapeEnableDrag();const stars=document.getElementById('escapeStars');stars.innerHTML='';ESCAPE_TASKS.forEach((_,i)=>{const b=document.createElement('button');b.textContent=(escapeDone.has(i)?'⭐':'☆')+' '+(ESCAPE_TASKS[i].figure||i+1);b.className=i===escapeIndex?'active':'';b.onclick=()=>escapeOpen(i);stars.appendChild(b);});}
+// Vẽ mũi tên từ quân đang chiếu tới phần đầu (vương miện) của Vua.
+// SVG phủ lên bàn cờ nhưng không chặn nhấp chuột hay kéo thả.
+function escapeDrawCheckArrow(board,king,files,ranks){
+ if(!king||!escapeInCheck(escapePosition))return;
+ const byWhite=escapeTurn()==='b';
+ const attackers=Object.keys(escapePosition).filter(from=>{
+  const p=escapePosition[from];
+  return p&&((p===p.toUpperCase())===byWhite)&&captureCanAttack(p,from,king,escapePosition);
+ });
+ if(!attackers.length)return;
+ const coords=sq=>({x:(files.indexOf(sq[0])+.5)*100,y:(ranks.indexOf(Number(sq[1]))+.5)*100});
+ const dest=coords(king);
+ // Điểm đích nằm trên đầu Vua, phía trên tâm ô khoảng 20% chiều cao.
+ const tip={x:dest.x,y:dest.y-19};
+ const ns='http://www.w3.org/2000/svg';
+ const svg=document.createElementNS(ns,'svg');
+ svg.setAttribute('viewBox','0 0 800 800');
+ svg.setAttribute('class','escape-check-arrows');
+ svg.setAttribute('aria-hidden','true');
+ const defs=document.createElementNS(ns,'defs');
+ const marker=document.createElementNS(ns,'marker');
+ marker.setAttribute('id','escape-king-arrowhead');
+ marker.setAttribute('viewBox','0 0 16 16');
+ marker.setAttribute('refX','13');
+ marker.setAttribute('refY','8');
+ marker.setAttribute('markerWidth','18');
+ marker.setAttribute('markerHeight','18');
+ marker.setAttribute('markerUnits','userSpaceOnUse');
+ marker.setAttribute('orient','auto');
+ const head=document.createElementNS(ns,'path');
+ head.setAttribute('d','M 1 1 L 15 8 L 1 15 Z');
+ head.setAttribute('fill','#c83c3c');
+ marker.appendChild(head);defs.appendChild(marker);svg.appendChild(defs);
+ for(const from of attackers){
+  const a=coords(from),dx=tip.x-a.x,dy=tip.y-a.y,len=Math.hypot(dx,dy);
+  if(len<1)continue;
+  const line=document.createElementNS(ns,'line');
+  line.setAttribute('x1',a.x+dx/len*23);
+  line.setAttribute('y1',a.y+dy/len*23);
+  line.setAttribute('x2',tip.x);
+  line.setAttribute('y2',tip.y);
+  line.setAttribute('stroke','#c83c3c');
+  line.setAttribute('stroke-width','11');
+  line.setAttribute('stroke-opacity','.75');
+  line.setAttribute('stroke-linecap','round');
+  line.setAttribute('marker-end','url(#escape-king-arrowhead)');
+  svg.appendChild(line);
+ }
+ board.appendChild(svg);
+}
+function escapeRender(){const board=document.getElementById('escapeBoard');board.innerHTML='';const king=Object.keys(escapePosition).find(s=>escapePosition[s]===(escapeTurn()==='w'?'K':'k'));const ranks=escapeTurn()==='b'?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],files=escapeTurn()==='b'?'hgfedcba':'abcdefgh';for(const r of ranks)for(const f of files){const sq=f+r,p=escapePosition[sq],cell=document.createElement('div');cell.dataset.square=sq;cell.className='escape-cell '+((8-r+'abcdefgh'.indexOf(f))%2?'dark':'light')+(escapeSelected===sq?' selected':'')+(sq===king&&escapeInCheck(escapePosition)?' escape-checked':'');if(p)cell.innerHTML=pieceSvgMarkup(p);if(escapeSelected&&escapeLegal(escapePosition[escapeSelected],escapeSelected,sq,escapePosition))cell.insertAdjacentHTML('beforeend',p?'<span class="escape-ring"></span>':'<span class="escape-dot"></span>');if(f===files[0])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-rank">'+r+'</span>');if(r===ranks[7])cell.insertAdjacentHTML('beforeend','<span class="escape-coord escape-file">'+f+'</span>');cell.onclick=()=>{if(Date.now()>=escapeSuppressClickUntil)escapeClick(sq);};board.appendChild(cell);}escapeDrawCheckArrow(board,king,files,ranks);escapeEnableDrag();const stars=document.getElementById('escapeStars');stars.innerHTML='';ESCAPE_TASKS.forEach((_,i)=>{const b=document.createElement('button');b.textContent=(escapeDone.has(i)?'⭐':'☆')+' '+(ESCAPE_TASKS[i].figure||i+1);b.className=i===escapeIndex?'active':'';b.onclick=()=>escapeOpen(i);stars.appendChild(b);});}
 // Lichess-style: kéo thả quân, kể cả thử Vua vào ô bị chiếu.
 // Nước đi thử sai chỉ dùng trong bài tập, không sửa luật của các chế độ khác.
 function escapeEnableDrag(){
