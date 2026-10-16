@@ -39,7 +39,7 @@ function escapeReset(){escapePosition={...ESCAPE_TASKS[escapeIndex].pieces};esca
 // Vẽ mũi tên từ quân đang chiếu tới phần đầu (vương miện) của Vua.
 // SVG phủ lên bàn cờ nhưng không chặn nhấp chuột hay kéo thả.
 function escapeDrawCheckArrow(board,king,files,ranks){
- if(!king||!escapeInCheck(escapePosition))return;
+ if(!escapeFailed||!king||!escapeInCheck(escapePosition))return;
  const byWhite=escapeTurn()==='b';
  const attackers=Object.keys(escapePosition).filter(from=>{
   const p=escapePosition[from];
