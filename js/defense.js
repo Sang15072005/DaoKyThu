@@ -14,7 +14,7 @@ const DEFENSE_TASKS=[
 // Bài học 3 — sáu thế cờ phòng thủ quân bị tấn công (Hình 51–56).
 // Dấu chấm đen: Đen đi, dấu chấm trắng: Trắng đi.
 const DEFENSE_ATTACK_TASKS=[
- {figure:51,side:'b',focus:['d4','c3'],pieces:{d7:'k',g7:'b',b6:'p',f6:'p',h6:'p',b5:'p',d4:'n',c3:'b',a2:'P',d5:'P',e4:'B',f4:'P',d1:'K'},tip:'Hình 51 · Đen đi. Hãy bảo vệ quân đen đang bị tấn công bằng một biện pháp phòng thủ hợp lệ.'},
+ {figure:51,side:'b',focus:['d4'],pieces:{d7:'k',g7:'b',b6:'p',f6:'p',h6:'p',b5:'p',d4:'n',c3:'B',a2:'P',d5:'P',e4:'B',f4:'P',d1:'K'},tip:'Hình 51 · Đen đi. Hãy bảo vệ quân đen đang bị tấn công bằng một biện pháp phòng thủ hợp lệ.'},
  {figure:52,side:'b',focus:['e4','b6'],pieces:{b8:'k',d8:'r',a7:'p',b7:'p',b6:'n',c6:'p',f6:'p',g5:'p',e4:'b',a2:'P',d4:'P',e3:'P',f3:'N',d2:'B',f2:'P',h2:'P',g4:'P',e1:'R',g1:'K'},tip:'Hình 52 · Đen đi. Tìm một nước phòng thủ để bảo vệ quân đang bị đe dọa.'},
  {figure:53,side:'b',focus:['d6','c5'],pieces:{a7:'p',c7:'p',e7:'k',h7:'p',d6:'n',f6:'p',g6:'p',c5:'b',a6:'P',a5:'P',d5:'R',b3:'K',f3:'P',h3:'N',g2:'P'},tip:'Hình 53 · Đen đi. Có thể di chuyển, yểm trợ, chặn đòn hoặc phản công để phòng thủ.'},
  {figure:54,side:'b',focus:['d7','b8'],pieces:{a8:'r',b8:'n',h8:'k',a7:'p',d7:'n',g7:'p',h6:'p',d4:'P',e4:'Q',a2:'P',g2:'P',h3:'P',h2:'K'},tip:'Hình 54 · Đen đi. Hãy chọn biện pháp bảo vệ quân đen đang bị tấn công.'},
