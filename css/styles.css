@@ -1989,3 +1989,12 @@ button{
 .pawn-promotion-option:hover,.pawn-promotion-option:focus-visible{border-color:#328cd0;background:#e0f1ff;outline-offset:2px}
 .pawn-promotion-option svg,.pawn-promotion-option img{width:min(68px,100%);height:70px;object-fit:contain}
 .pawn-promotion-option span{font-size:13px}
+
+/* Thoát chiếu: thao tác kéo-thả và thông báo thử sai kiểu bài tập. */
+.escape-board{touch-action:none;user-select:none;-webkit-user-select:none}
+.escape-drag-source>svg,.escape-drag-source>img{opacity:.24}
+.escape-drag-ghost{position:fixed;z-index:99999;pointer-events:none;width:min(10vw,84px);height:min(10vw,84px);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 7px 5px #0005)}
+.escape-drag-ghost svg,.escape-drag-ghost img{width:100%;height:100%;object-fit:contain}
+.escape-feedback.wrong{display:flex;flex-direction:column;align-items:center;gap:12px;background:#c93131;color:#fff;border:0;border-radius:12px;padding:20px 12px;text-align:center;font-size:19px;box-shadow:0 5px 14px #a6222240}
+.escape-retry-btn{border:0;border-radius:9px;background:#fff;color:#b92b2b;font-size:20px;font-weight:800;padding:12px 22px;cursor:pointer;box-shadow:0 4px 12px #0003}
+.escape-retry-btn:hover{background:#fff2f2}
