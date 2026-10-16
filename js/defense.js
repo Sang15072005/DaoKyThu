@@ -143,7 +143,10 @@ function defenseClick(sq){
  if(!vqcExerciseLegalMove(moving,from,sq,defensePosition)){defenseSelected=null;defenseRender();return;}
  const before={...defensePosition};
  const next={...before};delete next[from];next[sq]=moving;
- const accepted=defenseIndex<DEFENSE_TASKS.length?defenseIsSuccessful(before,next,from,sq):defenseNewTaskAccepted(before,next,from,sq);
+ // Chặn riêng ở bước chấm: không bao giờ công nhận một quân vừa đi
+ // nếu quân ít điểm hơn của đối phương có thể ăn ngay, kể cả khi có yểm trợ.
+ const unsafeMove=defenseIndex>=DEFENSE_TASKS.length&&defenseUnsafeTrade(sq,next);
+ const accepted=!unsafeMove&&(defenseIndex<DEFENSE_TASKS.length?defenseIsSuccessful(before,next,from,sq):defenseNewTaskAccepted(before,next,from,sq));
  defensePosition=next;defenseSelected=null;
  const fb=document.getElementById('defenseFeedback');fb.hidden=false;
  if(accepted){
@@ -153,7 +156,11 @@ function defenseClick(sq){
   document.getElementById('defenseInstruction').textContent='Hoàn thành! Chọn bài tiếp theo để luyện tập.';
  }else{
   fb.className='defense-feedback';
-  fb.innerHTML=defenseIndex===4?'❌ Chưa đúng! Đưa Mã lên chắn sẽ bị Tượng ăn và mất Mã 3 điểm. Hãy tìm cách đưa Xe thoát đòn mà không thiệt quân. <button onclick="defenseReset()">↻ Thử lại</button>':defenseIndex===3?'❌ Chưa đúng! Cần bảo vệ đồng thời cả Tượng và Tốt. <button onclick="defenseReset()">↻ Thử lại</button>':'❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
+  fb.innerHTML=unsafeMove
+   ?(defenseIndex===10&&from==='d6'&&sq==='b7'
+      ?'❌ Giải sai! Mã đen ở b7 sẽ bị Tốt trắng a6 ăn. Không được đổi Mã (3 điểm) lấy Tốt (1 điểm). <button onclick="defenseReset()">↻ Thử lại</button>'
+      :'❌ Giải sai! Quân vừa đi có thể bị quân ít điểm hơn ăn ngay, khiến em thiệt quân. <button onclick="defenseReset()">↻ Thử lại</button>')
+   :defenseIndex===4?'❌ Chưa đúng! Đưa Mã lên chắn sẽ bị Tượng ăn và mất Mã 3 điểm. Hãy tìm cách đưa Xe thoát đòn mà không thiệt quân. <button onclick="defenseReset()">↻ Thử lại</button>':defenseIndex===3?'❌ Chưa đúng! Cần bảo vệ đồng thời cả Tượng và Tốt. <button onclick="defenseReset()">↻ Thử lại</button>':'❌ Sai! Nước đi chưa bảo vệ được quân đang bị đe dọa. <button onclick="defenseReset()">↻ Thử lại</button>';
  }
  defenseRender();vqcPublishDefense();
 }
