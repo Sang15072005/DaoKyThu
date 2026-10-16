@@ -28,14 +28,32 @@ function defenseIsFriendly(piece){return !!piece&&(defenseCurrentSide()==='w'?pi
 function defenseIsEnemy(piece){return !!piece&&!defenseIsFriendly(piece);}
 function defenseAttackersOf(sq,pos,enemy){return Object.keys(pos).filter(from=>pos[from]&&(enemy?!defenseIsFriendly(pos[from]):defenseIsFriendly(pos[from]))&&captureCanAttack(pos[from],from,sq,pos));}
 function defenseGuardCount(sq,pos){return Object.keys(pos).filter(from=>from!==sq&&pos[from]&&defenseIsFriendly(pos[from])&&captureCanAttack(pos[from],from,sq,pos)).length;}
+// Giá trị quân dùng để loại nước phòng thủ làm mất quân lớn vì quân nhỏ.
+// Ví dụ Hình 52: Mã f3-e5 được Tốt d4 bảo vệ nhưng Tốt đen f6 vẫn ăn
+// Mã (3 điểm) để đổi lấy Tốt (1 điểm), không được chấm là phòng thủ thành công.
+function defensePieceValue(piece){
+ return ({p:1,n:3,b:3,r:5,q:9,k:100})[piece.toLowerCase()]||0;
+}
+function defenseUnsafeTrade(sq,pos){
+ const piece=pos[sq];
+ if(!piece)return false;
+ const attackers=defenseAttackersOf(sq,pos,true);
+ if(!attackers.length)return false;
+ const cheapest=Math.min(...attackers.map(from=>defensePieceValue(pos[from])));
+ return cheapest<defensePieceValue(piece);
+}
 function defenseNewTaskAccepted(before,after,from,to){
  const task=defenseCurrentTask();
+ // Không công nhận nước đưa quân vào chỗ có thể bị quân rẻ hơn ăn ngay.
+ if(defenseUnsafeTrade(to,after))return false;
  const threatened=(task.focus||[]).filter(sq=>before[sq]&&defenseIsFriendly(before[sq])&&defenseAttackersOf(sq,before,true).length);
  for(const sq of threatened){
   const dest=sq===from?to:sq;
   if(after[dest]!==before[sq])continue;
   const afterAttack=defenseAttackersOf(dest,after,true);
   if(!afterAttack.length)return true;
+  // Có quân yểm trợ vẫn không đủ nếu đối phương dùng quân ít điểm hơn để ăn.
+  if(defenseUnsafeTrade(dest,after))continue;
   if(defenseGuardCount(dest,after)>defenseGuardCount(sq,before))return true;
  }
  return false;
