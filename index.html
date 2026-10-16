@@ -5635,14 +5635,10 @@ function checkOneBlackCapture(pos,square){
       const [fx,fy]=captureCoordinates(from),[tx,ty]=captureCoordinates(square);
       if(Math.abs(tx-fx)!==1||ty!==fy-1)continue;
     }else if(!captureCanAttack(piece,from,square,pos))continue;
-    // Vua đen không được đi vào ô đang bị quân trắng khác bảo vệ.
-    if(piece==='k'){
-      const after={...pos};delete after[from];after[square]='k';
-      const defended=Object.keys(after).some(k=>{
-        const q=after[k];return q&&q===q.toUpperCase()&&captureCanAttack(q,k,square,after);
-      });
-      if(defended)continue;
-    }
+    // Mọi nước đáp trả của Đen đều phải giải quyết được tình trạng Vua đang bị chiếu.
+    // Đặc biệt Mã/Xe/Tượng/Hậu không được ăn quân chiếu nếu Vua vẫn bị quân khác chiếu.
+    const after={...pos};delete after[from];after[square]=piece;
+    if(checkOneIsCheck(after))continue;
     return from;
   }
   return null;
