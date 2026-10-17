@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=challenge-click-target-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=challenge-root-dialog-20261017">
 
 
 
@@ -873,6 +873,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
    if(typeof window[fnName]!=='function')throw Error('Tệp bài tập chưa tải hoặc hàm '+fnName+' chưa sẵn sàng.');
    window[fnName](index);
    if(!overlay.classList.contains('open'))overlay.classList.add('open');
+   // Move active dialog to document root so hidden classroom ancestors cannot conceal it.
+   if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
    document.querySelectorAll('.lesson').forEach(n=>n.classList.toggle('active',n.id===id));
   }catch(error){
    console.error('[Đảo Kỳ Thủ] Thử thách '+id,error);
