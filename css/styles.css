@@ -2150,3 +2150,31 @@ body.vqc-mode-home,body.vqc-mode-world{background:linear-gradient(180deg,#70bdfb
  #accountOverlay .vqc-login-scene{min-height:clamp(230px,43vw,380px);background-position:50% 45%}
  #accountOverlay .account-modal{margin:0;border-radius:22px 22px 0 0}
 }
+
+
+/* Exact user-provided two-student artwork. The image lives at assets/login-kids.webp.
+   Preserve the original illustration aspect ratio (943x738) and keep forms interactive. */
+#accountOverlay.account-overlay{background:#7cc5ff;overflow-y:auto}
+#accountOverlay .vqc-login-layout{width:100%;max-width:none;min-height:100dvh;display:grid;grid-template-columns:minmax(0,55%) minmax(390px,45%);align-items:stretch}
+#accountOverlay .vqc-login-scene{
+ background-image:url('../assets/login-kids.webp');
+ background-repeat:no-repeat;
+ background-size:cover;
+ background-position:center center;
+ min-height:100dvh;
+}
+#accountOverlay .vqc-login-scene>*{display:none!important}
+#accountOverlay .account-modal{margin:clamp(16px,2.3vw,40px);padding:clamp(22px,3.2vw,48px);border-radius:32px;min-height:calc(100dvh - clamp(32px,4.6vw,80px));max-height:none;background:#fff}
+#accountOverlay .vqc-login-formhead{margin-bottom:24px}
+#accountOverlay .vqc-login-formhead h2{font-size:clamp(30px,3vw,45px)}
+#accountOverlay .vqc-login-input input{box-shadow:none!important;border:0!important;background:transparent!important}
+#accountOverlay .vqc-login-roles button{box-shadow:none}
+#accountOverlay .vqc-login-roles button.selected{box-shadow:0 5px 14px #256de93b}
+@media(max-width:850px){
+ #accountOverlay .vqc-login-layout{grid-template-columns:1fr;display:block}
+ #accountOverlay .vqc-login-scene{width:100%;min-height:0;aspect-ratio:943 / 738;background-size:cover;background-position:center}
+ #accountOverlay .account-modal{margin:0;border-radius:26px 26px 0 0;min-height:0;padding:25px max(20px,5vw) 36px}
+}
+@media(min-width:851px) and (max-height:720px){
+ #accountOverlay .account-modal{margin:12px;min-height:calc(100dvh - 24px);padding:20px 35px}
+}
