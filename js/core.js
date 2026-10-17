@@ -913,6 +913,7 @@ function movePiece(to){
                 // Cả giáo viên và học sinh nhận phần thưởng qua cùng trạng thái phòng.
                 rewardDismissedInRoom=false;
                 showStarReward(pieceGame.piece);
+                if(typeof window.vqcAdventurePieceCompleted==='function')window.vqcAdventurePieceCompleted(pieceGame.piece);
                 document.getElementById("status").innerHTML = "🏆 <b>Xuất sắc!</b> Em đã nhặt đủ 6/6 ngôi sao với " + pieceGameNames[pieceGame.piece] + "!";
             }
         }
