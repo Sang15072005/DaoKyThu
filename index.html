@@ -873,9 +873,6 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
    if(typeof window[fnName]!=='function')throw Error('Tệp bài tập chưa tải hoặc hàm '+fnName+' chưa sẵn sàng.');
    window[fnName](index);
    if(!overlay.classList.contains('open'))overlay.classList.add('open');
-   overlay.style.setProperty('display','flex','important');
-   overlay.style.setProperty('visibility','visible','important');
-   overlay.style.setProperty('z-index','12050','important');
    document.querySelectorAll('.lesson').forEach(n=>n.classList.toggle('active',n.id===id));
   }catch(error){
    console.error('[Đảo Kỳ Thủ] Thử thách '+id,error);
