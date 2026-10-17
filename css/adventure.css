@@ -594,3 +594,268 @@
  .vqc-adventure .vqc-level-node{width:58px;height:58px;min-height:58px}
  .vqc-adventure .vqc-level-node__medal{width:49px;height:49px;font-size:26px}
 }
+
+/* =============================================================
+   CHARACTER PICKER - SIX EXISTING ASSETS (Wizard to Explorer)
+   Used only in Khám phá Đảo Kỳ Thủ, not in the live classroom.
+   ============================================================= */
+.vqc-adventure .vqc-avatar-change{
+ position:absolute;
+ top:14px;
+ right:16px;
+ z-index:20;
+ display:grid;
+ place-items:center;
+ width:64px;
+ height:64px;
+ padding:5px;
+ border:4px solid #ffdfa2;
+ border-radius:50%;
+ background:linear-gradient(145deg,#fffde2,#c2edff);
+ box-shadow:0 5px 0 #b18a49,0 9px 22px rgba(33,77,111,.22);
+ cursor:pointer;
+ transition:transform .18s ease,box-shadow .18s ease;
+}
+.vqc-adventure .vqc-avatar-change:hover{
+ transform:translateY(-3px);
+ box-shadow:0 8px 0 #b18a49,0 13px 22px rgba(33,77,111,.25);
+}
+.vqc-adventure .vqc-avatar-change:focus-visible{
+ outline:4px solid #3289ef;
+ outline-offset:4px;
+}
+.vqc-adventure .vqc-avatar-change img{
+ width:100%;
+ height:100%;
+ display:block;
+ border-radius:50%;
+ object-fit:cover;
+ background:#fff6df;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-avatar-change__gear{
+ display:grid;
+ place-items:center;
+ position:absolute;
+ right:-8px;
+ bottom:-5px;
+ width:25px;
+ height:25px;
+ border:2px solid #fff;
+ border-radius:50%;
+ background:#4d9deb;
+ box-shadow:0 2px 5px #21496d55;
+ color:#fff;
+ font-size:14px;
+ line-height:1;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-level-avatar{
+ box-sizing:border-box;
+ padding:2px;
+ overflow:hidden;
+ background:#fff4d4;
+}
+.vqc-adventure .vqc-level-avatar #playerAvatar{
+ display:block;
+ width:100%;
+ height:100%;
+ max-width:100%;
+ max-height:100%;
+ border-radius:50%;
+ object-fit:cover;
+ object-position:center center;
+ pointer-events:none;
+ user-select:none;
+ -webkit-user-drag:none;
+}
+body.vqc-avatar-open{overflow:hidden}
+.vqc-avatar-modal[hidden]{display:none!important}
+.vqc-avatar-modal{
+ position:fixed;
+ inset:0;
+ z-index:20000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ box-sizing:border-box;
+ padding:18px;
+ background:rgba(15,36,64,.75);
+ backdrop-filter:blur(5px);
+}
+.vqc-avatar-modal__dialog{
+ position:relative;
+ box-sizing:border-box;
+ width:min(710px,100%);
+ max-height:calc(100dvh - 36px);
+ overflow-y:auto;
+ padding:28px clamp(16px,4vw,32px) 25px;
+ border:5px solid #ffd772;
+ border-radius:28px;
+ background:linear-gradient(155deg,#fffdf0 0%,#f1faff 53%,#e8ffe9 100%);
+ box-shadow:0 8px 0 #dca854,0 24px 70px #091c3988;
+ text-align:center;
+ font-family:"Segoe UI",Arial,sans-serif;
+ color:#2e5e7f;
+}
+.vqc-avatar-modal__eyebrow{
+ display:inline-block;
+ padding:7px 15px;
+ border-radius:999px;
+ background:#dff7e4;
+ color:#34764c;
+ font-size:12px;
+ font-weight:900;
+ letter-spacing:.5px;
+}
+.vqc-avatar-modal__dialog h2{
+ margin:14px 40px 8px;
+ font-size:clamp(23px,3vw,32px);
+ line-height:1.3;
+ font-weight:900;
+ color:#246eac;
+}
+.vqc-avatar-modal__dialog p{
+ margin:0 auto 18px;
+ max-width:530px;
+ line-height:1.55;
+ color:#617789;
+ font-size:14px;
+}
+.vqc-avatar-modal__close{
+ position:absolute;
+ top:12px;
+ right:14px;
+ display:grid;
+ place-items:center;
+ width:39px;
+ height:39px;
+ border:2px solid #f2d19d;
+ border-radius:50%;
+ background:#fff;
+ color:#a75b44;
+ font-size:27px;
+ font-weight:900;
+ line-height:1;
+ cursor:pointer;
+}
+.vqc-avatar-choices{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:15px;
+ margin:22px auto 16px;
+}
+.vqc-avatar-option{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:10px;
+ min-width:0;
+ padding:12px 8px 14px;
+ border:4px solid #d8e9f4;
+ border-radius:22px;
+ background:#fff;
+ box-shadow:0 5px 0 #b9d0dc;
+ color:#316481;
+ font:inherit;
+ font-weight:800;
+ cursor:pointer;
+ transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+}
+.vqc-avatar-option:hover{
+ transform:translateY(-4px) scale(1.025);
+ border-color:#7ac4ed;
+ box-shadow:0 8px 0 #8bc3df,0 8px 22px #58a7d33d;
+}
+.vqc-avatar-option:focus-visible,
+.vqc-avatar-modal__close:focus-visible,
+.vqc-avatar-modal__confirm:focus-visible{
+ outline:3px solid #348eff;
+ outline-offset:3px;
+}
+.vqc-avatar-option.selected{
+ border:4px solid #ffc833;
+ background:#fff8d9;
+ box-shadow:0 5px 0 #dfa92d,0 0 0 4px #ffea9c80;
+}
+.vqc-avatar-option__photo{
+ position:relative;
+ display:block;
+ width:min(100%,142px);
+ aspect-ratio:1;
+ border-radius:50%;
+ overflow:visible;
+ background:#fff5d6;
+}
+.vqc-avatar-option__photo img{
+ display:block;
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ border-radius:50%;
+}
+.vqc-avatar-option__check{
+ position:absolute;
+ right:0;
+ bottom:2px;
+ display:none;
+ place-items:center;
+ width:32px;
+ height:32px;
+ border:3px solid #fff;
+ border-radius:50%;
+ background:#3daf62;
+ box-shadow:0 2px 8px #2b874363;
+ color:#fff;
+ font-size:20px;
+ font-weight:900;
+}
+.vqc-avatar-option.selected .vqc-avatar-option__check{display:grid}
+.vqc-avatar-option__label{
+ display:block;
+ font-size:15px;
+ line-height:1.25;
+}
+.vqc-avatar-modal__dialog .vqc-avatar-modal__tip{
+ margin:12px auto 18px;
+ font-size:13px;
+ color:#648078;
+}
+.vqc-avatar-modal__confirm{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ min-height:48px;
+ padding:11px 27px;
+ border:0;
+ border-radius:14px;
+ background:linear-gradient(180deg,#69ca78,#369d51);
+ box-shadow:0 5px 0 #277d3c;
+ color:#fff;
+ font:inherit;
+ font-weight:900;
+ font-size:16px;
+ cursor:pointer;
+}
+.vqc-avatar-modal__confirm:hover{
+ transform:translateY(-2px);
+ box-shadow:0 7px 0 #277d3c;
+}
+@media(max-width:690px){
+ .vqc-adventure .vqc-avatar-change{top:12px;right:12px;width:57px;height:57px}
+ .vqc-adventure .vqc-entry-head{padding-top:52px}
+ .vqc-avatar-modal__dialog{padding:22px 13px 18px;border-radius:22px}
+ .vqc-avatar-choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .vqc-avatar-option{gap:6px;padding:10px 6px;border-radius:17px}
+ .vqc-avatar-option__photo{width:min(100%,120px)}
+ .vqc-avatar-option__label{font-size:13px}
+ .vqc-avatar-modal__dialog h2{margin:12px 38px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-adventure .vqc-avatar-change,
+ .vqc-avatar-option,
+ .vqc-avatar-modal__confirm{transition:none!important}
+ .vqc-adventure .vqc-avatar-change:hover,
+ .vqc-avatar-option:hover,
+ .vqc-avatar-modal__confirm:hover{transform:none!important}
+}

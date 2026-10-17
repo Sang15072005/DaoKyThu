@@ -16,7 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=map-background-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=avatar-picker-20261017">
 
 
 
@@ -138,6 +138,10 @@
  <p class="vqc-entry-note">Hoạt động trong “Vào lớp” không cộng sao hoặc mở khóa vùng đất trong hành trình cá nhân.</p>
 </section>
 <section id="vqcModeWorld" class="vqc-entry vqc-world vqc-adventure" aria-hidden="true" aria-label="Hành trình khám phá Đảo Kỳ Thủ">
+ <button class="vqc-avatar-change" id="vqcChangeAvatarBtn" type="button" aria-haspopup="dialog" aria-controls="vqcAvatarModal" aria-label="Đổi nhân vật" title="Đổi nhân vật">
+  <img id="vqcAvatarButtonPreview" src="./assets/nhanvat%20(6).png" alt="" width="56" height="56">
+  <span class="vqc-avatar-change__gear" aria-hidden="true">⚙️</span>
+ </button>
  <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
  <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
  <div id="vqcAdventureMap">
@@ -158,7 +162,9 @@
      <path class="vqc-level-path__trail" d="M23 89 C24 80 51 82 69 76 C87 69 50 62 36 64 C19 64 49 52 75 51 C97 50 54 34 26 39 C7 43 28 24 68 26 C90 27 59 10 41 12"/>
     </svg>
     <div class="vqc-adventure-regions vqc-level-map__nodes" id="vqcAdventureRegions" aria-label="Các trạm phiêu lưu"></div>
-    <div class="vqc-level-avatar" id="vqcLevelAvatar" aria-hidden="true">🧙‍♂️</div>
+    <div class="vqc-level-avatar" id="vqcLevelAvatar" aria-hidden="true">
+     <img id="playerAvatar" src="./assets/nhanvat%20(6).png" alt="Nhân vật nhà thám hiểm" width="56" height="56" draggable="false">
+    </div>
     <div class="vqc-level-popup" id="vqcLevelPopup" role="dialog" aria-labelledby="vqcLevelPopupTitle" hidden>
      <button class="vqc-level-popup__close" id="vqcLevelPopupClose" type="button" aria-label="Đóng thông tin vùng đất">×</button>
      <span class="vqc-level-popup__eyebrow" id="vqcLevelPopupStage"></span>
@@ -242,6 +248,45 @@
  <p id="vqcAdventureSave" role="status"></p>
  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
 </section>
+
+<!-- Character selection lives at body root so parent map overflow cannot clip the backdrop. -->
+<div id="vqcAvatarModal" class="vqc-avatar-modal" role="dialog" aria-modal="true" aria-labelledby="vqcAvatarModalTitle" aria-describedby="vqcAvatarModalDesc" hidden>
+ <div class="vqc-avatar-modal__dialog" tabindex="-1">
+  <button id="vqcAvatarClose" type="button" class="vqc-avatar-modal__close" aria-label="Đóng cửa sổ chọn nhân vật">×</button>
+  <span class="vqc-avatar-modal__eyebrow">✨ TẠO HÌNH NHÀ THÁM HIỂM</span>
+  <h2 id="vqcAvatarModalTitle">Chọn nhân vật của bạn</h2>
+  <p id="vqcAvatarModalDesc">Em thích đồng hành cùng ai trong chuyến phiêu lưu trên Đảo Kỳ Thủ?</p>
+  <div class="vqc-avatar-choices" id="vqcAvatarChoices" aria-label="Sáu nhân vật có thể lựa chọn">
+    <button class="vqc-avatar-option" type="button" data-avatar="wizard" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(1).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Pháp sư</span>
+    </button>
+    <button class="vqc-avatar-option" type="button" data-avatar="king" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(2).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Nhà vua</span>
+    </button>
+    <button class="vqc-avatar-option" type="button" data-avatar="queen" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(3).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Nữ hoàng</span>
+    </button>
+    <button class="vqc-avatar-option" type="button" data-avatar="knight" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(4).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Hiệp sĩ</span>
+    </button>
+    <button class="vqc-avatar-option" type="button" data-avatar="scholar" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(5).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Học giả</span>
+    </button>
+    <button class="vqc-avatar-option" type="button" data-avatar="explorer" aria-pressed="false">
+     <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(6).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
+     <span class="vqc-avatar-option__label">Nhà thám hiểm</span>
+    </button>
+  </div>
+  <p class="vqc-avatar-modal__tip">Nhân vật em chọn sẽ xuất hiện trên bản đồ. Em có thể đổi bất cứ lúc nào!</p>
+  <button id="vqcAvatarConfirm" class="vqc-avatar-modal__confirm" type="button">✓ Xác nhận nhân vật</button>
+ </div>
+</div>
+
 <!-- ======================================================
 
      HEADER
@@ -941,7 +986,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=map-background-20261017"></script>
+<script src="./js/adventure.js?v=avatar-picker-20261017"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){

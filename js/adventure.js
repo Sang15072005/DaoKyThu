@@ -29,6 +29,90 @@ const QUESTIONS=[
 ];
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
 let progress={done:[],forestDone:[],stars:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+
+/* Six existing assets are kept on the adventure side only; live classroom is unaffected. */
+const AVAILABLE_AVATARS=[
+ {id:'wizard', name:'Pháp sư', src:'./assets/nhanvat%20(1).png'},
+ {id:'king', name:'Nhà vua', src:'./assets/nhanvat%20(2).png'},
+ {id:'queen', name:'Nữ hoàng', src:'./assets/nhanvat%20(3).png'},
+ {id:'knight', name:'Hiệp sĩ', src:'./assets/nhanvat%20(4).png'},
+ {id:'scholar', name:'Học giả', src:'./assets/nhanvat%20(5).png'},
+ {id:'explorer', name:'Nhà thám hiểm', src:'./assets/nhanvat%20(6).png'}
+];
+const AVATAR_STORAGE_KEY='selectedAvatar';
+let selectedAvatar=AVAILABLE_AVATARS[5],avatarPickerInitialized=false,avatarPreviousFocus=null;
+
+function readAvatarSelection(){
+ let value=null;
+ try{value=localStorage.getItem(AVATAR_STORAGE_KEY);}catch(error){console.warn('Không thể đọc lựa chọn nhân vật',error);}
+ // Only allow known local assets, never arbitrary URLs from localStorage.
+ return AVAILABLE_AVATARS.find(avatar=>avatar.src===value||avatar.id===value)
+   ||AVAILABLE_AVATARS[5];
+}
+function applyAvatarSelection(avatar,save=true){
+ const valid=AVAILABLE_AVATARS.find(item=>item.id===avatar?.id);
+ if(!valid)return;
+ selectedAvatar=valid;
+ const picture=$('playerAvatar'),preview=$('vqcAvatarButtonPreview');
+ if(picture){picture.src=valid.src;picture.alt='Nhân vật '+valid.name;}
+ if(preview){preview.src=valid.src;preview.alt='';}
+ document.querySelectorAll('#vqcAvatarChoices .vqc-avatar-option').forEach(button=>{
+  const active=button.dataset.avatar===valid.id;
+  button.classList.toggle('selected',active);
+  button.setAttribute('aria-pressed',String(active));
+ });
+ if(save){
+  try{localStorage.setItem(AVATAR_STORAGE_KEY,valid.src);}
+  catch(error){console.warn('Không thể lưu nhân vật trên thiết bị',error);}
+ }
+}
+function closeAvatarPicker(){
+ const modal=$('vqcAvatarModal');
+ if(!modal||modal.hidden)return;
+ modal.hidden=true;
+ document.body.classList.remove('vqc-avatar-open');
+ if(avatarPreviousFocus?.isConnected&&document.body.classList.contains('vqc-mode-world'))avatarPreviousFocus.focus();
+ avatarPreviousFocus=null;
+}
+function openAvatarPicker(){
+ const modal=$('vqcAvatarModal');
+ if(!modal)return;
+ avatarPreviousFocus=document.activeElement;
+ applyAvatarSelection(selectedAvatar,false);
+ modal.hidden=false;
+ document.body.classList.add('vqc-avatar-open');
+ const active=modal.querySelector('.vqc-avatar-option.selected');
+ (active||$('vqcAvatarClose'))?.focus();
+}
+function initAvatarPicker(){
+ if(avatarPickerInitialized)return;
+ const modal=$('vqcAvatarModal'),trigger=$('vqcChangeAvatarBtn');
+ if(!modal||!trigger||!$('playerAvatar'))return;
+ avatarPickerInitialized=true;
+ applyAvatarSelection(readAvatarSelection(),false);
+ trigger.addEventListener('click',openAvatarPicker);
+ $('vqcAvatarClose')?.addEventListener('click',closeAvatarPicker);
+ $('vqcAvatarConfirm')?.addEventListener('click',closeAvatarPicker);
+ modal.querySelectorAll('.vqc-avatar-option').forEach(button=>{
+  button.addEventListener('click',()=>{
+   const choice=AVAILABLE_AVATARS.find(avatar=>avatar.id===button.dataset.avatar);
+   if(choice)applyAvatarSelection(choice);
+  });
+ });
+ modal.addEventListener('click',event=>{
+  if(event.target===modal)closeAvatarPicker();
+ });
+ modal.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){event.preventDefault();closeAvatarPicker();return;}
+  if(event.key!=='Tab')return;
+  const buttons=[...modal.querySelectorAll('button:not([disabled])')];
+  const first=buttons[0],last=buttons[buttons.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ });
+}
+window.vqcCloseAvatarModal=closeAvatarPicker;
+
 const $=id=>document.getElementById(id);
 function identity(){return window.accountProfile?.uid||null;}
 function storageKey(){return 'vqc-adventure-v1-'+(identity()||'guest');}
@@ -356,6 +440,7 @@ window.vqcAdventurePieceCompleted=function(piece){
  // Preserve the original 6-star reward dialog and its existing continue button.
 };
 window.vqcAdventureLeaveWorld=function(){
+ closeAvatarPicker();
  if(forestActive)closeForest();
 };
 
@@ -396,6 +481,7 @@ function next(){
 }
 function closeRegion(){$('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;render();showAdventureMap();}
 window.vqcAdventureStart=function(){
+ if(avatarPickerInitialized)applyAvatarSelection(readAvatarSelection(),false);
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá hòn đảo.','warning');return;}
  $('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;
  if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
@@ -410,5 +496,5 @@ window.vqcAdventureReset=function(){
  if(!confirm('Em có muốn chơi lại từ màn đầu? Tiến độ cũ sẽ được đặt lại.'))return;
  progress=sanitize({});saveProgress();closeRegion();
 };
-window.addEventListener('DOMContentLoaded',()=>{if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
+window.addEventListener('DOMContentLoaded',()=>{initAvatarPicker();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
 })();
