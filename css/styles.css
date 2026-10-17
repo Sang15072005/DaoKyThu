@@ -2112,3 +2112,21 @@ body.vqc-mode-home,body.vqc-mode-world{background:linear-gradient(180deg,#70bdfb
 .vqc-entry-card p,.vqc-entry-caption{min-height:0}
 }
 @media(prefers-reduced-motion:reduce){.vqc-entry-card,.vqc-entry-card .btn{transition:none}}
+
+
+/* Island adventure login visual refinement */
+#accountOverlay.account-overlay{background:#82c9ff}
+#accountOverlay .vqc-login-layout{grid-template-columns:minmax(0,1.22fr) minmax(390px,.78fr);max-width:1900px}
+#accountOverlay .vqc-login-scene{background:#82c9ff url('../assets/login-adventure.svg') center center/cover no-repeat;min-height:100vh}
+#accountOverlay .vqc-login-sun,#accountOverlay .vqc-login-cloud,#accountOverlay .vqc-login-castle,#accountOverlay .vqc-login-flag,#accountOverlay .vqc-login-children,#accountOverlay .vqc-login-board{display:none!important}
+#accountOverlay .vqc-login-brand{top:5%;left:6%;transform:rotate(-3deg);font-size:clamp(32px,3vw,58px);z-index:7;filter:drop-shadow(0 5px 1px #16478680)}
+#accountOverlay .vqc-login-brand-crown{font-size:42px}
+#accountOverlay .vqc-login-features{top:33%;left:6%;gap:12px}
+#accountOverlay .vqc-login-features>div{max-width:280px;width:clamp(185px,23vw,280px);border-radius:17px;background:#f8fbfff0;backdrop-filter:blur(5px);box-shadow:0 6px 18px #1a54883a}
+#accountOverlay .vqc-login-features strong{font-size:clamp(12px,1vw,15px)}
+#accountOverlay .vqc-login-features small{font-size:12px}
+#accountOverlay .account-modal{margin:4% 4% 4% 0;min-height:unset;border-radius:30px;box-shadow:0 18px 55px #2c6d9c48;padding:clamp(26px,3vw,60px)}
+#accountOverlay .vqc-login-formhead h2{font-weight:900}
+#accountOverlay .vqc-login-roles button,#accountOverlay .vqc-login-submit{transition:filter .18s,transform .18s}
+#accountOverlay .vqc-login-submit:active{transform:scale(.99)}
+@media(max-width:850px){#accountOverlay .vqc-login-layout{grid-template-columns:1fr}#accountOverlay .vqc-login-scene{min-height:300px;background-position:center 42%}#accountOverlay .vqc-login-brand{font-size:27px;top:16px;left:18px}#accountOverlay .vqc-login-brand-crown{font-size:26px}#accountOverlay .vqc-login-features{top:auto;bottom:10px;left:12px;right:12px;display:flex;gap:7px}#accountOverlay .vqc-login-features>div{width:33%;min-width:0;padding:8px 6px;gap:4px}#accountOverlay .vqc-login-features b{display:none}#accountOverlay .vqc-login-features strong{font-size:10px}#accountOverlay .vqc-login-features small{display:none}#accountOverlay .account-modal{margin:0;border-radius:25px 25px 0 0;padding:27px 7vw 35px}}
