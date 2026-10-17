@@ -2304,3 +2304,8 @@ body #escapeOverlay.open,body #checkOneOverlay.open,body #pawnGameOverlay.open,b
  .header #vqcBackHome{order:3}
  .header .room-box{order:4}
 }
+
+/* Site-wide header now sits above Home, World and Classroom; stays accessible while scrolling. */
+body > .header{position:sticky;top:0;z-index:100;width:100%;}
+body.vqc-mode-home > .header,body.vqc-mode-world > .header{justify-content:space-between;}
+body.vqc-mode-home > .header #accountBar,body.vqc-mode-world > .header #accountBar{margin-left:auto;}
