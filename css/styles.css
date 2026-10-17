@@ -2262,3 +2262,6 @@ body.vqc-mode-class .lesson[role="button"]{pointer-events:auto;position:relative
 #vqcChallengeError{position:fixed;top:18px;left:50%;transform:translateX(-50%);max-width:min(90vw,650px);z-index:15000;border:2px solid #f2c15d;background:#fff5e2;color:#713d00;border-radius:14px;padding:16px 20px;font-size:15px;font-weight:700;box-shadow:0 9px 28px #142c4e50;text-align:center}
 #vqcChallengeError[hidden]{display:none}
 #escapeOverlay.open,#checkOneOverlay.open,#pawnGameOverlay.open,#defenseOverlay.open,#freeCaptureOverlay.open,#captureOverlay.open{z-index:12050!important;visibility:visible!important;display:flex!important;pointer-events:auto!important}
+
+/* Challenges are rendered at document root: keep them visible in every learning mode. */
+body #escapeOverlay.open,body #checkOneOverlay.open,body #pawnGameOverlay.open,body #defenseOverlay.open,body #freeCaptureOverlay.open,body #captureOverlay.open{position:fixed!important;inset:0!important;display:flex!important;visibility:visible!important;opacity:1!important;z-index:13000!important;pointer-events:auto!important}
