@@ -11,11 +11,13 @@ let captureIndex=0,captureSelected=null,captureSolved=false,captureBusy=false,ca
 const captureDone=new Set();
 function captureOpen(i){
  if(captureTimer)clearTimeout(captureTimer);
- captureIndex=(i+CAPTURE_TASKS.length)%CAPTURE_TASKS.length;
+ captureIndex=((i%CAPTURE_TASKS.length)+CAPTURE_TASKS.length)%CAPTURE_TASKS.length;
+ if(typeof vqcCloseOtherViews==='function')vqcCloseOtherViews('capture');
  captureReset();document.getElementById('captureOverlay').classList.add('open');
  document.getElementById('vqcHomeHero')?.setAttribute('hidden','');
+ if(typeof vqcBroadcastView==='function')vqcBroadcastView('capture',captureIndex);
 }
-function captureClose(){if(captureTimer)clearTimeout(captureTimer);captureTimer=null;captureBusy=false;document.getElementById('captureOverlay').classList.remove('open');}
+function captureClose(){if(captureTimer)clearTimeout(captureTimer);captureTimer=null;captureBusy=false;document.getElementById('captureOverlay').classList.remove('open');if(typeof vqcBroadcastView==='function')vqcBroadcastView('board');}
 function captureReset(){
  if(captureTimer)clearTimeout(captureTimer);captureTimer=null;
  captureSelected=null;captureSolved=false;captureBusy=false;captureReply=null;
