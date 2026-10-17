@@ -2230,3 +2230,26 @@ body:has(#accountOverlay:not(.hidden)) > footer{display:none!important}
  #accountOverlay .account-modal{width:min(560px,calc(100% - 24px));max-height:none;overflow:visible;margin:12px auto 24px!important;border-radius:24px;padding:24px 20px!important}
  #accountOverlay .vqc-login-copyright{font-size:11px}
 }
+
+
+/* Login layout refinement: 60% illustration, 40% form */
+#accountOverlay .vqc-login-layout{
+ display:grid;
+ grid-template-columns:minmax(0,3fr) minmax(0,2fr);
+ width:100%;max-width:none;min-height:100dvh;
+}
+#accountOverlay .account-modal{
+ width:min(100% - 28px,590px);
+ margin:16px auto!important;
+ box-sizing:border-box;
+}
+#accountOverlay .vqc-login-copyright{
+ display:block;text-align:center;
+ color:#7085a4;font-size:12px;
+ line-height:1.6;margin:18px auto 0;
+ max-width:100%;
+}
+@media(max-width:850px){
+ #accountOverlay .vqc-login-layout{display:block;min-height:100dvh}
+ #accountOverlay .account-modal{width:min(100% - 24px,560px);margin:12px auto 24px!important}
+}
