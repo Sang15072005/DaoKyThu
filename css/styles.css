@@ -2002,3 +2002,21 @@ button{
 /* Mũi tên chiếu Vua nằm trên bàn cờ, chĩa đúng phần đầu Vua. */
 .escape-board{position:relative}
 .escape-check-arrows{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;overflow:visible}
+
+/* Điều hướng 2 không gian: phòng học giữ toàn bộ công cụ cũ; bản đồ cá nhân độc lập. */
+.vqc-mode-home .app,.vqc-mode-world .app,.vqc-mode-home .room-box,.vqc-mode-world .room-box,.vqc-mode-home #vqcBackHome,.vqc-mode-world #vqcBackHome{display:none!important}
+.vqc-mode-class #vqcModeHome,.vqc-mode-class #vqcModeWorld,.vqc-mode-world #vqcModeHome,.vqc-mode-home #vqcModeWorld{display:none!important}
+.vqc-entry{width:min(1100px,calc(100% - 30px));margin:32px auto 55px;padding:24px;background:linear-gradient(140deg,#f4faff,#fff6e1);border:1px solid #dae8f7;border-radius:25px;box-shadow:0 15px 45px #24466b18}
+.vqc-entry-head{text-align:center;margin:10px auto 30px}.vqc-entry-head h1{font-size:clamp(28px,4vw,42px);color:#236eae;margin:6px 0}.vqc-entry-head p{color:#61758c;margin:8px auto}
+.vqc-entry-symbol{display:grid;place-items:center;width:80px;height:80px;margin:auto;background:#2d83cf;border-radius:22px;color:white;font-size:54px;box-shadow:0 10px 25px #1665a93b}
+.vqc-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.vqc-entry-card{background:#fff;border:2px solid #e0ecfa;border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 22px #1e4f7a12}
+.vqc-entry-card h2{font-size:25px;color:#275e8c;margin:0}.vqc-entry-card p{color:#40566f;line-height:1.65;margin:0;min-height:80px}
+.vqc-entry-emoji{display:block;font-size:45px}.vqc-entry-caption{font-size:13px;color:#4c7490;font-weight:700;min-height:40px}.vqc-entry-card .btn{width:100%;margin-top:auto;padding:14px}
+.vqc-entry-join{margin-top:8px;padding:14px;background:#eef7ff;border-radius:12px}.vqc-entry-join[hidden]{display:none}.vqc-entry-join label{display:block;margin-bottom:7px;font-weight:700}.vqc-entry-join input{width:100%;padding:12px;border:1px solid #aecbe0;border-radius:10px;margin-bottom:10px}
+.vqc-entry-note{text-align:center;color:#56718d;font-size:14px;margin:20px 0 4px}
+.vqc-world-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:22px}
+.vqc-world-grid article{display:flex;flex-direction:column;gap:10px;padding:20px;background:white;border:1px solid #ddeaf6;border-radius:16px;font-size:35px;min-height:160px}
+.vqc-world-grid strong{font-size:17px;color:#276396}.vqc-world-grid small{font-size:12px;color:#71859b}
+.vqc-world>.btn{display:block;margin:18px auto 0}
+@media(max-width:720px){.vqc-entry-grid,.vqc-world-grid{grid-template-columns:1fr}.vqc-entry{padding:16px;margin:16px auto}.vqc-entry-card{padding:19px}.vqc-entry-card p,.vqc-entry-caption{min-height:0}}
