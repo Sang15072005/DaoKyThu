@@ -2265,3 +2265,42 @@ body.vqc-mode-class .lesson[role="button"]{pointer-events:auto;position:relative
 
 /* Challenges are rendered at document root: keep them visible in every learning mode. */
 body #escapeOverlay.open,body #checkOneOverlay.open,body #pawnGameOverlay.open,body #defenseOverlay.open,body #freeCaptureOverlay.open,body #captureOverlay.open{position:fixed!important;inset:0!important;display:flex!important;visibility:visible!important;opacity:1!important;z-index:13000!important;pointer-events:auto!important}
+
+/* Tài khoản ở góc trên bên phải trên mọi trang (trang chủ, đảo, lớp). */
+.header{position:relative;display:flex;align-items:center;gap:14px;min-width:0}
+.header .logo{flex:0 0 auto}
+.header .room-box{min-width:0}
+.header #vqcBackHome{flex:0 0 auto}
+.header #accountBar{
+ display:flex;
+ align-items:center;
+ justify-content:flex-end;
+ gap:8px;
+ margin-left:auto;
+ flex:0 0 auto;
+ max-width:min(48vw,600px);
+}
+.header #accountUserLabel{
+ display:inline-block;
+ max-width:clamp(90px,14vw,200px);
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ color:#326a9a;
+}
+.header #accountBar .btn{white-space:nowrap}
+@media(max-width:950px){
+ .header{height:auto;min-height:82px;flex-wrap:wrap;padding:10px 16px;gap:10px}
+ .header #accountBar{margin-left:auto;max-width:calc(100% - 75px)}
+ .header .room-box{order:3;width:100%;justify-content:center;margin:0}
+ .header #vqcBackHome{order:2}
+}
+@media(max-width:600px){
+ .header{padding:9px 12px;gap:6px}
+ .header .logo{margin-right:auto}
+ .header #accountBar{gap:5px;max-width:calc(100% - 65px)}
+ .header #accountUserLabel{max-width:95px;font-size:11px!important}
+ .header #accountBar button{font-size:12px;padding:7px 8px}
+ .header #vqcBackHome{order:3}
+ .header .room-box{order:4}
+}
