@@ -105,3 +105,27 @@
  pointer-events:none;
  background:transparent!important;
 }
+
+/* Vùng 2: six original star-collection exercises, no new puzzles. */
+.vqc-adventure .vqc-forest-screen{background:linear-gradient(160deg,#effce9,#f5fff7 55%,#e5f6ff);border:2px solid #b6dfbb;border-radius:24px;padding:clamp(14px,3vw,26px);margin-top:12px}
+.vqc-adventure .vqc-forest-header{text-align:center;color:#245d54;margin:5px auto 22px;max-width:640px}
+.vqc-adventure .vqc-forest-header>span{font-size:45px}
+.vqc-adventure .vqc-forest-header h2{font-size:clamp(24px,3vw,32px);color:#227457;margin:7px 0}
+.vqc-adventure .vqc-forest-header p{line-height:1.6;font-size:15px;color:#527369}
+.vqc-adventure #vqcForestProgress{display:inline-block;background:#d8f2dc;color:#286f49;border-radius:99px;padding:9px 18px;margin-top:7px}
+.vqc-adventure .vqc-forest-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.vqc-adventure .vqc-forest-card{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:9px;min-height:160px;border:2px solid #b3dbbb;border-radius:18px;background:linear-gradient(160deg,#fff,#e5f9e5);box-shadow:0 5px 0 #9bcda4;cursor:pointer;color:#27664d;padding:15px;font:inherit;transition:transform .15s}
+.vqc-adventure .vqc-forest-card:hover{transform:translateY(-4px);background:#f4fff3}
+.vqc-adventure .vqc-forest-card.is-done{background:linear-gradient(160deg,#fff7d6,#e0f8da);border-color:#e7d389}
+.vqc-adventure .vqc-forest-card .vqc-forest-icon{font-size:44px;color:#214c4b}
+.vqc-adventure .vqc-forest-card strong{font-size:17px}
+.vqc-adventure .vqc-forest-card small{font-size:12px;color:#55786b}
+.vqc-adventure #vqcForestGameTitle{align-self:center;font-size:18px;color:#257359}
+.vqc-adventure .vqc-forest-board-mount{width:min(100%,680px);margin:14px auto;min-width:0}
+.vqc-adventure .vqc-forest-board-mount section.center{display:block!important;width:100%;max-width:100%;min-width:0;margin:0;padding:0}
+.vqc-adventure .vqc-forest-board-mount .board-shell{box-sizing:border-box;width:100%;max-width:650px;margin:0 auto;padding:clamp(5px,1vw,13px)}
+.vqc-adventure .vqc-forest-board-mount .board{box-sizing:border-box;width:100%;height:auto;aspect-ratio:1;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr))}
+.vqc-adventure .vqc-forest-board-mount .square{min-width:0;min-height:0;aspect-ratio:1}
+.vqc-adventure .vqc-forest-board-mount .piece img,.vqc-adventure .vqc-forest-board-mount .piece svg{max-width:88%;max-height:88%;object-fit:contain}
+.vqc-adventure .vqc-forest-board-mount .board-toolbar{display:none!important}
+@media(max-width:650px){.vqc-adventure .vqc-forest-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.vqc-adventure .vqc-forest-card{min-height:135px;padding:10px}.vqc-adventure .vqc-forest-card .vqc-forest-icon{font-size:35px}}
