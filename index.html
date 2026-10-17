@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=challenge-delegated-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=challenge-click-target-20261017">
 
 
 
@@ -880,7 +880,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
   }
  }
  document.addEventListener('click',function(event){
-  const el=event.target.closest('[id]');
+  const el=event.target.closest('.lesson[id]');
   if(!el||!targetMap[el.id])return;
   event.preventDefault();event.stopPropagation();
   vqcChallengeLaunch(el.id,0);
