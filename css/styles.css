@@ -2064,3 +2064,51 @@ button{
 #accountOverlay:has(#accountLoggedArea[style*="block"]) .vqc-login-layout{display:block;max-width:1000px;min-height:auto;margin:auto}
 #accountOverlay:has(#accountLoggedArea[style*="block"]) .account-modal{min-height:auto;border-radius:20px;padding:25px;box-shadow:0 15px 60px #102c5580}
 @media(max-width:850px){#accountOverlay .vqc-login-layout{grid-template-columns:1fr}#accountOverlay .vqc-login-scene{min-height:260px}#accountOverlay .vqc-login-brand{top:12px;left:5%;font-size:28px}#accountOverlay .vqc-login-brand-crown{font-size:27px}#accountOverlay .vqc-login-castle{font-size:170px;right:4%;top:5%}#accountOverlay .vqc-login-children{font-size:100px;left:38%;bottom:0}#accountOverlay .vqc-login-board{height:20%;bottom:-18%}#accountOverlay .vqc-login-features,#accountOverlay .vqc-login-flag{display:none}#accountOverlay .account-modal{min-height:auto;padding:22px 7vw 38px}#accountOverlay .vqc-login-formhead{margin-bottom:15px}#accountOverlay .vqc-login-formhead h2{font-size:30px}#accountOverlay .vqc-login-mini-crown{font-size:32px}}
+
+
+/* ĐẢO KỲ THỦ – island adventure home + polished responsive login (2026-10-17) */
+body.vqc-mode-home,body.vqc-mode-world{background:linear-gradient(180deg,#70bdfb 0%,#c6eeff 42%,#eaf9ff 100%);min-height:100vh}
+.vqc-mode-home .vqc-entry,.vqc-mode-world .vqc-entry{position:relative;isolation:isolate;overflow:hidden;width:min(1170px,calc(100% - 36px));margin:32px auto 42px;padding:40px clamp(22px,4vw,55px) 30px;background:linear-gradient(155deg,#ffffffed,#f0f9ffed 56%,#fff9e8ed);border:3px solid #ffffffd9;border-radius:34px;box-shadow:0 20px 55px #175c9e35,0 6px 0 #b5dff2}
+.vqc-entry:before{content:"";position:absolute;inset:0 0 auto;height:195px;z-index:-1;pointer-events:none;background:radial-gradient(circle at 13% 12%,#fff9 0 32px,transparent 35px),radial-gradient(circle at 83% 0%,#fff9 0 60px,transparent 63px),linear-gradient(180deg,#d6f3ffbd,transparent)}
+.vqc-entry-head{margin:0 auto 33px}
+.vqc-entry-head h1{font-size:clamp(36px,5vw,59px);letter-spacing:-1px;color:#2164bc;text-shadow:0 3px 0 #fff,0 5px 12px #286dc72e;font-weight:900}
+.vqc-entry-head p{font-size:17px;color:#4e6888}
+.vqc-entry-symbol{height:88px;width:88px;border-radius:25px;background:linear-gradient(145deg,#1e88fa,#1554d4);box-shadow:0 7px 0 #123c9e,0 14px 28px #246ac959;border:3px solid #fff}
+.vqc-entry-grid{gap:24px}
+.vqc-entry-card{position:relative;overflow:hidden;padding:28px 26px 25px;border:2px solid #d5eaff;border-radius:25px;background:linear-gradient(155deg,#fff,#f7fbff);box-shadow:0 9px 0 #c6e0ee,0 16px 22px #225b8030;transition:transform .2s,box-shadow .2s}
+.vqc-entry-card:hover{transform:translateY(-4px);box-shadow:0 13px 0 #c6e0ee,0 21px 30px #225b8038}
+.vqc-entry-card:nth-child(2){background:linear-gradient(155deg,#fff,#f7fff9);border-color:#d0f1d9;box-shadow:0 9px 0 #c3e4d0,0 16px 22px #225b8030}
+.vqc-entry-emoji{font-size:54px;filter:drop-shadow(0 5px 3px #254c6a2f)}
+.vqc-entry-card h2{font-size:clamp(23px,2.4vw,30px);color:#163f88;font-weight:850}
+.vqc-entry-card p{font-size:15px;color:#506585}
+.vqc-entry-caption{color:#32649a}
+.vqc-entry-card .btn{font-size:16px;font-weight:800;border-radius:15px;min-height:57px;box-shadow:0 5px 0 #1f68b2;transition:filter .15s,transform .15s}
+.vqc-entry-card .btn:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.vqc-entry-card:nth-child(2) .btn{box-shadow:0 5px 0 #39936a}
+.vqc-entry-note{margin-top:31px;color:#56738e;line-height:1.6}
+.vqc-world-grid article{border:2px solid #dceefb;border-radius:20px;box-shadow:0 5px 0 #d5e9ef;background:linear-gradient(140deg,#fff,#f0faff)}
+.vqc-world-grid article:first-child{border-color:#a6dfbd;background:linear-gradient(135deg,#fafffa,#eaffed)}
+#accountOverlay.account-overlay{background:linear-gradient(135deg,#64b6ff,#b9e4fd)}
+#accountOverlay .vqc-login-layout{grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr)}
+#accountOverlay .vqc-login-scene{background:radial-gradient(circle at 65% 18%,#fdfcffac,transparent 29%),linear-gradient(160deg,#5db2ff,#9bddff 55%,#7aca95)}
+#accountOverlay .vqc-login-brand{top:6%;left:8%;font-size:clamp(34px,4.2vw,66px);line-height:1.1;white-space:nowrap;transform:rotate(-3deg);color:#ffc449;-webkit-text-stroke:2px #88400c;text-shadow:0 5px #b46511,3px 9px #20488b,0 13px 17px #17365b9e}
+#accountOverlay .vqc-login-brand strong{display:block}
+#accountOverlay .vqc-login-brand strong span{color:#f8fcff;-webkit-text-stroke:2px #164b9b;text-shadow:0 4px #3582da,0 8px #173b81}
+#accountOverlay .vqc-login-brand-crown{font-size:57px}
+#accountOverlay .vqc-login-features>div{border-radius:16px;backdrop-filter:blur(12px)}
+#accountOverlay .account-modal{margin:clamp(16px,3vw,42px);min-height:calc(100vh - clamp(32px,6vw,84px));border-radius:30px;background:linear-gradient(145deg,#fff,#fbfdff);box-shadow:0 17px 55px #24549a42;padding:clamp(25px,3.3vw,55px)}
+#accountOverlay .vqc-login-formhead h2{font-weight:900}
+#accountOverlay .vqc-login-roles button,#accountOverlay .vqc-login-input,#accountOverlay .vqc-login-submit{border-radius:14px}
+#accountOverlay .vqc-login-submit{box-shadow:0 5px 0 #0a43ac,0 9px 18px #1662dc25}
+#accountOverlay .vqc-login-submit:active{transform:translateY(2px);box-shadow:0 3px 0 #0a43ac}
+@media(max-width:850px){
+#accountOverlay .vqc-login-layout{grid-template-columns:minmax(0,1fr)}
+#accountOverlay .vqc-login-scene{min-height:270px}
+#accountOverlay .vqc-login-brand{top:12px;left:5%;font-size:clamp(29px,5vw,39px)}
+#accountOverlay .vqc-login-brand-crown{font-size:31px}
+#accountOverlay .account-modal{min-height:auto;margin:0;border-radius:25px 25px 0 0;padding:25px 6vw 35px}
+.vqc-mode-home .vqc-entry,.vqc-mode-world .vqc-entry{padding:25px 17px;width:min(100% - 24px,650px)}
+.vqc-entry-grid{grid-template-columns:1fr}
+.vqc-entry-card p,.vqc-entry-caption{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){.vqc-entry-card,.vqc-entry-card .btn{transition:none}}
