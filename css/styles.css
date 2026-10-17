@@ -2257,3 +2257,8 @@ body:has(#accountOverlay:not(.hidden)) > footer{display:none!important}
 /* Challenge dialogs must be above all classroom and login layers. */
 body.vqc-mode-class .escape-overlay.open,body.vqc-mode-class .checkone-overlay.open,body.vqc-mode-class .pawn-game-overlay.open,body.vqc-mode-class .defense-overlay.open,body.vqc-mode-class .freecapture-overlay.open,body.vqc-mode-class .capture-overlay.open{display:flex!important;position:fixed!important;inset:0!important;z-index:12000!important;visibility:visible!important;pointer-events:auto!important}
 body.vqc-mode-class .lesson[role="button"]{pointer-events:auto;position:relative;cursor:pointer}
+
+/* Dedicated challenge click debugging and overlays */
+#vqcChallengeError{position:fixed;top:18px;left:50%;transform:translateX(-50%);max-width:min(90vw,650px);z-index:15000;border:2px solid #f2c15d;background:#fff5e2;color:#713d00;border-radius:14px;padding:16px 20px;font-size:15px;font-weight:700;box-shadow:0 9px 28px #142c4e50;text-align:center}
+#vqcChallengeError[hidden]{display:none}
+#escapeOverlay.open,#checkOneOverlay.open,#pawnGameOverlay.open,#defenseOverlay.open,#freeCaptureOverlay.open,#captureOverlay.open{z-index:12050!important;visibility:visible!important;display:flex!important;pointer-events:auto!important}
