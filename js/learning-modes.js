@@ -16,6 +16,7 @@
  }
  window.vqcGoHome=function(){
   if(roomRef){vqcNotify('Hãy rời phòng trước khi quay về trang chủ.','warning');return;}
+  if(typeof window.vqcAdventureLeaveWorld==='function')window.vqcAdventureLeaveWorld();
   mode('home');
  };
  window.vqcOpenWorld=function(){
