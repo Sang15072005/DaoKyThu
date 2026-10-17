@@ -141,7 +141,10 @@ function captureClick(sq){
  captureWhiteSquare=sq;captureSelected=null;captureReply=null;
  const remainingBlack=Object.values(capturePosition).filter(p=>p===p.toLowerCase()).length;
  if(remainingBlack===0){
-  captureSolved=true;captureDone.add(captureIndex);accountSaveProgress('capture_'+captureIndex,true,1);
+  captureSolved=true;captureDone.add(captureIndex);
+  // Keep adventure progress separate from classroom learning progress.
+  if(!window.vqcIsAdventureCaptureActive?.('capture'))accountSaveProgress('capture_'+captureIndex,true,1);
+  window.vqcAdventureCaptureCompleted?.('capture',captureIndex);
   const fb=document.getElementById('captureFeedback');fb.hidden=false;fb.className='capture-feedback good';fb.textContent='✅ Chính xác! Hoàn thành!';
   document.getElementById('captureInstruction').textContent='Xuất sắc! Em đã ăn hết tất cả quân đen. Chọn Bài tiếp để luyện thêm.';
   captureRender();vqcPublishCapture();return;

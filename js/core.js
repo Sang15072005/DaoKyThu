@@ -1340,7 +1340,7 @@ function vqcCloseOtherViews(target){
 function vqcBroadcastView(view,index=0){
   if(vqcNavApplying)return;
   if(!roomRef){
-    if(role==='teacher'&&view!=='board')vqcNotify('Chưa kết nối phòng học. Hãy tạo hoặc vào phòng để bài học hiện trên máy học sinh.','warning');
+    if(role==='teacher'&&view!=='board'&&window.vqcCurrentLearningMode!=='world')vqcNotify('Chưa kết nối phòng học. Hãy tạo hoặc vào phòng để bài học hiện trên máy học sinh.','warning');
     return;
   }
   // Giáo viên điều khiển trang học chung; học sinh nhận thay đổi qua Firebase.

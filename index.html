@@ -16,7 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=remove-wizard-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=canyon-3-20261018">
 
 
 
@@ -245,6 +245,39 @@
    <div id="vqcForestBoardMount" class="vqc-forest-board-mount"></div>
   </div>
  </div>
+ <section id="vqcCanyonScreen" class="vqc-canyon-screen" aria-label="Ải 3 Hẻm Núi Chiến Thuật" hidden>
+  <header class="vqc-canyon-heading">
+   <span class="vqc-canyon-heading__icon" aria-hidden="true">⛰️</span>
+   <span class="vqc-canyon-heading__chapter">ẢI 3 · HÀNH TRÌNH CHIẾN THUẬT</span>
+   <h2>Hẻm Núi Chiến Thuật</h2>
+   <p>Luyện tập ăn quân trên bàn cờ. Hãy chọn một trong những bài tập đã có trong lớp học để chinh phục hẻm núi!</p>
+   <div class="vqc-canyon-summary" aria-label="Tiến độ ải 3">
+    <span>🏆 <strong id="vqcCanyonDoneCount">0/13</strong> bài đã hoàn thành</span>
+    <span>⭐ <strong id="vqcCanyonStarCount">0</strong>/39 sao</span>
+   </div>
+   <div class="vqc-canyon-meter" aria-hidden="true"><span id="vqcCanyonMeterFill"></span></div>
+  </header>
+  <div class="vqc-canyon-categories">
+   <article class="vqc-canyon-category">
+    <div class="vqc-canyon-category__header">
+     <span class="vqc-canyon-category__symbol" aria-hidden="true">🏹</span>
+     <div><h3>Ăn quân</h3><p>5 bài tập gốc: ăn hết các quân đen, quan sát nguy cơ bị ăn lại.</p></div>
+     <span class="vqc-canyon-category__counter" id="vqcCanyonCaptureCount">0/5</span>
+    </div>
+    <div class="vqc-canyon-tasks" id="vqcCanyonCaptureTasks" aria-label="5 bài tập Ăn quân"></div>
+   </article>
+   <article class="vqc-canyon-category">
+    <div class="vqc-canyon-category__header">
+     <span class="vqc-canyon-category__symbol" aria-hidden="true">🎯</span>
+     <div><h3>Ăn quân không được bảo vệ</h3><p>8 bài tập gốc (Hình 43–50): chọn nước ăn an toàn, tránh bị ăn lại.</p></div>
+     <span class="vqc-canyon-category__counter" id="vqcCanyonFreeCount">0/8</span>
+    </div>
+    <div class="vqc-canyon-tasks" id="vqcCanyonFreeCaptureTasks" aria-label="8 bài tập Ăn quân không được bảo vệ"></div>
+   </article>
+  </div>
+  <p class="vqc-canyon-feedback" id="vqcCanyonMessage" role="status">Mỗi bài giải đúng lần đầu sẽ được nhận 3 sao. Em có thể luyện lại bao nhiêu lần tùy thích!</p>
+  <div class="vqc-adventure-actions"><button class="btn btn-soft" type="button" onclick="vqcAdventureCanyonBack()">← Quay lại bản đồ</button></div>
+ </section>
  <p id="vqcAdventureSave" role="status"></p>
  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
 </section>
@@ -930,7 +963,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 
-  <script src="./js/core.js?v=forest-star-20261017"></script>
+  <script src="./js/core.js?v=canyon-3-20261018"></script>
 
 
 
@@ -949,7 +982,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
  <div class="capture-layout"><div id="captureBoard" class="capture-board"></div><div class="capture-side"><h2>🏹 Ăn quân</h2><p id="captureInstruction">Hãy ăn quân đen!</p><div id="captureFeedback" class="capture-feedback" hidden></div><div class="capture-stars" id="captureStars"></div><div class="capture-controls"><button onclick="captureOpen(captureIndex-1)">← Bài trước</button><button onclick="captureReset()">↻ Thử lại</button><button onclick="captureOpen(captureIndex+1)">Bài tiếp →</button></div></div></div>
  </div>
 </div>
-<script src="./js/capture.js?v=challenge-delegated-20261017"></script>
+<script src="./js/capture.js?v=canyon-3-20261018"></script>
 
 <script src="./js/exercise-sync.js"></script>
 
@@ -969,7 +1002,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <div class="freecapture-overlay" id="freeCaptureOverlay" role="dialog" aria-modal="true" aria-label="Ăn quân không được bảo vệ"><div class="freecapture-dialog">
 <div class="mate-top"><strong>🎯 Ăn quân không được bảo vệ — Hình 43–50</strong><button class="btn btn-soft" onclick="freeCaptureClose()">✕ Đóng</button></div>
 <div class="freecapture-layout"><div class="freecapture-board" id="freeCaptureBoard"></div><div class="freecapture-side"><h2>🎯 Tìm quân có thể ăn</h2><div id="freeCaptureInstruction" class="freecapture-info"></div><div id="freeCaptureFeedback" class="freecapture-feedback" hidden></div><div id="freeCaptureNumbers" class="freecapture-numbers"></div><div class="freecapture-controls"><button onclick="freeCaptureOpen(freeCaptureIndex-1)">← Bài trước</button><button onclick="freeCaptureOpen(freeCaptureIndex+1)">Bài tiếp →</button><button onclick="freeCaptureReset()">↻ Thử lại</button><button onclick="freeCaptureShowHint()">💡 Gợi ý</button></div></div></div></div></div>
-<script src="./js/free-capture.js?v=challenge-delegated-20261017"></script>
+<script src="./js/free-capture.js?v=canyon-3-20261018"></script>
 
 <div id="pawnGameOverlay" class="pawn-game-overlay" role="dialog" aria-modal="true" aria-label="Trò chơi Tốt và Mã">
  <div class="pawn-game-dialog"><div class="pawn-game-top"><h2>♟️ Trò chơi Tốt và Mã</h2><button onclick="pawnGameClose()">✕ Đóng</button></div>
@@ -982,7 +1015,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=remove-wizard-20261017"></script>
+<script src="./js/adventure.js?v=canyon-3-20261018"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){

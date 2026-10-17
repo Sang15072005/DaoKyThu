@@ -43,7 +43,9 @@ function freeCaptureClick(sq){if(freeCaptureSolved||freeCaptureFailed||freeCaptu
  const safe=freeCaptureSafeCapture(from,sq);freeCapturePosition[sq]=moving;delete freeCapturePosition[from];
  if(safe){
   freeCaptureSolved=true;freeCaptureDone.add(freeCaptureIndex);
-  accountSaveProgress('freecapture_'+freeCaptureIndex,true,1);
+  // Keep adventure progress separate from classroom learning progress.
+  if(!window.vqcIsAdventureCaptureActive?.('freecapture'))accountSaveProgress('freecapture_'+freeCaptureIndex,true,1);
+  window.vqcAdventureCaptureCompleted?.('freecapture',freeCaptureIndex);
   freeCaptureFeedback('✅ Chính xác! '+from+' → '+sq+': Em đã ăn quân không được bảo vệ.','good');
   freeCaptureRender();vqcPublishFreeCapture();return;
  }

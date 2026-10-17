@@ -29,15 +29,17 @@ service cloud.firestore {
   match /adventureProgress/{uid} {
    allow read: if active() && request.auth.uid==uid;
    allow create,update: if student() && request.auth.uid==uid
-     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','stars','updatedAt'])
+     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','stars','updatedAt'])
      && request.resource.data.studentId==uid
      && request.resource.data.done is list
      && request.resource.data.done.size()<=10
      && request.resource.data.forestDone is list
      && request.resource.data.forestDone.size()<=6
+     && request.resource.data.canyonDone is list
+     && request.resource.data.canyonDone.size()<=13
      && request.resource.data.stars is int
      && request.resource.data.stars>=0
-     && request.resource.data.stars<=66;
+     && request.resource.data.stars<=105;
    allow delete: if false;
   }
   // Existing live classroom: restrict authenticated access. For production,
