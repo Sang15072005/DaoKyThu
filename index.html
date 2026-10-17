@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=learning-modes-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=royal-login-20261017">
 
 
 
@@ -740,15 +740,45 @@
  <small>Giáo viên chọn màu trước khi bắt đầu. Học sinh tự động nhận màu còn lại. Chỉ được đi đúng lượt.</small>
  </div></div></div>
 </div>
-<div id="accountOverlay" class="account-overlay"><div class="account-modal">
-<h2 style="margin-top:0;color:#3479b4">♞ Vương Quốc Cờ Vua</h2>
-<div id="accountLoginArea"><p class="account-note">Tài khoản và mật khẩu chỉ được cấp bởi giáo viên.</p>
-<label>Tài khoản</label><input id="accountLoginId" autocomplete="username" placeholder="Tài khoản">
-<label>Mật khẩu</label><input id="accountLoginPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu">
-<button class="btn btn-blue" onclick="accountSignIn()">Đăng nhập</button><p id="accountLoginError" class="account-error"></p></div>
+<div id="accountOverlay" class="account-overlay" role="dialog" aria-modal="true" aria-label="Đăng nhập Vương Quốc Cờ Vua">
+  <div class="vqc-login-layout">
+    <div class="vqc-login-scene" aria-hidden="true">
+      <div class="vqc-login-sun"></div><div class="vqc-login-cloud cloud-a"></div><div class="vqc-login-cloud cloud-b"></div>
+      <div class="vqc-login-brand"><span class="vqc-login-brand-crown">👑</span><strong>VƯƠNG QUỐC<br><span>CỜ VUA</span></strong></div>
+      <div class="vqc-login-castle"><span>🏰</span></div>
+      <div class="vqc-login-flag">♞</div>
+      <div class="vqc-login-children"><span class="vqc-login-boy">🤴</span><span class="vqc-login-girl">👸</span></div>
+      <div class="vqc-login-board"><div class="vqc-login-pieces">♜　♞　♚　♟<br>♙　♔　♖　♘</div></div>
+      <div class="vqc-login-features">
+        <div><b>🎓</b><span><strong>Học qua trò chơi</strong><small>Bài học sinh động, dễ hiểu</small></span></div>
+        <div><b>🏆</b><span><strong>Luyện tập theo cấp độ</strong><small>Từ cơ bản đến nâng cao</small></span></div>
+        <div><b>👥</b><span><strong>Giáo viên theo dõi</strong><small>Đồng bộ thời gian thực</small></span></div>
+      </div>
+    </div>
+    <div class="account-modal">
+      <div class="vqc-login-formhead"><div class="vqc-login-mini-crown">👑</div><h2>Đăng nhập</h2><p>Vào Vương Quốc Cờ Vua</p></div>
+      <div id="accountLoginArea">
+        <div class="vqc-login-roles" aria-label="Loại tài khoản">
+          <button type="button" class="selected" id="vqcLoginStudent" onclick="vqcSelectLoginRole('student')">🎓 Học sinh</button>
+          <button type="button" id="vqcLoginTeacher" onclick="vqcSelectLoginRole('teacher')">👩‍🏫 Giáo viên</button>
+        </div>
+        <label class="vqc-login-label" for="accountLoginId">Tên đăng nhập</label>
+        <div class="vqc-login-input"><span>👤</span><input id="accountLoginId" autocomplete="username" placeholder="Tên đăng nhập"></div>
+        <label class="vqc-login-label" for="accountLoginPassword">Mật khẩu</label>
+        <div class="vqc-login-input"><span>🔒</span><input id="accountLoginPassword" type="password" autocomplete="current-password" placeholder="Mật khẩu" onkeydown="if(event.key==='Enter')accountSignIn()"><button type="button" class="vqc-login-eye" onclick="vqcToggleLoginPassword()" aria-label="Hiện hoặc ẩn mật khẩu">👁</button></div>
+        <button type="button" class="vqc-login-submit" onclick="accountSignIn()">➜ &nbsp; Đăng nhập</button>
+        <p id="accountLoginError" class="account-error" aria-live="polite"></p>
+        <div class="vqc-login-divider"><span>♟</span></div>
+        <p class="vqc-login-help">Chưa có tài khoản hoặc quên mật khẩu?<br><strong>Liên hệ giáo viên để được hỗ trợ.</strong></p>
+        <div class="vqc-login-welcome"><span>♖</span><p>Tham gia ngay để khám phá thế giới cờ vua thú vị!</p></div>
+      </div>
 <div id="accountLoggedArea" style="display:none"><div class="account-tabs"><button onclick="accountShowTab('profile')">Hồ sơ</button><button id="accountManageTab" onclick="accountShowTab('manage')">Quản lý học viên</button><button id="accountClassTab" onclick="accountShowTab('classes')">Lớp & giao bài</button><button onclick="accountShowTab('progress')">Tiến độ</button></div>
 <div id="accountTabBody"></div><p id="accountActionMessage" class="account-note"></p><button class="btn btn-soft" onclick="hideAccountPanel()">← Về bàn cờ</button></div>
 </div></div>
+<script>
+function vqcSelectLoginRole(role){document.getElementById('vqcLoginStudent').classList.toggle('selected',role==='student');document.getElementById('vqcLoginTeacher').classList.toggle('selected',role==='teacher');}
+function vqcToggleLoginPassword(){const el=document.getElementById('accountLoginPassword');el.type=el.type==='password'?'text':'password';}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
