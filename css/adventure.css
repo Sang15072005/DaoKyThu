@@ -421,3 +421,176 @@
  .vqc-adventure .vqc-level-node{transition:none!important}
  .vqc-adventure .vqc-level-node.is-playing .vqc-level-node__medal::after{animation:none;opacity:.75;transform:none}
 }
+
+
+/* ===============================================
+   Custom illustrated map background (user artwork).
+   Asset contains its own landmarks, road and labels;
+   keep interactive markers small and align hotspots
+   to the drawn stepping-stones. 
+   =============================================== */
+.vqc-adventure .vqc-entry-head{
+ display:none; /* The artwork already contains the game title. */
+}
+.vqc-adventure .vqc-adventure-map.vqc-level-map{
+ box-sizing:border-box;
+ width:100%;
+ min-width:900px;
+ height:auto;
+ min-height:0;
+ aspect-ratio:1024 / 572;
+ margin:0;
+ padding:0;
+ border:4px solid #cfe6ef;
+ border-radius:23px;
+ overflow:hidden;
+ background:#28bddd url("../assets/map-background.jpg") center center / 100% 100% no-repeat;
+}
+.vqc-adventure .vqc-level-map::before{
+ content:none!important;
+ display:none!important;
+}
+.vqc-adventure .vqc-level-map__island,
+.vqc-adventure .vqc-level-path{
+ display:none; /* These shapes and paths are painted into the new image. */
+}
+/* Only overlay compact game markers, not duplicate names already painted in JPG. */
+.vqc-adventure .vqc-level-node{
+ box-sizing:border-box;
+ display:grid;
+ place-items:center;
+ width:58px;
+ height:58px;
+ min-height:58px;
+ padding:0;
+ gap:0;
+ border:3px solid #fff2b1;
+ border-radius:50%;
+ background:#effff2d9;
+ color:#286454;
+ box-shadow:0 0 0 5px #59b67c6b,0 4px 12px #2c51477a;
+ transform:translate(-50%,-50%);
+}
+.vqc-adventure .vqc-level-node:hover:not(:disabled),
+.vqc-adventure .vqc-level-node:focus-visible{
+ scale:1.08;
+ box-shadow:0 0 0 7px #fbe77dc7,0 5px 15px #2c51479e;
+}
+.vqc-adventure .vqc-level-node__medal{
+ box-sizing:border-box;
+ display:grid;
+ place-items:center;
+ width:49px;
+ height:49px;
+ margin:0;
+ border:0;
+ border-radius:50%;
+ background:#e9fff1a8;
+ box-shadow:none;
+ font-size:26px;
+}
+.vqc-adventure .vqc-level-node--forest .vqc-level-node__medal{
+ border:0;
+ background:#d8faddc9;
+}
+.vqc-adventure .vqc-level-node__name,
+.vqc-adventure .vqc-level-node__status{
+ position:absolute!important;
+ width:1px!important;
+ height:1px!important;
+ padding:0!important;
+ margin:-1px!important;
+ overflow:hidden!important;
+ white-space:nowrap!important;
+ border:0!important;
+ clip-path:inset(50%)!important;
+}
+/* Locked stops are recognisable, but cannot be clicked. */
+.vqc-adventure .vqc-level-node.is-locked,
+.vqc-adventure .vqc-level-node:disabled{
+ filter:grayscale(.95);
+ opacity:.86;
+ background:#e9efedf2;
+ border-color:#e8edf0;
+ box-shadow:0 0 0 4px #8ca3a48c,0 3px 9px #314b5180;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-level-node.is-selected{
+ outline:3px solid #fff2ad;
+ outline-offset:4px;
+}
+.vqc-adventure .vqc-level-node.is-complete{
+ border-color:#ffda6d;
+ background:#fff5d7e8;
+ box-shadow:0 0 0 5px #ffd36d9e,0 4px 12px #73542a7a;
+}
+.vqc-adventure .vqc-level-avatar{
+ width:48px;
+ height:48px;
+ font-size:26px;
+ z-index:5;
+ border-width:2px;
+ background:#fff8dedc;
+ box-shadow:0 4px 13px #28526ba9;
+}
+/* Replace fixed text burned into artwork with values from each student. */
+.vqc-adventure .vqc-map-hud{
+ box-sizing:border-box;
+ position:absolute;
+ z-index:6;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#fff8e6;
+ border:2px solid #dbb785;
+ background:linear-gradient(150deg,#9c6545,#5e3b2e);
+ text-shadow:0 1px 2px #2b211d;
+ box-shadow:0 3px 0 #463020,0 4px 12px #2d4b5866;
+ border-radius:12px;
+ font-weight:900;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-map-hud--left{
+ top:1%;
+ left:0;
+ width:130px;
+ height:80px;
+ flex-direction:column;
+ gap:5px;
+ font-size:17px;
+}
+.vqc-adventure .vqc-map-hud__star{
+ white-space:nowrap;
+}
+.vqc-adventure .vqc-map-hud__progress{
+ display:block;
+ width:83%;
+ height:12px;
+ border:2px solid #e4c99e;
+ border-radius:999px;
+ overflow:hidden;
+ background:#65463a;
+}
+.vqc-adventure .vqc-map-hud__progress>span{
+ display:block;
+ width:0;
+ height:100%;
+ background:linear-gradient(90deg,#f9739b,#ffcc75);
+ transition:width .25s ease-out;
+}
+.vqc-adventure .vqc-map-hud--right{
+ top:1%;
+ right:0;
+ width:147px;
+ height:44px;
+ font-size:15px;
+ white-space:nowrap;
+}
+.vqc-adventure .vqc-level-hint{
+ margin-top:12px;
+}
+@media(max-width:800px){
+ .vqc-adventure .vqc-adventure-map.vqc-level-map{min-width:900px}
+ .vqc-adventure .vqc-level-node{width:58px;height:58px;min-height:58px}
+ .vqc-adventure .vqc-level-node__medal{width:49px;height:49px;font-size:26px}
+}

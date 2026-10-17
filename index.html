@@ -16,7 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=level-map-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=map-background-20261017">
 
 
 
@@ -143,6 +143,13 @@
  <div id="vqcAdventureMap">
   <div class="vqc-level-scroll" id="vqcLevelScroll" tabindex="0" aria-label="Bản đồ 7 vùng đất. Trên điện thoại, vuốt ngang để khám phá">
    <div class="vqc-adventure-map vqc-level-map" id="vqcLevelMap">
+    <div class="vqc-map-hud vqc-map-hud--left" aria-label="Thành tích hiện tại">
+      <div class="vqc-map-hud__star">⭐ <strong id="vqcMapHudStars">0</strong> sao</div>
+      <div class="vqc-map-hud__progress" role="presentation"><span id="vqcMapHudProgress"></span></div>
+    </div>
+    <div class="vqc-map-hud vqc-map-hud--right" aria-label="Số màn đã hoàn thành">
+      🏆 <strong id="vqcMapHudLessons">0/10 màn</strong>
+    </div>
     <div class="vqc-level-map__island vqc-level-map__island--a" aria-hidden="true"></div>
     <div class="vqc-level-map__island vqc-level-map__island--b" aria-hidden="true"></div>
     <div class="vqc-level-map__island vqc-level-map__island--c" aria-hidden="true"></div>
@@ -934,7 +941,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=level-map-20261017"></script>
+<script src="./js/adventure.js?v=map-background-20261017"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){

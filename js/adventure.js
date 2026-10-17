@@ -63,9 +63,16 @@ function saveProgress(){
 function setSaveStatus(msg){if($('vqcAdventureSave'))$('vqcAdventureSave').textContent=msg;}
 function unlocked(n){return n===0||progress.done.includes(n-1);}
 // Coordinates are percentages of the same map surface as the SVG path.
+// Hotspots aligned to the landmarks and circular stepping stones drawn
+// directly on assets/map-background.jpg (1024 × 572).
 const MAP_STOPS=[
- {x:23,y:89},{x:69,y:76},{x:36,y:64},{x:75,y:51},
- {x:26,y:39},{x:68,y:26},{x:41,y:12}
+ {x:19.8,y:77.5}, // 1 — Bến Cảng: đá cạnh cầu cảng
+ {x:27.8,y:38.5}, // 2 — Rừng Sao: đá cạnh rừng
+ {x:44.2,y:58.0}, // 3 — Hẻm Núi: đá trước dãy núi
+ {x:58.6,y:75.4}, // 4 — Hang Động: đá phía trước hang
+ {x:74.2,y:75.0}, // 5 — Núi Lửa: bệ xanh phía trước núi
+ {x:59.5,y:42.5}, // 6 — Lâu Đài Trên Mây: bệ dưới lâu đài
+ {x:78.5,y:37.5}  // 7 — Thành Trì: bệ xanh dưới thành
 ];
 let selectedMapRegion=1;
 let avatarPlaced=false;
@@ -91,7 +98,7 @@ function moveMapAvatar(index,animate=true){
  const map=$('vqcLevelMap'),avatar=$('vqcLevelAvatar'),pos=MAP_STOPS[index];
  if(!map||!avatar||!pos||map.clientWidth===0||map.clientHeight===0)return;
  const x=map.clientWidth*pos.x/100-avatar.offsetWidth/2;
- const y=map.clientHeight*pos.y/100-avatar.offsetHeight-43;
+ const y=map.clientHeight*pos.y/100-avatar.offsetHeight-13;
  if(!animate||!avatarPlaced){
   avatar.style.transition='none';
   avatar.style.transform='translate3d('+x+'px,'+y+'px,0)';
@@ -202,6 +209,9 @@ function render(){
   nodes.appendChild(button);
  });
  $('vqcAdventureStars').textContent=String(progress.stars);
+ if($('vqcMapHudStars'))$('vqcMapHudStars').textContent=String(progress.stars);
+ if($('vqcMapHudLessons'))$('vqcMapHudLessons').textContent=progress.done.length+'/'+QUESTIONS.length+' màn';
+ if($('vqcMapHudProgress'))$('vqcMapHudProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
  if($('vqcForestProgress'))$('vqcForestProgress').textContent=progress.forestDone.length+'/'+FOREST_PIECES.length+' bài hoàn thành';
  renderForestCards();
  $('vqcAdventureCount').textContent=progress.done.length+'/'+QUESTIONS.length;
