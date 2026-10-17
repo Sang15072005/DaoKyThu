@@ -25,6 +25,19 @@ service cloud.firestore {
    allow update: if student() && resource.data.studentId==request.auth.uid && resource.data.teacherId==me().data.teacherId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed','score','updatedAt']) && request.resource.data.score is number && request.resource.data.score>=0 && request.resource.data.score<=6 && request.resource.data.completed is bool;
    allow delete: if false;
   }
+  // Individual island progress, never shared with classroom room state.
+  match /adventureProgress/{uid} {
+   allow read: if active() && request.auth.uid==uid;
+   allow create,update: if student() && request.auth.uid==uid
+     && request.resource.data.keys().hasOnly(['studentId','done','stars','updatedAt'])
+     && request.resource.data.studentId==uid
+     && request.resource.data.done is list
+     && request.resource.data.done.size()<=10
+     && request.resource.data.stars is int
+     && request.resource.data.stars>=0
+     && request.resource.data.stars<=30;
+   allow delete: if false;
+  }
   // Existing live classroom: restrict authenticated access. For production,
   // replace this with membership-aware rules before using real student data.
   match /rooms/{roomId} {
