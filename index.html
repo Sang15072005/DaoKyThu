@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=account-right-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
 <link rel="stylesheet" href="./css/adventure.css?v=forest-star-20261017">
 
 
@@ -30,54 +30,6 @@
 
 
 <body class="vqc-mode-home">
-
-
-
-<section id="vqcModeHome" class="vqc-entry" aria-label="Chọn chế độ học">
- <div class="vqc-entry-head"><div class="vqc-entry-symbol">♞</div><h1>Đảo Kỳ Thủ</h1><p>Mỗi nước cờ – Một hành trình khám phá!</p></div>
- <div class="vqc-entry-grid">
-  <article class="vqc-entry-card"><span class="vqc-entry-emoji">🏫</span><h2>Vào lớp</h2><p>Giáo viên và học sinh cùng học, xem và thao tác trên bàn cờ theo thời gian thực.</p><span class="vqc-entry-caption">Toàn bộ các bài tập, đối kháng và công cụ giảng dạy hiện tại</span><button class="btn btn-blue" onclick="vqcEnterClass()">Vào lớp học →</button>
-   <div id="vqcJoinArea" class="vqc-entry-join" hidden><label for="vqcJoinCode">Mã phòng giáo viên cung cấp</label><input id="vqcJoinCode" maxlength="8" placeholder="Nhập mã phòng"><button class="btn btn-green" onclick="vqcJoinFromLanding()">Kết nối với lớp</button></div>
-  </article>
-  <article class="vqc-entry-card"><span class="vqc-entry-emoji">🏰</span><h2>Khám phá các đảo</h2><p>Khám phá những hòn đảo kỳ thú, chinh phục thử thách và phát triển kỹ năng cờ vua theo hành trình riêng.</p><span class="vqc-entry-caption">Hành trình riêng • Những hòn đảo đang được phát triển</span><button class="btn btn-green" onclick="vqcOpenWorld()">Khám phá các đảo →</button></article>
- </div>
- <p class="vqc-entry-note">Hoạt động trong “Vào lớp” không cộng sao hoặc mở khóa vùng đất trong hành trình cá nhân.</p>
-</section>
-<section id="vqcModeWorld" class="vqc-entry vqc-world vqc-adventure" aria-hidden="true" aria-label="Hành trình khám phá Đảo Kỳ Thủ">
- <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
- <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
- <div id="vqcAdventureMap">
-  <div class="vqc-adventure-map"><div class="vqc-adventure-regions" id="vqcAdventureRegions"></div></div>
-  <p class="vqc-adventure-legend">⚓ Bến Cảng và 🌳 Rừng Sao đã mở • Các vùng đất còn lại đang được phát triển.</p>
- </div>
- <div id="vqcAdventurePlay" class="vqc-adventure-play" hidden>
-  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcAdventureBack()">← Bản đồ</button></div>
-  <div class="vqc-adventure-stages" id="vqcAdventureStages" aria-label="Chọn màn chơi"></div>
-  <div class="vqc-adventure-lesson"><div id="vqcAdventureBoard" class="vqc-adventure-board" aria-label="Bàn cờ minh họa"></div>
-   <div class="vqc-adventure-task"><h2 id="vqcAdventureStageTitle"></h2><p id="vqcAdventureQuestion"></p><div id="vqcAdventureAnswers" class="vqc-adventure-answers"></div><div id="vqcAdventureFeedback" class="vqc-adventure-feedback" role="status" hidden></div><button id="vqcAdventureNext" class="btn btn-green" onclick="vqcAdventureNext()" hidden>Tiếp tục khám phá →</button></div>
-  </div>
- </div>
- <div id="vqcForestScreen" class="vqc-forest-screen" hidden>
-  <div id="vqcForestSelect">
-   <div class="vqc-forest-header"><span>🌳</span><h2>Vùng 2 · Rừng Sao Bí Ẩn</h2><p>Ôn luyện 6 bài nhặt sao của em. Di chuyển đúng luật để thu thập đủ 6 ngôi sao ở mỗi bài!</p><strong id="vqcForestProgress">0/6 bài hoàn thành</strong></div>
-   <div id="vqcForestCards" class="vqc-forest-cards"></div>
-   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestBack()">← Trở về bản đồ</button></div>
-  </div>
-  <div id="vqcForestGame" hidden>
-   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestExit()">← Chọn quân cờ khác</button><strong id="vqcForestGameTitle">Rừng Sao</strong></div>
-   <div id="vqcForestBoardMount" class="vqc-forest-board-mount"></div>
-  </div>
- </div>
- <p id="vqcAdventureSave" role="status"></p>
- <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
-</section>
-<!-- ======================================================
-
-     HEADER
-
-======================================================= -->
-
-
 
 <header class="header">
 
@@ -171,6 +123,57 @@
 
 
 <button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
+
+
+
+
+<section id="vqcModeHome" class="vqc-entry" aria-label="Chọn chế độ học">
+ <div class="vqc-entry-head"><div class="vqc-entry-symbol">♞</div><h1>Đảo Kỳ Thủ</h1><p>Mỗi nước cờ – Một hành trình khám phá!</p></div>
+ <div class="vqc-entry-grid">
+  <article class="vqc-entry-card"><span class="vqc-entry-emoji">🏫</span><h2>Vào lớp</h2><p>Giáo viên và học sinh cùng học, xem và thao tác trên bàn cờ theo thời gian thực.</p><span class="vqc-entry-caption">Toàn bộ các bài tập, đối kháng và công cụ giảng dạy hiện tại</span><button class="btn btn-blue" onclick="vqcEnterClass()">Vào lớp học →</button>
+   <div id="vqcJoinArea" class="vqc-entry-join" hidden><label for="vqcJoinCode">Mã phòng giáo viên cung cấp</label><input id="vqcJoinCode" maxlength="8" placeholder="Nhập mã phòng"><button class="btn btn-green" onclick="vqcJoinFromLanding()">Kết nối với lớp</button></div>
+  </article>
+  <article class="vqc-entry-card"><span class="vqc-entry-emoji">🏰</span><h2>Khám phá các đảo</h2><p>Khám phá những hòn đảo kỳ thú, chinh phục thử thách và phát triển kỹ năng cờ vua theo hành trình riêng.</p><span class="vqc-entry-caption">Hành trình riêng • Những hòn đảo đang được phát triển</span><button class="btn btn-green" onclick="vqcOpenWorld()">Khám phá các đảo →</button></article>
+ </div>
+ <p class="vqc-entry-note">Hoạt động trong “Vào lớp” không cộng sao hoặc mở khóa vùng đất trong hành trình cá nhân.</p>
+</section>
+<section id="vqcModeWorld" class="vqc-entry vqc-world vqc-adventure" aria-hidden="true" aria-label="Hành trình khám phá Đảo Kỳ Thủ">
+ <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
+ <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
+ <div id="vqcAdventureMap">
+  <div class="vqc-adventure-map"><div class="vqc-adventure-regions" id="vqcAdventureRegions"></div></div>
+  <p class="vqc-adventure-legend">⚓ Bến Cảng và 🌳 Rừng Sao đã mở • Các vùng đất còn lại đang được phát triển.</p>
+ </div>
+ <div id="vqcAdventurePlay" class="vqc-adventure-play" hidden>
+  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcAdventureBack()">← Bản đồ</button></div>
+  <div class="vqc-adventure-stages" id="vqcAdventureStages" aria-label="Chọn màn chơi"></div>
+  <div class="vqc-adventure-lesson"><div id="vqcAdventureBoard" class="vqc-adventure-board" aria-label="Bàn cờ minh họa"></div>
+   <div class="vqc-adventure-task"><h2 id="vqcAdventureStageTitle"></h2><p id="vqcAdventureQuestion"></p><div id="vqcAdventureAnswers" class="vqc-adventure-answers"></div><div id="vqcAdventureFeedback" class="vqc-adventure-feedback" role="status" hidden></div><button id="vqcAdventureNext" class="btn btn-green" onclick="vqcAdventureNext()" hidden>Tiếp tục khám phá →</button></div>
+  </div>
+ </div>
+ <div id="vqcForestScreen" class="vqc-forest-screen" hidden>
+  <div id="vqcForestSelect">
+   <div class="vqc-forest-header"><span>🌳</span><h2>Vùng 2 · Rừng Sao Bí Ẩn</h2><p>Ôn luyện 6 bài nhặt sao của em. Di chuyển đúng luật để thu thập đủ 6 ngôi sao ở mỗi bài!</p><strong id="vqcForestProgress">0/6 bài hoàn thành</strong></div>
+   <div id="vqcForestCards" class="vqc-forest-cards"></div>
+   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestBack()">← Trở về bản đồ</button></div>
+  </div>
+  <div id="vqcForestGame" hidden>
+   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestExit()">← Chọn quân cờ khác</button><strong id="vqcForestGameTitle">Rừng Sao</strong></div>
+   <div id="vqcForestBoardMount" class="vqc-forest-board-mount"></div>
+  </div>
+ </div>
+ <p id="vqcAdventureSave" role="status"></p>
+ <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
+</section>
+<!-- ======================================================
+
+     HEADER
+
+======================================================= -->
+
+
+
+
 
 
 
