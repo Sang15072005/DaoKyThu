@@ -1310,7 +1310,11 @@ function vqcCloseOtherViews(target){
   if(target!=='escape')document.getElementById('escapeOverlay')?.classList.remove('open');
 }
 function vqcBroadcastView(view,index=0){
-  if(vqcNavApplying||!roomRef)return;
+  if(vqcNavApplying)return;
+  if(!roomRef){
+    if(role==='teacher'&&view!=='board')vqcNotify('Chưa kết nối phòng học. Hãy tạo hoặc vào phòng để bài học hiện trên máy học sinh.','warning');
+    return;
+  }
   // Giáo viên điều khiển trang học chung; học sinh nhận thay đổi qua Firebase.
   if(role!=='teacher'){vqcNotify('Giáo viên điều khiển bài học chung của lớp.','warning');return;}
   const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+(window.accountProfile?.role||role);
