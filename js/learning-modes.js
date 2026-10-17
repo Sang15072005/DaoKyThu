@@ -21,6 +21,7 @@
  window.vqcOpenWorld=function(){
   if(roomRef){vqcNotify('Hãy rời lớp trước khi khám phá vương quốc.','warning');return;}
   mode('world');
+  if(typeof window.vqcAdventureStart==='function')window.vqcAdventureStart();
  };
  window.vqcEnterClass=function(){
   if(!window.accountProfile){showAccountPanel();return;}
