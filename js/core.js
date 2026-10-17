@@ -1296,6 +1296,33 @@ function applyPieceGameUI(){
 let vqcNavApplying=false;
 let vqcNavSeen=null;
 let vqcNavSerial=0;
+let vqcStudentViewAckSeen=null;
+let vqcTeacherViewAckSeen=null;
+function vqcAcknowledgeStudentView(data){
+  if(role!=='student'||!roomRef||!data?.stamp||vqcStudentViewAckSeen===data.stamp)return;
+  vqcStudentViewAckSeen=data.stamp;
+  const currentRoom=roomRef;
+  currentRoom.update({studentViewAck:{
+    stamp:data.stamp,view:data.view,index:Number(data.index)||0,
+    clientId:typeof vqcExerciseClientId==='string'?vqcExerciseClientId:'student',
+    at:firebase.firestore.FieldValue.serverTimestamp()
+  }}).catch(e=>{
+    vqcStudentViewAckSeen=null;
+    console.warn('Không gửi được xác nhận mở bài học',e);
+    const status=document.getElementById('status');
+    if(status)status.textContent='⚠️ Đã nhận bài nhưng không gửi được xác nhận cho giáo viên.';
+  });
+}
+function vqcDisplayTeacherViewAck(data){
+  if(role!=='teacher'||!roomRef)return;
+  const active=data.activeView,ack=data.studentViewAck;
+  if(!active?.stamp||!ack||ack.stamp!==active.stamp)return;
+  if(vqcTeacherViewAckSeen===ack.stamp)return;
+  vqcTeacherViewAckSeen=ack.stamp;
+  const status=document.getElementById('status');
+  if(status)status.textContent='✅ Máy học sinh đã mở bài học: '+String(active.view||'bàn cờ')+'.';
+}
+
 function vqcCloseOtherViews(target){
   vqcCurrentSection=target;
   if(typeof editorRefresh==='function')editorRefresh();
@@ -1319,6 +1346,7 @@ function vqcBroadcastView(view,index=0){
   if(role!=='teacher'){vqcNotify('Giáo viên điều khiển bài học chung của lớp.','warning');return;}
   const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+(window.accountProfile?.role||role);
   vqcNavSeen=stamp;
+  vqcTeacherViewAckSeen=null;
   roomRef.update({activeView:{view,index,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
     .catch(e=>{console.error('Không đồng bộ được mục học',e);document.getElementById('status').textContent='⚠️ Chưa đồng bộ được mục học. Kiểm tra kết nối phòng.';});
 }
@@ -1357,6 +1385,7 @@ function vqcReceiveView(data){
     else if(view==='board')exitPieceGame();
     if(overlay)overlay.classList.add('open');
     vqcNavSeen=data.stamp;
+    vqcAcknowledgeStudentView(data);
   }catch(e){
     console.error('Không mở được bài học đồng bộ từ giáo viên:',data.view,e);
     vqcNavSeen=data.stamp;
@@ -1460,6 +1489,8 @@ let rewardClosing = false;
 let vqcLastBoardKey=null;
 function listenToRoom(){
   vqcNavSeen=null; // A newly joined/rejoined room must replay its current lesson.
+  vqcStudentViewAckSeen=null;
+  vqcTeacherViewAckSeen=null;
   vqcLastBoardKey=null;
   teacherRewardLastScore = null;
   teacherLastStudentJoinEvent = null;
@@ -1469,6 +1500,7 @@ function listenToRoom(){
   roomUnsubscribe=roomRef.onSnapshot(snap=>{
     if(!snap.exists)return;
     const data=snap.data();
+    vqcDisplayTeacherViewAck(data);
     if(role==="teacher"){teacherRoomData=data;refreshTeacherPresence();}
     // Chỉ thông báo khi xuất hiện một lượt tham gia mới; không lặp lại khi bàn cờ cập nhật.
     if(role==="teacher"){
@@ -1537,7 +1569,7 @@ async function createRoom(){
     lastFrom=lastTo=selected=null;renderBoard();
     const initialPiece=serializePieceGame();
     const initialView=initialPiece?{view:'piece',piece:initialPiece.piece,stamp:Date.now()+'-init'}:{view:'board',index:0,stamp:Date.now()+'-init'};
-    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,studentViewAck:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     vqcNavSeen=initialView.stamp;listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
