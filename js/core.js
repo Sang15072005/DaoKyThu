@@ -1319,7 +1319,14 @@ function vqcBroadcastView(view,index=0){
     .catch(e=>{console.error('Không đồng bộ được mục học',e);document.getElementById('status').textContent='⚠️ Chưa đồng bộ được mục học. Kiểm tra kết nối phòng.';});
 }
 function vqcReceiveView(data){
-  if(!data||!data.stamp||data.stamp===vqcNavSeen)return;
+  if(!data||!data.stamp)return;
+  const dialogIds={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay'};
+  const activeDialog=dialogIds[data.view]&&document.getElementById(dialogIds[data.view]);
+  // Reopen a classroom dialog on the student machine if its DOM was hidden
+  // after the snapshot had already been marked as received.
+  const missingStudentDialog=role==='student'&&activeDialog&&!activeDialog.classList.contains('open');
+  const missingClassroom=role==='student'&&roomRef&&!document.body.classList.contains('vqc-mode-class');
+  if(data.stamp===vqcNavSeen&&!missingStudentDialog&&!missingClassroom)return;
   vqcNavApplying=true;
   try{
     const view=data.view,index=Number(data.index)||0;
@@ -1448,6 +1455,7 @@ let rewardDismissedInRoom = false;
 let rewardClosing = false;
 let vqcLastBoardKey=null;
 function listenToRoom(){
+  vqcNavSeen=null; // A newly joined/rejoined room must replay its current lesson.
   vqcLastBoardKey=null;
   teacherRewardLastScore = null;
   teacherLastStudentJoinEvent = null;
@@ -1475,7 +1483,11 @@ function listenToRoom(){
     // Chỉ áp dụng trạng thái của dạng bài đang mở. Dữ liệu bài cũ không được
     // tự mở lại cửa sổ hoặc ghi đè bài mới khi hai máy chuyển bài khác thời điểm.
     const active=data.activeView||{};
-    vqcReceiveView(active);
+    try{vqcReceiveView(active);}
+    catch(e){
+      console.error('Lỗi nhận bài học từ phòng',e);
+      if(role==='student')vqcNotify('Máy học sinh chưa hiển thị được bài học: '+(e.message||String(e)),'warning');
+    }
     if(active.view==='freecapture' && data.freeCaptureExercise && data.freeCaptureExercise.index===active.index)vqcReceiveFreeCapture(data.freeCaptureExercise);
     if(active.view==='capture' && data.captureExercise && data.captureExercise.index===active.index)vqcReceiveCapture(data.captureExercise);
     if(active.view==='defense' && data.defenseExercise && data.defenseExercise.index===active.index)vqcReceiveDefense(data.defenseExercise);
@@ -1507,7 +1519,12 @@ function listenToRoom(){
       }
     }
 
-  },err=>{console.error(err);document.getElementById("status").textContent="Không thể kết nối Firebase. Kiểm tra Firestore Rules và Internet.";});
+  },err=>{
+    console.error('Firestore classroom listener error',err);
+    const status=document.getElementById('status');
+    if(status)status.textContent='⚠️ Mất đồng bộ phòng '+room+': '+(err.code||err.message||'lỗi kết nối')+'.';
+    vqcNotify('Không nhận được dữ liệu lớp học. Kiểm tra kết nối và quyền truy cập phòng.','warning');
+  });
 }
 async function createRoom(){
   if(!window.accountProfile || window.accountProfile.role!=="teacher"){vqcAlert("Chỉ giáo viên đã đăng nhập mới tạo phòng.");return;}
