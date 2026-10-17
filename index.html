@@ -875,6 +875,9 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
    if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
    window[fnName](index);
    overlay.classList.add('open');
+   // Share the selected lesson with every student connected to the same room.
+   const syncView={escapeMenu:'escape',checkOneMenu:'check1',pawnGamesMenu:'pawngame',defenseAttackMenu:'defense',defenseMenu:'defense',freeCaptureMenu:'freecapture',captureMenu:'capture'}[id];
+   if(syncView && typeof vqcBroadcastView==='function')vqcBroadcastView(syncView,index);
    document.querySelectorAll('.lesson').forEach(n=>n.classList.toggle('active',n.id===id));
   }catch(error){
    console.error('[Đảo Kỳ Thủ] Thử thách '+id,error);
