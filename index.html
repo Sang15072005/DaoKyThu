@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=challenge-root-dialog-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=challenge-root-repair-20261017">
 
 
 
@@ -871,10 +871,10 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
   if(!overlay){issue('Không tìm thấy cửa sổ bài tập '+id+'.');return;}
   try{
    if(typeof window[fnName]!=='function')throw Error('Tệp bài tập chưa tải hoặc hàm '+fnName+' chưa sẵn sàng.');
-   window[fnName](index);
-   if(!overlay.classList.contains('open'))overlay.classList.add('open');
-   // Move active dialog to document root so hidden classroom ancestors cannot conceal it.
+   // Detach before invoking the renderer: some exercises calculate board sizes while opening.
    if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
+   window[fnName](index);
+   overlay.classList.add('open');
    document.querySelectorAll('.lesson').forEach(n=>n.classList.toggle('active',n.id===id));
   }catch(error){
    console.error('[Đảo Kỳ Thủ] Thử thách '+id,error);
