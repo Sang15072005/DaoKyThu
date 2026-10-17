@@ -129,3 +129,295 @@
 .vqc-adventure .vqc-forest-board-mount .piece img,.vqc-adventure .vqc-forest-board-mount .piece svg{max-width:88%;max-height:88%;object-fit:contain}
 .vqc-adventure .vqc-forest-board-mount .board-toolbar{display:none!important}
 @media(max-width:650px){.vqc-adventure .vqc-forest-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.vqc-adventure .vqc-forest-card{min-height:135px;padding:10px}.vqc-adventure .vqc-forest-card .vqc-forest-icon{font-size:35px}}
+
+
+/* ============================================================
+   Level Map: 7 absolute nodes, SVG route and moving avatar
+   Isolated to the individual adventure mode, not live classroom.
+   ============================================================ */
+.vqc-adventure .vqc-level-scroll{
+ position:relative;
+ max-width:100%;
+ overflow-x:auto;
+ overflow-y:hidden;
+ overscroll-behavior-x:contain;
+ border-radius:26px;
+ scrollbar-width:thin;
+ scrollbar-color:#75b6ce #e0f8ff;
+ box-shadow:0 10px 28px rgba(39,100,129,.18);
+}
+.vqc-adventure .vqc-adventure-map.vqc-level-map{
+ box-sizing:border-box;
+ position:relative;
+ width:100%;
+ min-width:760px;
+ height:1220px;
+ margin:0;
+ padding:0;
+ overflow:hidden;
+ border:5px solid #f4dc99;
+ border-radius:26px;
+ background-color:#9bdbe8;
+ /* Replace the last layer with a custom island/ocean illustration later. */
+ background-image:
+  radial-gradient(ellipse 35% 14% at 23% 89%,#f6e8af 0%,#c6eaaa 53%,transparent 76%),
+  radial-gradient(ellipse 28% 15% at 67% 75%,#d0e8b6 0%,#a2d78e 51%,transparent 78%),
+  radial-gradient(ellipse 28% 12% at 35% 62%,#c0e2b4 0%,#8ccf96 52%,transparent 78%),
+  radial-gradient(ellipse 25% 12% at 75% 49%,#e7daa9 0%,#add69e 55%,transparent 80%),
+  radial-gradient(ellipse 25% 12% at 28% 37%,#f4cc9e 0%,#d5a283 53%,transparent 76%),
+  radial-gradient(ellipse 24% 12% at 69% 25%,#eff3ef 0%,#bbd8bc 53%,transparent 78%),
+  radial-gradient(ellipse 23% 13% at 43% 11%,#ffe8ad 0%,#aad6a7 55%,transparent 80%),
+  linear-gradient(145deg,rgba(255,255,255,.32),rgba(56,158,190,.12)),
+  url("https://placehold.co/1100x1250/96D8E8/96D8E8.png");
+ background-repeat:no-repeat;
+ background-size:cover;
+}
+.vqc-adventure .vqc-level-map::before{
+ content:none!important;
+}
+.vqc-adventure .vqc-level-map__island{
+ position:absolute;
+ z-index:0;
+ opacity:.34;
+ border:13px dotted #fff9da;
+ border-radius:50%;
+ pointer-events:none;
+ transform:rotate(-20deg);
+}
+.vqc-adventure .vqc-level-map__island--a{width:230px;height:90px;left:6%;top:51%}
+.vqc-adventure .vqc-level-map__island--b{width:280px;height:115px;right:9%;top:32%;transform:rotate(19deg)}
+.vqc-adventure .vqc-level-map__island--c{width:180px;height:80px;left:28%;top:9%;transform:rotate(25deg)}
+.vqc-adventure .vqc-level-path{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ z-index:1;
+ pointer-events:none;
+ overflow:visible;
+}
+.vqc-adventure .vqc-level-path__shadow,
+.vqc-adventure .vqc-level-path__trail{
+ fill:none;
+ stroke-linejoin:round;
+ stroke-linecap:round;
+ vector-effect:non-scaling-stroke;
+}
+.vqc-adventure .vqc-level-path__shadow{
+ stroke:#277d86;
+ stroke-width:15px;
+ opacity:.38;
+}
+.vqc-adventure .vqc-level-path__trail{
+ stroke:#fff3c5;
+ stroke-width:7px;
+ stroke-dasharray:9 14;
+ filter:drop-shadow(0 2px 1px #5a877b5e);
+}
+.vqc-adventure .vqc-adventure-regions.vqc-level-map__nodes{
+ position:absolute;
+ inset:0;
+ z-index:3;
+ display:block;
+ width:100%;
+ height:100%;
+ padding:0;
+ margin:0;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-level-node{
+ position:absolute;
+ left:var(--stop-x);
+ top:var(--stop-y);
+ transform:translate(-50%,-50%);
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ gap:5px;
+ width:170px;
+ min-height:128px;
+ padding:8px 8px 11px;
+ border:0;
+ border-radius:23px;
+ background:rgba(249,255,251,.94);
+ box-shadow:0 6px 0 #a9d1be,0 12px 18px rgba(23,66,64,.24);
+ color:#24546a;
+ text-align:center;
+ line-height:1.25;
+ font:inherit;
+ cursor:pointer;
+ pointer-events:auto;
+ transition:box-shadow .2s ease,filter .2s ease,background-color .2s ease,scale .2s ease;
+}
+.vqc-adventure .vqc-level-node:hover:not(:disabled),
+.vqc-adventure .vqc-level-node:focus-visible{
+ scale:1.045;
+ box-shadow:0 8px 0 #6bbaaa,0 14px 24px rgba(13,89,78,.3);
+ outline:3px solid #ffe37a;
+ outline-offset:4px;
+}
+.vqc-adventure .vqc-level-node.is-selected{
+ outline:3px solid #ffd76a;
+ outline-offset:3px;
+}
+.vqc-adventure .vqc-level-node__medal{
+ position:relative;
+ display:grid;
+ place-items:center;
+ width:61px;
+ height:61px;
+ flex-shrink:0;
+ border:4px solid #ffeba7;
+ border-radius:50%;
+ background:linear-gradient(145deg,#ffffec,#c9f7d4);
+ box-shadow:inset 0 2px 9px #ffffff,0 3px 0 #e1c877;
+ font-size:30px;
+ line-height:1;
+}
+.vqc-adventure .vqc-level-node--forest .vqc-level-node__medal{
+ background:linear-gradient(135deg,#ecffe7,#97e6a2);
+ border-color:#e5ffb8;
+}
+.vqc-adventure .vqc-level-node__name{
+ font-weight:900;
+ font-size:13px;
+ color:#285f73;
+}
+.vqc-adventure .vqc-level-node__status{
+ max-width:100%;
+ padding:5px 9px;
+ border-radius:999px;
+ background:#def2e7;
+ color:#337957;
+ font-size:11px;
+ font-weight:800;
+ white-space:normal;
+}
+.vqc-adventure .vqc-level-node.is-complete .vqc-level-node__status{
+ background:#ffefb3;
+ color:#89651d;
+}
+.vqc-adventure .vqc-level-node.is-playing .vqc-level-node__medal::after{
+ content:"";
+ position:absolute;
+ inset:-11px;
+ border:3px solid #fff5b2;
+ border-radius:50%;
+ opacity:0;
+ animation:vqc-level-breathe 2.4s ease-out infinite;
+ pointer-events:none;
+}
+@keyframes vqc-level-breathe{
+ 0%{transform:scale(.9);opacity:.95}
+ 80%,100%{transform:scale(1.24);opacity:0}
+}
+.vqc-adventure .vqc-level-node.is-locked,
+.vqc-adventure .vqc-level-node:disabled{
+ filter:grayscale(.9);
+ opacity:.7;
+ cursor:not-allowed;
+ pointer-events:none;
+ box-shadow:0 5px 0 #b0bbbe,0 12px 18px #3f66732e;
+}
+.vqc-adventure .vqc-level-node.is-locked .vqc-level-node__status{
+ background:#e1e5e8;
+ color:#52636d;
+}
+.vqc-adventure .vqc-level-avatar{
+ position:absolute;
+ left:0;
+ top:0;
+ z-index:5;
+ width:59px;
+ height:59px;
+ display:grid;
+ place-items:center;
+ border:3px solid #fff8d1;
+ border-radius:50%;
+ background:linear-gradient(140deg,#fff3cb,#fdc88a);
+ box-shadow:0 6px 13px #30536d78,0 0 0 4px #ffefaf71;
+ font-size:32px;
+ line-height:1;
+ pointer-events:none;
+ will-change:transform;
+ transform:translate3d(0,0,0);
+ transition:transform .95s cubic-bezier(.19,.83,.22,1);
+}
+.vqc-adventure .vqc-level-popup{
+ box-sizing:border-box;
+ position:absolute;
+ z-index:10;
+ width:290px;
+ max-width:calc(100% - 24px);
+ padding:19px 19px 17px;
+ border:3px solid #ffe39c;
+ border-radius:20px;
+ background:#fffffffa;
+ box-shadow:0 15px 35px #225b7880;
+ color:#365467;
+ line-height:1.45;
+}
+.vqc-adventure .vqc-level-popup[hidden]{display:none!important}
+.vqc-adventure .vqc-level-popup__close{
+ position:absolute;
+ right:10px;
+ top:9px;
+ width:30px;
+ height:30px;
+ display:grid;
+ place-items:center;
+ border:0;
+ border-radius:50%;
+ background:#eaf1f7;
+ color:#46657a;
+ font-size:23px;
+ font-weight:700;
+}
+.vqc-adventure .vqc-level-popup__eyebrow{
+ display:block;
+ padding-right:27px;
+ color:#268574;
+ font-size:11px;
+ font-weight:800;
+ letter-spacing:.4px;
+}
+.vqc-adventure .vqc-level-popup h3{
+ color:#22638a;
+ font-size:18px;
+ line-height:1.3;
+ margin:7px 28px 8px 0;
+}
+.vqc-adventure .vqc-level-popup p{
+ margin:0 0 11px;
+ font-size:13px;
+ color:#557384;
+}
+.vqc-adventure .vqc-level-popup__progress{
+ padding:9px 10px;
+ border-radius:10px;
+ background:#eff9f3;
+ font-weight:800;
+ color:#387b56!important;
+}
+.vqc-adventure .vqc-level-popup__play{width:100%;padding:10px 14px;font-size:13px}
+.vqc-adventure .vqc-level-hint{
+ margin:10px 10px 0;
+ color:#276785;
+ text-align:center;
+ font-size:13px;
+ font-weight:700;
+}
+.vqc-adventure .vqc-level-hint span{display:none}
+@media(max-width:800px){
+ .vqc-adventure .vqc-level-scroll{border-radius:18px}
+ .vqc-adventure .vqc-level-hint span{display:inline}
+ .vqc-adventure .vqc-level-node{width:151px;min-height:121px}
+ .vqc-adventure .vqc-level-node__name{font-size:12px}
+ .vqc-adventure .vqc-level-node__medal{width:54px;height:54px;font-size:27px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-adventure .vqc-level-avatar,
+ .vqc-adventure .vqc-level-node{transition:none!important}
+ .vqc-adventure .vqc-level-node.is-playing .vqc-level-node__medal::after{animation:none;opacity:.75;transform:none}
+}

@@ -16,7 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=forest-star-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=level-map-20261017">
 
 
 
@@ -141,7 +141,28 @@
  <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
  <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
  <div id="vqcAdventureMap">
-  <div class="vqc-adventure-map"><div class="vqc-adventure-regions" id="vqcAdventureRegions"></div></div>
+  <div class="vqc-level-scroll" id="vqcLevelScroll" tabindex="0" aria-label="Bản đồ 7 vùng đất. Trên điện thoại, vuốt ngang để khám phá">
+   <div class="vqc-adventure-map vqc-level-map" id="vqcLevelMap">
+    <div class="vqc-level-map__island vqc-level-map__island--a" aria-hidden="true"></div>
+    <div class="vqc-level-map__island vqc-level-map__island--b" aria-hidden="true"></div>
+    <div class="vqc-level-map__island vqc-level-map__island--c" aria-hidden="true"></div>
+    <svg class="vqc-level-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+     <path class="vqc-level-path__shadow" d="M23 89 C24 80 51 82 69 76 C87 69 50 62 36 64 C19 64 49 52 75 51 C97 50 54 34 26 39 C7 43 28 24 68 26 C90 27 59 10 41 12"/>
+     <path class="vqc-level-path__trail" d="M23 89 C24 80 51 82 69 76 C87 69 50 62 36 64 C19 64 49 52 75 51 C97 50 54 34 26 39 C7 43 28 24 68 26 C90 27 59 10 41 12"/>
+    </svg>
+    <div class="vqc-adventure-regions vqc-level-map__nodes" id="vqcAdventureRegions" aria-label="Các trạm phiêu lưu"></div>
+    <div class="vqc-level-avatar" id="vqcLevelAvatar" aria-hidden="true">🧙‍♂️</div>
+    <div class="vqc-level-popup" id="vqcLevelPopup" role="dialog" aria-labelledby="vqcLevelPopupTitle" hidden>
+     <button class="vqc-level-popup__close" id="vqcLevelPopupClose" type="button" aria-label="Đóng thông tin vùng đất">×</button>
+     <span class="vqc-level-popup__eyebrow" id="vqcLevelPopupStage"></span>
+     <h3 id="vqcLevelPopupTitle"></h3>
+     <p id="vqcLevelPopupDescription"></p>
+     <p class="vqc-level-popup__progress" id="vqcLevelPopupProgress"></p>
+     <button class="btn btn-green vqc-level-popup__play" id="vqcLevelPopupPlay" type="button">Vào thử thách →</button>
+    </div>
+   </div>
+  </div>
+  <p class="vqc-level-hint">🧭 Chọn trạm đã mở để xem thông tin và di chuyển nhân vật. <span>Vuốt ngang trên điện thoại để xem hết bản đồ.</span></p>
   <p class="vqc-adventure-legend">⚓ Bến Cảng và 🌳 Rừng Sao đã mở • Các vùng đất còn lại đang được phát triển.</p>
 
   <!-- Rewards showcase inside the adventure map; no gameplay or progress logic changed. -->
@@ -913,7 +934,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=forest-star-20261017"></script>
+<script src="./js/adventure.js?v=level-map-20261017"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){

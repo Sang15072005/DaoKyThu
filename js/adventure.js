@@ -62,13 +62,144 @@ function saveProgress(){
 }
 function setSaveStatus(msg){if($('vqcAdventureSave'))$('vqcAdventureSave').textContent=msg;}
 function unlocked(n){return n===0||progress.done.includes(n-1);}
+// Coordinates are percentages of the same map surface as the SVG path.
+const MAP_STOPS=[
+ {x:23,y:89},{x:69,y:76},{x:36,y:64},{x:75,y:51},
+ {x:26,y:39},{x:68,y:26},{x:41,y:12}
+];
+let selectedMapRegion=1;
+let avatarPlaced=false;
+let mapEventsReady=false;
+
+function regionStatus(index){
+ if(index===0){
+  const done=progress.done.length;
+  return done===QUESTIONS.length?'✓ Đã chinh phục':'▶ '+done+'/'+QUESTIONS.length+' thử thách';
+ }
+ if(index===1){
+  const done=progress.forestDone.length;
+  return done===FOREST_PIECES.length?'✓ Đã chinh phục':'▶ Đang chơi · '+done+'/'+FOREST_PIECES.length+' bài';
+ }
+ return '🔒 Sắp ra mắt';
+}
+function regionStars(index){
+ if(index===0)return progress.done.length*3;
+ if(index===1)return progress.forestDone.length*6;
+ return 0;
+}
+function moveMapAvatar(index,animate=true){
+ const map=$('vqcLevelMap'),avatar=$('vqcLevelAvatar'),pos=MAP_STOPS[index];
+ if(!map||!avatar||!pos||map.clientWidth===0||map.clientHeight===0)return;
+ const x=map.clientWidth*pos.x/100-avatar.offsetWidth/2;
+ const y=map.clientHeight*pos.y/100-avatar.offsetHeight-43;
+ if(!animate||!avatarPlaced){
+  avatar.style.transition='none';
+  avatar.style.transform='translate3d('+x+'px,'+y+'px,0)';
+  requestAnimationFrame(()=>avatar.style.removeProperty('transition'));
+ }else{
+  avatar.style.transform='translate3d('+x+'px,'+y+'px,0)';
+ }
+ avatarPlaced=true;
+}
+function fillMapPopup(index){
+ const popup=$('vqcLevelPopup'),map=$('vqcLevelMap'),region=REGIONS[index];
+ if(!popup||!map||!region)return;
+ $('vqcLevelPopupStage').textContent='VÙNG '+(index+1)+' · '+regionStatus(index);
+ $('vqcLevelPopupTitle').textContent=region[0]+' '+region[1];
+ $('vqcLevelPopupDescription').textContent=region[2];
+ $('vqcLevelPopupProgress').textContent=
+  index===0?'⭐ '+regionStars(index)+'/30 sao · '+progress.done.length+'/10 thử thách':
+  index===1?'⭐ '+regionStars(index)+'/36 sao · '+progress.forestDone.length+'/6 bài':
+  'Vùng đất chưa mở khóa';
+ $('vqcLevelPopupPlay').hidden=index>1;
+ popup.hidden=false;
+ const pos=MAP_STOPS[index];
+ const width=popup.offsetWidth||280,height=popup.offsetHeight||210;
+ const mapWidth=map.clientWidth,mapHeight=map.clientHeight;
+ const left=Math.max(12,Math.min(mapWidth-width-12,mapWidth*pos.x/100-width/2));
+ const pointY=mapHeight*pos.y/100;
+ const below=pointY<mapHeight/2;
+ const top=Math.max(12,Math.min(mapHeight-height-12,below?pointY+78:pointY-height-100));
+ popup.style.left=left+'px';
+ popup.style.top=top+'px';
+}
+function hideMapPopup(){
+ const popup=$('vqcLevelPopup');
+ if(popup)popup.hidden=true;
+}
+function selectMapRegion(index){
+ if(index>1)return;
+ selectedMapRegion=index;
+ document.querySelectorAll('#vqcAdventureRegions .vqc-level-node').forEach((button,i)=>{
+  button.classList.toggle('is-selected',i===index);
+  button.setAttribute('aria-pressed',String(i===index));
+ });
+ moveMapAvatar(index,true);
+ fillMapPopup(index);
+}
+function prepareMapEvents(){
+ if(mapEventsReady)return;
+ mapEventsReady=true;
+ const map=$('vqcLevelMap'),popup=$('vqcLevelPopup');
+ $('vqcLevelPopupClose')?.addEventListener('click',hideMapPopup);
+ $('vqcLevelPopupPlay')?.addEventListener('click',()=>{
+  hideMapPopup();
+  if(selectedMapRegion===0)openRegion();
+  if(selectedMapRegion===1)openForest();
+ });
+ map?.addEventListener('click',event=>{
+  if(!event.target.closest('.vqc-level-node, .vqc-level-popup'))hideMapPopup();
+ });
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&popup&&!popup.hidden)hideMapPopup();
+ });
+ if(typeof ResizeObserver==='function'&&map){
+  new ResizeObserver(()=>{
+   if(!map.clientWidth)return;
+   moveMapAvatar(selectedMapRegion,false);
+   if(popup&&!popup.hidden)fillMapPopup(selectedMapRegion);
+  }).observe(map);
+ }
+}
+function showAdventureMap(){
+ hideMapPopup();
+ avatarPlaced=false;
+ requestAnimationFrame(()=>{
+  moveMapAvatar(selectedMapRegion,false);
+  const scroller=$('vqcLevelScroll'),map=$('vqcLevelMap');
+  if(scroller&&map&&scroller.clientWidth<map.clientWidth){
+   const target=map.clientWidth*MAP_STOPS[selectedMapRegion].x/100-scroller.clientWidth/2;
+   scroller.scrollLeft=Math.max(0,target);
+  }
+ });
+}
 function render(){
  const nodes=$('vqcAdventureRegions');if(!nodes)return;
+ prepareMapEvents();
  nodes.replaceChildren();
- REGIONS.forEach((r,i)=>{
-  const card=document.createElement('button');card.type='button';card.className='vqc-island vqc-island-'+r[3]+(i>1?' is-locked':' is-available');
-  card.innerHTML='<span class="vqc-island-emoji" aria-hidden="true">'+r[0]+'</span><span class="vqc-island-number">VÙNG '+(i+1)+'</span><strong>'+r[1]+'</strong><small>'+r[2]+'</small><span class="vqc-island-state">'+(i===0?(progress.done.length===QUESTIONS.length?'🏆 Đã chinh phục':'▶ '+progress.done.length+'/'+QUESTIONS.length+' thử thách'):i===1?(progress.forestDone.length===FOREST_PIECES.length?'🏆 Đã chinh phục':'▶ '+progress.forestDone.length+'/'+FOREST_PIECES.length+' bài nhặt sao'):'🔒 Sắp ra mắt')+'</span>';
-  card.disabled=i>1;card.onclick=()=>i===1?openForest():openRegion();nodes.appendChild(card);
+ REGIONS.forEach((region,index)=>{
+  const pos=MAP_STOPS[index];
+  const isLocked=index>1;
+  const isDone=index===0?progress.done.length===QUESTIONS.length:
+   index===1?progress.forestDone.length===FOREST_PIECES.length:false;
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='vqc-level-node vqc-level-node--'+region[3]+
+   (isLocked?' is-locked':isDone?' is-complete':' is-playing')+
+   (selectedMapRegion===index?' is-selected':'');
+  button.style.setProperty('--stop-x',pos.x+'%');
+  button.style.setProperty('--stop-y',pos.y+'%');
+  button.setAttribute('aria-pressed',String(selectedMapRegion===index));
+  button.setAttribute('aria-label','Vùng '+(index+1)+': '+region[1]+'. '+regionStatus(index));
+  button.disabled=isLocked;
+  button.innerHTML=
+   '<span class="vqc-level-node__medal" aria-hidden="true">'+
+     (isLocked?'🔒':region[0])+
+   '</span>'+
+   '<span class="vqc-level-node__name">Vùng '+(index+1)+' · '+region[1]+'</span>'+
+   '<span class="vqc-level-node__status">'+regionStatus(index)+'</span>';
+  if(!isLocked)button.addEventListener('click',()=>selectMapRegion(index));
+  nodes.appendChild(button);
  });
  $('vqcAdventureStars').textContent=String(progress.stars);
  if($('vqcForestProgress'))$('vqcForestProgress').textContent=progress.forestDone.length+'/'+FOREST_PIECES.length+' bài hoàn thành';
@@ -76,6 +207,12 @@ function render(){
  $('vqcAdventureCount').textContent=progress.done.length+'/'+QUESTIONS.length;
  $('vqcAdventureProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
  if($('vqcAdventureStages')&&!$('vqcAdventurePlay').hidden)renderStages();
+ if($('vqcLevelMap')?.clientWidth){
+  requestAnimationFrame(()=>{
+   moveMapAvatar(selectedMapRegion,false);
+   if(!$('vqcLevelPopup').hidden)fillMapPopup(selectedMapRegion);
+  });
+ }
 }
 function renderStages(){
  const wrap=$('vqcAdventureStages');wrap.replaceChildren();
@@ -197,6 +334,7 @@ function closeForest(){
  $('vqcForestScreen').hidden=true;
  $('vqcAdventureMap').hidden=false;
  render();
+ showAdventureMap();
 }
 window.vqcAdventureForestBack=closeForest;
 window.vqcAdventureForestExit=closeForestPiece;
@@ -246,13 +384,15 @@ function next(){
  if(current===QUESTIONS.length-1){closeRegion();return;}
  showStage(current+1);
 }
-function closeRegion(){$('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;render();}
+function closeRegion(){$('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;render();showAdventureMap();}
 window.vqcAdventureStart=function(){
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá hòn đảo.','warning');return;}
  $('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;
  if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
  forestActive=false;
+ selectedMapRegion=1;
  loadProgress();
+ showAdventureMap();
 };
 window.vqcAdventureBack=closeRegion;
 window.vqcAdventureNext=next;
