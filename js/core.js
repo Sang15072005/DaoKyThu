@@ -2468,6 +2468,9 @@ const vqcProgressExercises=[
  ...Array.from({length:8},(_,i)=>({id:'freecapture_'+i,name:'Ăn quân không bảo vệ – Hình '+(43+i),max:1}))
 ];
 async function accountSaveProgress(exercise,completed,score){
+ // Tiến độ khám phá cá nhân tách biệt hoàn toàn với các bài GV/HS làm trong lớp.
+ // Các bài tập cũ chỉ dùng để đồng bộ giảng dạy, không được mở khóa vùng đất.
+ if(window.vqcCurrentLearningMode!=='adventure'||roomRef)return;
  const p=window.accountProfile,user=auth.currentUser;
  if(!p||p.role!=='student'||!user||!vqcProgressExercises.some(x=>x.id===exercise))return;
  const ref=db.collection('progress').doc(user.uid+'_'+exercise),value=Math.max(0,Number(score)||0);
@@ -2529,8 +2532,8 @@ async function accountLoadProgress(){
  }catch(e){el.textContent='Không tải được tiến độ: '+e.message;}
 }
 
-// Mở ngay bài thực hành quân Xe khi tải trang; không hiển thị màn hình chào mừng.
-// Không tạo hoặc tham gia phòng Firebase tự động.
+// Khởi tạo bàn cờ cho không gian lớp học, nhưng trang đầu là màn chọn chế độ.
+// Không tự tạo phòng và không tự cộng tiến độ vùng đất.
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded',()=>startPieceGame('R'),{once:true});
 }else{
