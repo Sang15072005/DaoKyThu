@@ -2178,3 +2178,55 @@ body.vqc-mode-home,body.vqc-mode-world{background:linear-gradient(180deg,#70bdfb
 @media(min-width:851px) and (max-height:720px){
  #accountOverlay .account-modal{margin:12px;min-height:calc(100dvh - 24px);padding:20px 35px}
 }
+
+
+/* Unified Island Chess login visual system, 2026-10-17 */
+#accountOverlay.account-overlay{
+ background:linear-gradient(125deg,#71bfff 0%,#a6d9ff 57%,#e5f4ff 100%);
+ font-family:"Nunito","Segoe UI",system-ui,sans-serif;
+}
+#accountOverlay .vqc-login-layout{grid-template-columns:minmax(0,53%) minmax(390px,47%);max-width:1800px;margin:0 auto}
+#accountOverlay .vqc-login-scene{
+ background-image:url('../assets/login-kids.webp');
+ background-position:center center;background-size:cover;
+ border-radius:0 28px 28px 0;
+ box-shadow:12px 0 35px rgba(51,119,183,.10);
+}
+#accountOverlay .account-modal{
+ align-self:center;justify-content:center;min-height:unset!important;
+ max-height:calc(100dvh - 30px);overflow-y:auto;
+ width:min(590px,calc(100% - 48px));margin:15px auto!important;
+ padding:clamp(22px,2.6vw,42px)!important;
+ background:rgba(255,255,255,.97);
+ border:1px solid rgba(255,255,255,.93);border-radius:29px;
+ box-shadow:0 14px 46px rgba(35,105,160,.17),0 3px 12px rgba(35,105,160,.07);
+ scrollbar-width:thin;
+}
+#accountOverlay .vqc-login-formhead{margin-bottom:18px}
+#accountOverlay .vqc-login-formhead h2{font-size:clamp(30px,2.7vw,41px);font-weight:900;letter-spacing:-.8px;color:#182c60}
+#accountOverlay .vqc-login-formhead p{font-size:14px}
+#accountOverlay .vqc-login-mini-crown{font-size:34px}
+#accountOverlay .vqc-login-roles{background:#edf5ff;border:1px solid #dbeaff;margin-bottom:18px}
+#accountOverlay .vqc-login-roles button{font-family:inherit;border-radius:11px;color:#526a92;font-size:14px}
+#accountOverlay .vqc-login-roles button.selected{background:#1466e8;box-shadow:0 3px 9px #1466e826;color:#fff}
+#accountOverlay .vqc-login-label{color:#354b72;font-size:13px;font-family:inherit}
+#accountOverlay .vqc-login-input{height:51px;border:1.5px solid #dbe7f8;border-radius:14px;background:#fafdff;box-shadow:none;margin-bottom:13px;gap:10px}
+#accountOverlay .vqc-login-input:focus-within{background:#fff;border-color:#1466e8;box-shadow:0 0 0 3px #1466e818}
+#accountOverlay .vqc-login-input input{background:transparent!important;font-family:inherit;outline:0;box-shadow:none!important}
+#accountOverlay .vqc-login-submit{height:54px;font-family:inherit;font-size:17px;background:#1466e8;border-radius:14px;box-shadow:0 5px 13px rgba(20,102,232,.20);margin-top:5px}
+#accountOverlay .vqc-login-submit:hover{background:#0d56ce;filter:none}
+#accountOverlay .vqc-login-divider{margin:23px 0 18px;background:#e3ecf6}
+#accountOverlay .vqc-login-help{margin-bottom:15px;color:#627698;font-size:13px}
+#accountOverlay .vqc-login-help strong{color:#1466e8}
+#accountOverlay .vqc-login-welcome{background:#eef7ff;border:1px solid #e0effb;border-radius:15px;padding:11px 14px;color:#536d8f;font-size:13px}
+#accountOverlay .vqc-login-welcome span{color:#ffc34d;font-size:32px}
+#accountOverlay .vqc-login-copyright{text-align:center;margin:16px 0 0;color:#7384a0;font-size:12px;line-height:1.5}
+body:has(#accountOverlay:not(.hidden)) > footer{display:none!important}
+#accountOverlay:has(#accountLoggedArea[style*="block"]) .vqc-login-layout{display:block;max-width:1000px}
+#accountOverlay:has(#accountLoggedArea[style*="block"]) .account-modal{width:100%;max-height:94dvh;margin:auto!important}
+@media(max-width:850px){
+ #accountOverlay .vqc-login-layout{display:block;max-width:100%}
+ #accountOverlay .vqc-login-scene{width:100%;min-height:unset!important;aspect-ratio:943/738;border-radius:0 0 20px 20px;box-shadow:none}
+ #accountOverlay .account-modal{width:min(560px,calc(100% - 24px));max-height:none;overflow:visible;margin:12px auto 24px!important;border-radius:24px;padding:24px 20px!important}
+ #accountOverlay .vqc-login-copyright{font-size:11px}
+}
