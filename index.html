@@ -790,7 +790,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 
-  <script src="./js/core.js?v=class-progress-separated-20261017"></script>
+  <script src="./js/core.js?v=class-sync-repair-20261017"></script>
 
 
 
@@ -875,9 +875,6 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
    if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
    window[fnName](index);
    overlay.classList.add('open');
-   // Share the selected lesson with every student connected to the same room.
-   const syncView={escapeMenu:'escape',checkOneMenu:'check1',pawnGamesMenu:'pawngame',defenseAttackMenu:'defense',defenseMenu:'defense',freeCaptureMenu:'freecapture',captureMenu:'capture'}[id];
-   if(syncView && typeof vqcBroadcastView==='function')vqcBroadcastView(syncView,index);
    document.querySelectorAll('.lesson').forEach(n=>n.classList.toggle('active',n.id===id));
   }catch(error){
    console.error('[Đảo Kỳ Thủ] Thử thách '+id,error);
@@ -892,7 +889,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
  },true);
  document.addEventListener('keydown',function(event){
   if(event.key!=='Enter'&&event.key!==' ')return;
-  const el=event.target.closest('[id]');
+  const el=event.target.closest('.lesson[id]');
   if(!el||!targetMap[el.id])return;
   event.preventDefault();event.stopImmediatePropagation();
   vqcChallengeLaunch(el.id,0);
