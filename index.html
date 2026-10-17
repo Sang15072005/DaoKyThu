@@ -16,6 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=challenge-root-repair-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=harbor-1">
 
 
 
@@ -42,15 +43,22 @@
  </div>
  <p class="vqc-entry-note">Hoạt động trong “Vào lớp” không cộng sao hoặc mở khóa vùng đất trong hành trình cá nhân.</p>
 </section>
-<section id="vqcModeWorld" class="vqc-entry vqc-world" aria-hidden="true"><div class="vqc-entry-head"><span class="vqc-entry-emoji">🗺️</span><h1>Bản đồ phiêu lưu Đảo Kỳ Thủ</h1><p>Hành trình cá nhân độc lập với lớp học</p></div>
- <div class="vqc-world-grid">
-  <article>🌱 <strong>Ngôi làng Tốt Dũng Cảm</strong><small>Đang phát triển các màn chơi đầu tiên</small></article>
-  <article>🐴 <strong>Khu Rừng Mã Phiêu Lưu</strong><small>Sắp ra mắt</small></article>
-  <article>📚 <strong>Học Viện Tượng Thông Thái</strong><small>Sắp ra mắt</small></article>
-  <article>🏯 <strong>Thành Trì Xe Kiên Cường</strong><small>Sắp ra mắt</small></article>
-  <article>👑 <strong>Cung Điện Hậu Quyền Năng</strong><small>Sắp ra mắt</small></article>
-  <article>🏰 <strong>Lâu Đài Vua Tối Cao</strong><small>Sắp ra mắt</small></article>
- </div><p class="vqc-entry-note">Những hòn đảo chưa có màn chơi; sẽ được mở trong các bản cập nhật tiếp theo. Kết quả học trên lớp không ảnh hưởng đến bản đồ này.</p><button class="btn btn-soft" onclick="vqcGoHome()">← Về trang chủ</button>
+<section id="vqcModeWorld" class="vqc-entry vqc-world vqc-adventure" aria-hidden="true" aria-label="Hành trình khám phá Đảo Kỳ Thủ">
+ <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
+ <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
+ <div id="vqcAdventureMap">
+  <div class="vqc-adventure-map"><div class="vqc-adventure-regions" id="vqcAdventureRegions"></div></div>
+  <p class="vqc-adventure-legend">⚓ Bến Cảng Khởi Hành đã mở • Các vùng đất khác sẽ xuất hiện trong những bản cập nhật tiếp theo.</p>
+ </div>
+ <div id="vqcAdventurePlay" class="vqc-adventure-play" hidden>
+  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcAdventureBack()">← Bản đồ</button></div>
+  <div class="vqc-adventure-stages" id="vqcAdventureStages" aria-label="Chọn màn chơi"></div>
+  <div class="vqc-adventure-lesson"><div id="vqcAdventureBoard" class="vqc-adventure-board" aria-label="Bàn cờ minh họa"></div>
+   <div class="vqc-adventure-task"><h2 id="vqcAdventureStageTitle"></h2><p id="vqcAdventureQuestion"></p><div id="vqcAdventureAnswers" class="vqc-adventure-answers"></div><div id="vqcAdventureFeedback" class="vqc-adventure-feedback" role="status" hidden></div><button id="vqcAdventureNext" class="btn btn-green" onclick="vqcAdventureNext()" hidden>Tiếp tục khám phá →</button></div>
+  </div>
+ </div>
+ <p id="vqcAdventureSave" role="status"></p>
+ <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
 </section>
 <!-- ======================================================
 
@@ -841,7 +849,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
-<script src="./js/learning-modes.js?v=separate-class-world-20261017"></script>
+<script src="./js/learning-modes.js?v=harbor-1"></script>
+<script src="./js/adventure.js?v=harbor-1"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){
