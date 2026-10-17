@@ -16,7 +16,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=challenge-root-repair-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=board-render-fix-20261017">
+<link rel="stylesheet" href="./css/adventure.css?v=forest-star-20261017">
 
 
 
@@ -48,13 +48,24 @@
  <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
  <div id="vqcAdventureMap">
   <div class="vqc-adventure-map"><div class="vqc-adventure-regions" id="vqcAdventureRegions"></div></div>
-  <p class="vqc-adventure-legend">⚓ Bến Cảng Khởi Hành đã mở • Các vùng đất khác sẽ xuất hiện trong những bản cập nhật tiếp theo.</p>
+  <p class="vqc-adventure-legend">⚓ Bến Cảng và 🌳 Rừng Sao đã mở • Các vùng đất còn lại đang được phát triển.</p>
  </div>
  <div id="vqcAdventurePlay" class="vqc-adventure-play" hidden>
   <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcAdventureBack()">← Bản đồ</button></div>
   <div class="vqc-adventure-stages" id="vqcAdventureStages" aria-label="Chọn màn chơi"></div>
   <div class="vqc-adventure-lesson"><div id="vqcAdventureBoard" class="vqc-adventure-board" aria-label="Bàn cờ minh họa"></div>
    <div class="vqc-adventure-task"><h2 id="vqcAdventureStageTitle"></h2><p id="vqcAdventureQuestion"></p><div id="vqcAdventureAnswers" class="vqc-adventure-answers"></div><div id="vqcAdventureFeedback" class="vqc-adventure-feedback" role="status" hidden></div><button id="vqcAdventureNext" class="btn btn-green" onclick="vqcAdventureNext()" hidden>Tiếp tục khám phá →</button></div>
+  </div>
+ </div>
+ <div id="vqcForestScreen" class="vqc-forest-screen" hidden>
+  <div id="vqcForestSelect">
+   <div class="vqc-forest-header"><span>🌳</span><h2>Vùng 2 · Rừng Sao Bí Ẩn</h2><p>Ôn luyện 6 bài nhặt sao của em. Di chuyển đúng luật để thu thập đủ 6 ngôi sao ở mỗi bài!</p><strong id="vqcForestProgress">0/6 bài hoàn thành</strong></div>
+   <div id="vqcForestCards" class="vqc-forest-cards"></div>
+   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestBack()">← Trở về bản đồ</button></div>
+  </div>
+  <div id="vqcForestGame" hidden>
+   <div class="vqc-adventure-actions"><button type="button" class="btn btn-soft" onclick="vqcAdventureForestExit()">← Chọn quân cờ khác</button><strong id="vqcForestGameTitle">Rừng Sao</strong></div>
+   <div id="vqcForestBoardMount" class="vqc-forest-board-mount"></div>
   </div>
  </div>
  <p id="vqcAdventureSave" role="status"></p>
@@ -798,7 +809,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 
-  <script src="./js/core.js?v=sync-ack-isolated-20261017"></script>
+  <script src="./js/core.js?v=forest-star-20261017"></script>
 
 
 
@@ -850,7 +861,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=board-render-fix-20261017"></script>
+<script src="./js/adventure.js?v=forest-star-20261017"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
 (function(){
