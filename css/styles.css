@@ -2130,3 +2130,23 @@ body.vqc-mode-home,body.vqc-mode-world{background:linear-gradient(180deg,#70bdfb
 #accountOverlay .vqc-login-roles button,#accountOverlay .vqc-login-submit{transition:filter .18s,transform .18s}
 #accountOverlay .vqc-login-submit:active{transform:scale(.99)}
 @media(max-width:850px){#accountOverlay .vqc-login-layout{grid-template-columns:1fr}#accountOverlay .vqc-login-scene{min-height:300px;background-position:center 42%}#accountOverlay .vqc-login-brand{font-size:27px;top:16px;left:18px}#accountOverlay .vqc-login-brand-crown{font-size:26px}#accountOverlay .vqc-login-features{top:auto;bottom:10px;left:12px;right:12px;display:flex;gap:7px}#accountOverlay .vqc-login-features>div{width:33%;min-width:0;padding:8px 6px;gap:4px}#accountOverlay .vqc-login-features b{display:none}#accountOverlay .vqc-login-features strong{font-size:10px}#accountOverlay .vqc-login-features small{display:none}#accountOverlay .account-modal{margin:0;border-radius:25px 25px 0 0;padding:27px 7vw 35px}}
+
+
+/* Use the supplied two-children illustration when uploaded to assets.
+   Original castle SVG remains as a graceful fallback until then. */
+#accountOverlay .vqc-login-scene{
+  background-image:url('../assets/login-kids.webp'),url('../assets/login-adventure.svg');
+  background-position:center center,center center;
+  background-size:cover,cover;
+  background-repeat:no-repeat,no-repeat;
+}
+#accountOverlay .vqc-login-brand,#accountOverlay .vqc-login-features,
+#accountOverlay .vqc-login-sun,#accountOverlay .vqc-login-cloud,
+#accountOverlay .vqc-login-castle,#accountOverlay .vqc-login-flag,
+#accountOverlay .vqc-login-children,#accountOverlay .vqc-login-board{display:none!important}
+#accountOverlay .vqc-login-scene{min-height:100vh}
+#accountOverlay .account-modal{border-radius:30px;background:#fff;margin:3.5% 4% 3.5% 0;box-shadow:0 16px 50px #194f9133}
+@media(max-width:850px){
+ #accountOverlay .vqc-login-scene{min-height:clamp(230px,43vw,380px);background-position:50% 45%}
+ #accountOverlay .account-modal{margin:0;border-radius:22px 22px 0 0}
+}
