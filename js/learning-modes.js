@@ -20,7 +20,7 @@
   mode('home');
  };
  window.vqcOpenWorld=function(){
-  if(roomRef){vqcNotify('Hãy rời lớp trước khi khám phá vương quốc.','warning');return;}
+  if(roomRef){vqcNotify('Hãy rời lớp trước khi khám phá các đảo.','warning');return;}
   mode('world');
   if(typeof window.vqcAdventureStart==='function')window.vqcAdventureStart();
  };
