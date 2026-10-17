@@ -76,19 +76,39 @@ function renderStages(){
   button.onclick=()=>showStage(i);wrap.appendChild(button);
  });
 }
+// Reuse the same chess-piece assets as the classroom board.
+// Unicode chess characters inherit system fonts and render inconsistently.
 function boardPieces(type){
  const pieces={};
- if(type==='start'){for(let x=0;x<8;x++){pieces['1'+x]='♟';pieces['6'+x]='♙';}['♜','♞','♝','♛','♚','♝','♞','♜'].forEach((p,i)=>pieces['0'+i]=p);['♖','♘','♗','♕','♔','♗','♘','♖'].forEach((p,i)=>pieces['7'+i]=p);}
- if(type==='pawns'){for(let x=0;x<8;x++){pieces['1'+x]='♟';pieces['6'+x]='♙';}}
- const solo={king:'♔',rook:'♖',bishop:'♗',knight:'♘',queen:'♕',pawnmove:'♙',check:'♔'};
+ if(type==='start'){
+  for(let x=0;x<8;x++){pieces['1'+x]='p';pieces['6'+x]='P';}
+  ['r','n','b','q','k','b','n','r'].forEach((p,i)=>pieces['0'+i]=p);
+  ['R','N','B','Q','K','B','N','R'].forEach((p,i)=>pieces['7'+i]=p);
+ }
+ if(type==='pawns')for(let x=0;x<8;x++){pieces['1'+x]='p';pieces['6'+x]='P';}
+ const solo={king:'K',rook:'R',bishop:'B',knight:'N',queen:'Q',pawnmove:'P',check:'K'};
  if(solo[type])pieces[type==='pawnmove'?'60':'44']=solo[type];
- if(type==='check')pieces['04']='♜';
+ if(type==='check')pieces['04']='r';
  return pieces;
 }
 function renderBoard(type){
- const board=$('vqcAdventureBoard');board.replaceChildren();const pieces=boardPieces(type);
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-  const cell=document.createElement('div');cell.className='vqc-adventure-square '+((r+c)%2?'dark':'light');cell.textContent=pieces[''+r+c]||'';board.appendChild(cell);
+ const board=$('vqcAdventureBoard');
+ if(!board)return;
+ board.replaceChildren();
+ const pieces=boardPieces(type);
+ for(let r=0;r<8;r++)for(let col=0;col<8;col++){
+  const cell=document.createElement('div');
+  cell.className='vqc-adventure-square '+((r+col)%2?'dark':'light');
+  const piece=pieces[''+r+col];
+  if(piece){
+   const pieceEl=document.createElement('span');
+   pieceEl.className='vqc-adventure-piece';
+   pieceEl.setAttribute('aria-label',(piece===piece.toUpperCase()?'Quân trắng ':'Quân đen ')+({P:'Tốt',R:'Xe',N:'Mã',B:'Tượng',Q:'Hậu',K:'Vua'}[piece.toUpperCase()]||''));
+   if(typeof pieceSvgMarkup==='function')pieceEl.innerHTML=pieceSvgMarkup(piece);
+   else pieceEl.textContent=({K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}[piece]||'');
+   cell.appendChild(pieceEl);
+  }
+  board.appendChild(cell);
  }
 }
 function openRegion(){
