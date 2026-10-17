@@ -1350,6 +1350,15 @@ function vqcBroadcastView(view,index=0){
   roomRef.update({activeView:{view,index,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
     .catch(e=>{console.error('Không đồng bộ được mục học',e);document.getElementById('status').textContent='⚠️ Chưa đồng bộ được mục học. Kiểm tra kết nối phòng.';});
 }
+function vqcSafeReceiveExercise(label,receiver,payload){
+  if(!payload||typeof receiver!=='function')return;
+  try{receiver(payload);}
+  catch(e){
+    console.error('Lỗi đồng bộ '+label,e);
+    const status=document.getElementById('status');
+    if(status&&role==='student')status.textContent='⚠️ Lỗi đồng bộ '+label+': '+(e.message||String(e));
+  }
+}
 function vqcReceiveView(data){
   if(!data||!data.stamp)return;
   const dialogIds={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay'};
@@ -1524,15 +1533,15 @@ function listenToRoom(){
       console.error('Lỗi nhận bài học từ phòng',e);
       if(role==='student')vqcNotify('Máy học sinh chưa hiển thị được bài học: '+(e.message||String(e)),'warning');
     }
-    if(active.view==='freecapture' && data.freeCaptureExercise && data.freeCaptureExercise.index===active.index)vqcReceiveFreeCapture(data.freeCaptureExercise);
-    if(active.view==='capture' && data.captureExercise && data.captureExercise.index===active.index)vqcReceiveCapture(data.captureExercise);
-    if(active.view==='defense' && data.defenseExercise && data.defenseExercise.index===active.index)vqcReceiveDefense(data.defenseExercise);
-    if(active.view==='pawngame' && data.pawnGameExercise && data.pawnGameExercise.index===active.index)pawnGameReceive(data.pawnGameExercise);
-    if(active.view==='check1' && data.checkOneExercise && data.checkOneExercise.index===active.index)vqcReceiveCheckOne(data.checkOneExercise);
-    if(active.view==='escape' && data.escapeExercise && data.escapeExercise.index===active.index)vqcReceiveEscape(data.escapeExercise);
-    if(active.view==='mate3' && data.mate3Exercise && data.mate3Exercise.index===active.index)vqcReceiveMate3(data.mate3Exercise);
-    if(active.view==='mate2' && data.mateExercise && data.mateExercise.index===active.index)receiveMateExercise(data.mateExercise);
-    pvpReceive(data.pvp||null);
+    if(active.view==='freecapture' && data.freeCaptureExercise && data.freeCaptureExercise.index===active.index)vqcSafeReceiveExercise('Ăn quân không bảo vệ',vqcReceiveFreeCapture,data.freeCaptureExercise);
+    if(active.view==='capture' && data.captureExercise && data.captureExercise.index===active.index)vqcSafeReceiveExercise('Ăn quân',vqcReceiveCapture,data.captureExercise);
+    if(active.view==='defense' && data.defenseExercise && data.defenseExercise.index===active.index)vqcSafeReceiveExercise('Phòng thủ',vqcReceiveDefense,data.defenseExercise);
+    if(active.view==='pawngame' && data.pawnGameExercise && data.pawnGameExercise.index===active.index)vqcSafeReceiveExercise('Tốt và Mã',pawnGameReceive,data.pawnGameExercise);
+    if(active.view==='check1' && data.checkOneExercise && data.checkOneExercise.index===active.index)vqcSafeReceiveExercise('Chiếu 1 nước',vqcReceiveCheckOne,data.checkOneExercise);
+    if(active.view==='escape' && data.escapeExercise && data.escapeExercise.index===active.index)vqcSafeReceiveExercise('Thoát chiếu',vqcReceiveEscape,data.escapeExercise);
+    if(active.view==='mate3' && data.mate3Exercise && data.mate3Exercise.index===active.index)vqcSafeReceiveExercise('Chiếu hết 3 nước',vqcReceiveMate3,data.mate3Exercise);
+    if(active.view==='mate2' && data.mateExercise && data.mateExercise.index===active.index)vqcSafeReceiveExercise('Chiếu hết 2 nước',receiveMateExercise,data.mateExercise);
+    try{pvpReceive(data.pvp||null);}catch(e){console.error('Lỗi đồng bộ đối kháng',e);}
     // Chỉ nhận dữ liệu từ máy khác hoặc bản đã xác nhận, không xóa nước đi đang chọn.
     if(Array.isArray(data.state)&&data.state.length===64){
       const boardKey=JSON.stringify([data.state,data.lastFrom,data.lastTo,data.pieceGame,data.rewardDismissed]);
