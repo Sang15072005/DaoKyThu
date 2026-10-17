@@ -1320,10 +1320,18 @@ function vqcBroadcastView(view,index=0){
 }
 function vqcReceiveView(data){
   if(!data||!data.stamp||data.stamp===vqcNavSeen)return;
-  vqcNavSeen=data.stamp;
   vqcNavApplying=true;
   try{
     const view=data.view,index=Number(data.index)||0;
+    if(roomRef && !document.body.classList.contains('vqc-mode-class')){
+      document.body.classList.remove('vqc-mode-home','vqc-mode-world');
+      document.body.classList.add('vqc-mode-class');
+      document.getElementById('vqcModeHome')?.setAttribute('aria-hidden','true');
+      document.getElementById('vqcModeWorld')?.setAttribute('aria-hidden','true');
+    }
+    const dialogs={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay'};
+    const overlay=dialogs[view]&&document.getElementById(dialogs[view]);
+    if(overlay&&overlay.parentElement!==document.body)document.body.appendChild(overlay);
     vqcCloseOtherViews(view);
     if(view==='mate2')openMateExercises(index);
     else if(view==='mate3')openMate3(index);
@@ -1334,11 +1342,14 @@ function vqcReceiveView(data){
     else if(view==='pawngame')pawnGameOpen(index);
     else if(view==='check1')checkOneOpen(index);
     else if(view==='escape')escapeOpen(index);
-    else if(view==='piece'&&pieceGameNames[data.piece]){
-      startPieceGame(data.piece);
-    }else if(view==='board'){
-      exitPieceGame();
-    }
+    else if(view==='piece'&&pieceGameNames[data.piece])startPieceGame(data.piece);
+    else if(view==='board')exitPieceGame();
+    if(overlay)overlay.classList.add('open');
+    vqcNavSeen=data.stamp;
+  }catch(e){
+    console.error('Không mở được bài học đồng bộ từ giáo viên:',data.view,e);
+    vqcNavSeen=data.stamp;
+    if(typeof vqcNotify==='function')vqcNotify('Không mở được bài học từ giáo viên: '+(e.message||String(e)),'warning');
   }finally{vqcNavApplying=false;}
 }
 // Gói các hàm hiện có để đồng bộ thao tác, không thay đổi luật chơi.
