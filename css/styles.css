@@ -2253,3 +2253,7 @@ body:has(#accountOverlay:not(.hidden)) > footer{display:none!important}
  #accountOverlay .vqc-login-layout{display:block;min-height:100dvh}
  #accountOverlay .account-modal{width:min(100% - 24px,560px);margin:12px auto 24px!important}
 }
+
+/* Challenge dialogs must be above all classroom and login layers. */
+body.vqc-mode-class .escape-overlay.open,body.vqc-mode-class .checkone-overlay.open,body.vqc-mode-class .pawn-game-overlay.open,body.vqc-mode-class .defense-overlay.open,body.vqc-mode-class .freecapture-overlay.open,body.vqc-mode-class .capture-overlay.open{display:flex!important;position:fixed!important;inset:0!important;z-index:12000!important;visibility:visible!important;pointer-events:auto!important}
+body.vqc-mode-class .lesson[role="button"]{pointer-events:auto;position:relative;cursor:pointer}
