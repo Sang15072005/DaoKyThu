@@ -15,7 +15,7 @@
 
 
 
-<link rel="stylesheet" href="./css/styles.css?v=login-60-40-footer-20261017">
+<link rel="stylesheet" href="./css/styles.css?v=challenge-repair-20261017">
 
 
 
@@ -365,13 +365,13 @@
 
 
 
-    <div class="lesson" id="escapeMenu" role="button" tabindex="0" onclick="escapeOpen(0)" onkeydown="if(event.key==='Enter')escapeOpen(0)"><div class="lesson-icon">🛡️</div> Thoát chiếu</div>
-    <div class="lesson" id="checkOneMenu" role="button" tabindex="0" onclick="checkOneOpen(0)" onkeydown="if(event.key==='Enter')checkOneOpen(0)"><div class="lesson-icon">⚡</div> Chiếu trong 1 nước</div>
-    <div class="lesson" id="pawnGamesMenu" role="button" tabindex="0" onclick="pawnGameOpen(0)" onkeydown="if(event.key==='Enter')pawnGameOpen(0)"><div class="lesson-icon">♟️</div> Trò chơi Tốt và Mã</div>
-    <div class="lesson" id="defenseAttackMenu" role="button" tabindex="0" onclick="defenseOpenNew(0)" onkeydown="if(event.key==='Enter')defenseOpenNew(0)"><div class="lesson-icon">🛡️</div> Phòng thủ quân bị tấn công</div>
-    <div class="lesson" id="defenseMenu" role="button" tabindex="0" onclick="defenseOpen(0)" onkeydown="if(event.key==='Enter')defenseOpen(0)"><div class="lesson-icon">🛡️</div> Phòng thủ</div>
-<div class="lesson" id="freeCaptureMenu" role="button" tabindex="0" onclick="freeCaptureOpen(0)" onkeydown="if(event.key==='Enter')freeCaptureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân không được bảo vệ</div>
-<div class="lesson" id="captureMenu" role="button" tabindex="0" onclick="captureOpen(0)" onkeydown="if(event.key==='Enter')captureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân</div>
+    <div class="lesson" id="escapeMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('escapeOpen',0)" onkeydown="if(event.key==='Enter')escapeOpen(0)"><div class="lesson-icon">🛡️</div> Thoát chiếu</div>
+    <div class="lesson" id="checkOneMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('checkOneOpen',0)" onkeydown="if(event.key==='Enter')checkOneOpen(0)"><div class="lesson-icon">⚡</div> Chiếu trong 1 nước</div>
+    <div class="lesson" id="pawnGamesMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('pawnGameOpen',0)" onkeydown="if(event.key==='Enter')pawnGameOpen(0)"><div class="lesson-icon">♟️</div> Trò chơi Tốt và Mã</div>
+    <div class="lesson" id="defenseAttackMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('defenseOpenNew',0)" onkeydown="if(event.key==='Enter')defenseOpenNew(0)"><div class="lesson-icon">🛡️</div> Phòng thủ quân bị tấn công</div>
+    <div class="lesson" id="defenseMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('defenseOpen',0)" onkeydown="if(event.key==='Enter')defenseOpen(0)"><div class="lesson-icon">🛡️</div> Phòng thủ</div>
+<div class="lesson" id="freeCaptureMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('freeCaptureOpen',0)" onkeydown="if(event.key==='Enter')freeCaptureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân không được bảo vệ</div>
+<div class="lesson" id="captureMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('captureOpen',0)" onkeydown="if(event.key==='Enter')captureOpen(0)"><div class="lesson-icon">🎯</div> Ăn quân</div>
 <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước</div>
 <div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
 
@@ -842,6 +842,23 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js"></script>
 <script src="./js/learning-modes.js?v=separate-class-world-20261017"></script>
+<script>
+/* Robust menu handlers: expose an actionable message instead of silently failing. */
+function vqcOpenChallengeSafe(name,index){
+  const labels={escapeOpen:'Thoát chiếu',checkOneOpen:'Chiếu trong 1 nước',pawnGameOpen:'Trò chơi Tốt và Mã',defenseOpenNew:'Phòng thủ quân bị tấn công',defenseOpen:'Phòng thủ',freeCaptureOpen:'Ăn quân không được bảo vệ',captureOpen:'Ăn quân'};
+  try{
+    if(typeof window[name]!=='function')throw Error('Chưa tải được tập tin bài tập: '+name);
+    window[name](index);
+    const overlays={escapeOpen:'escapeOverlay',checkOneOpen:'checkOneOverlay',pawnGameOpen:'pawnGameOverlay',defenseOpenNew:'defenseOverlay',defenseOpen:'defenseOverlay',freeCaptureOpen:'freeCaptureOverlay',captureOpen:'captureOverlay'};
+    const el=document.getElementById(overlays[name]);
+    if(!el||!el.classList.contains('open'))throw Error('Cửa sổ bài tập chưa được mở.');
+  }catch(error){
+    console.error('Không mở được thử thách '+name,error);
+    const msg='Không mở được '+(labels[name]||'thử thách')+': '+(error.message||'lỗi không xác định')+'. Hãy tải lại trang bằng Ctrl+F5.';
+    if(typeof vqcNotify==='function')vqcNotify(msg,'warning');else alert(msg);
+  }
+}
+</script>
 </body>
 
 </html>
