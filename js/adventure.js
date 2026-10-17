@@ -30,9 +30,8 @@ const QUESTIONS=[
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
 let progress={done:[],forestDone:[],stars:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
 
-/* Six existing assets are kept on the adventure side only; live classroom is unaffected. */
+/* Five selectable assets are kept on the adventure side only; live classroom is unaffected. */
 const AVAILABLE_AVATARS=[
- {id:'wizard', name:'Pháp sư', src:'./assets/nhanvat%20(1).png'},
  {id:'king', name:'Nhà vua', src:'./assets/nhanvat%20(2).png'},
  {id:'queen', name:'Nữ hoàng', src:'./assets/nhanvat%20(3).png'},
  {id:'knight', name:'Hiệp sĩ', src:'./assets/nhanvat%20(4).png'},
