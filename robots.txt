@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thanhsangchess.github.io/DaoKyThu/sitemap.xml
