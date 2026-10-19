@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
 <link rel="stylesheet" href="./css/adventure.css?v=volcano-region5-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
-<link rel="stylesheet" href="./css/friends.css?v=friends-permission-diagnostics-20261019">
+<link rel="stylesheet" href="./css/friends.css?v=friend-search-20261020">
 
 
 
@@ -1092,8 +1092,9 @@
    <label id="vqcFriendsInviteHeading" for="vqcFriendsCodeInput">✉️ Gửi lời mời kết bạn</label>
    <div class="vqc-friends-invite__row">
     <input id="vqcFriendsCodeInput" type="text" inputmode="text" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Nhập mã KTXXXXXXXXXX" aria-describedby="vqcFriendsInviteHint">
-    <button id="vqcFriendsSend" type="button">Gửi lời mời</button>
+    <button id="vqcFriendsFind" type="button">Tìm bạn</button><button id="vqcFriendsSend" type="button">Gửi lời mời</button>
    </div>
+   <div id="vqcFriendsFound" class="vqc-friends-found" hidden><span aria-hidden="true">♟️</span> <strong id="vqcFriendsFoundName"></strong></div>
    <small id="vqcFriendsInviteHint">Bạn nhận được lời mời sẽ chọn Đồng ý hoặc Từ chối. Không có trò chuyện riêng.</small>
   </section>
   <div class="vqc-friends-tabs" role="tablist" aria-label="Các mục bạn bè">
@@ -1222,7 +1223,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
 <script src="./js/adventure.js?v=friends-20261019"></script>
-<script src="./js/friends.js?v=fix-invite-create-20261020"></script>
+<script src="./js/friends.js?v=friend-search-20261020"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
