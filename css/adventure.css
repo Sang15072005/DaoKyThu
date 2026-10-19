@@ -1611,3 +1611,398 @@ body.vqc-coin-wallet-open{overflow:hidden}
  .vqc-adventure .vqc-character-shop-button{transition:none}
  .vqc-adventure .vqc-character-shop-button:hover{transform:none}
 }
+
+/* ===========================================================
+   REWARD COLLECTION CARDS - BADGES & TREASURE
+   Same proportions, buttons and depth as coins / character cards.
+   =========================================================== */
+.vqc-adventure .chess-reward-card--badges,
+.vqc-adventure .chess-reward-card--treasure{
+ height:auto;
+ min-height:465px;
+ grid-template-rows:minmax(230px,3fr) minmax(185px,2fr);
+ background:#fffdfc;
+}
+.vqc-adventure .chess-reward-card--badges{
+ border-color:#d8c0ff;
+ box-shadow:0 8px 28px rgba(120,75,178,.16);
+}
+.vqc-adventure .chess-reward-card--treasure{
+ border-color:#b4dfbb;
+ box-shadow:0 8px 28px rgba(68,151,92,.16);
+}
+.vqc-adventure .chess-reward-card--badges .chess-reward-card__content,
+.vqc-adventure .chess-reward-card--treasure .chess-reward-card__content{
+ padding:15px 21px 20px;
+ justify-content:center;
+ gap:5px;
+}
+.vqc-adventure .chess-reward-card--badges .chess-reward-card__content h3,
+.vqc-adventure .chess-reward-card--treasure .chess-reward-card__content h3{
+ margin:0 0 2px;
+}
+.vqc-adventure .chess-reward-card--badges .chess-reward-card__content p,
+.vqc-adventure .chess-reward-card--treasure .chess-reward-card__content p{
+ margin:0;
+ font-size:13px;
+ line-height:1.45;
+}
+.vqc-adventure .chess-reward-card--badges .chess-reward-card__content p{color:#715c90}
+.vqc-adventure .chess-reward-card--treasure .chess-reward-card__content p{color:#5c7b60}
+.vqc-adventure .vqc-badge-art,
+.vqc-adventure .vqc-treasure-art{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:10px;
+ overflow:hidden;
+ border-radius:22px 22px 0 0;
+}
+.vqc-adventure .vqc-badge-art{
+ background:radial-gradient(circle at 50% 30%,#f9f2ff 0%,#e9dbff 55%,#d1b1f3 100%);
+}
+.vqc-adventure .vqc-treasure-art{
+ background:radial-gradient(circle at 50% 30%,#f6ffef 0%,#d7f0d2 55%,#9bd8a8 100%);
+}
+.vqc-adventure .vqc-badge-art:before,
+.vqc-adventure .vqc-badge-art:after,
+.vqc-adventure .vqc-treasure-art:before,
+.vqc-adventure .vqc-treasure-art:after{
+ content:'✦';
+ position:absolute;
+ color:#fff8;
+ font-size:35px;
+ pointer-events:none;
+}
+.vqc-adventure .vqc-badge-art:before,
+.vqc-adventure .vqc-treasure-art:before{top:12%;left:11%}
+.vqc-adventure .vqc-badge-art:after,
+.vqc-adventure .vqc-treasure-art:after{right:10%;bottom:14%;font-size:25px}
+.vqc-adventure .vqc-badge-art__icons{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-wrap:wrap;
+ gap:10px;
+ max-width:90%;
+}
+.vqc-adventure .vqc-badge-art__icons span{
+ display:grid;
+ place-items:center;
+ width:60px;
+ height:60px;
+ border:3px solid #fff7d5;
+ border-radius:50%;
+ background:linear-gradient(135deg,#fffdf8,#faebff);
+ box-shadow:0 5px 0 #b898cf7d,0 7px 14px #65458b42;
+ font-size:27px;
+}
+.vqc-adventure .vqc-treasure-art__chest{
+ display:grid;
+ place-items:center;
+ width:96px;
+ height:96px;
+ border:4px solid #f9dda1;
+ border-radius:26px;
+ background:linear-gradient(145deg,#fff8de,#ffe3ab);
+ box-shadow:0 8px 0 #bb874f75,0 11px 22px #5a9b5873;
+ font-size:55px;
+ filter:drop-shadow(0 3px 4px #27623a26);
+}
+.vqc-adventure .vqc-badge-art__eyebrow,
+.vqc-adventure .vqc-treasure-art__eyebrow{
+ font-size:11px;
+ font-weight:900;
+ letter-spacing:1.1px;
+}
+.vqc-adventure .vqc-badge-art__eyebrow{color:#7842ae}
+.vqc-adventure .vqc-treasure-art__eyebrow{color:#377f53}
+.vqc-adventure .vqc-badge-art__headline,
+.vqc-adventure .vqc-treasure-art__headline{
+ padding:6px 17px;
+ border:2px solid;
+ border-radius:999px;
+ background:#fffef9e8;
+ font-size:clamp(17px,2vw,23px);
+ box-shadow:0 4px 0 #78787827;
+}
+.vqc-adventure .vqc-badge-art__headline{border-color:#d0a6fa;color:#7544b1}
+.vqc-adventure .vqc-treasure-art__headline{border-color:#92cc9f;color:#367945}
+.vqc-adventure .vqc-badge-button,
+.vqc-adventure .vqc-treasure-button{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+ width:100%;
+ min-height:39px;
+ margin-top:8px;
+ padding:9px 12px;
+ border:0;
+ border-radius:13px;
+ color:#fff;
+ font:inherit;
+ font-size:14px;
+ font-weight:900;
+ cursor:pointer;
+ transition:transform .15s ease,box-shadow .15s ease;
+}
+.vqc-adventure .vqc-badge-button{
+ background:linear-gradient(180deg,#b38bef,#885bd4);
+ box-shadow:0 4px 0 #6841a7;
+}
+.vqc-adventure .vqc-treasure-button{
+ background:linear-gradient(180deg,#7dd696,#3ca969);
+ box-shadow:0 4px 0 #2b8151;
+}
+.vqc-adventure .vqc-badge-button:hover,
+.vqc-adventure .vqc-treasure-button:hover{transform:translateY(-2px)}
+.vqc-adventure .vqc-badge-button:hover{box-shadow:0 6px 0 #6841a7}
+.vqc-adventure .vqc-treasure-button:hover{box-shadow:0 6px 0 #2b8151}
+.vqc-adventure .vqc-badge-button:focus-visible,
+.vqc-adventure .vqc-treasure-button:focus-visible{
+ outline:3px solid #2b94df;
+ outline-offset:3px;
+}
+/* Matching full-screen collection dialogs */
+.vqc-reward-modal[hidden],.vqc-reward-toast[hidden]{display:none!important}
+body.vqc-reward-dialog-open{overflow:hidden}
+.vqc-reward-modal{
+ position:fixed;
+ inset:0;
+ z-index:27000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ box-sizing:border-box;
+ padding:16px;
+ background:rgba(19,33,62,.76);
+ backdrop-filter:blur(5px);
+ font-family:"Segoe UI",Arial,sans-serif;
+}
+.vqc-reward-modal__panel{
+ position:relative;
+ box-sizing:border-box;
+ width:min(760px,100%);
+ max-height:calc(100dvh - 32px);
+ overflow-y:auto;
+ padding:clamp(16px,3vw,27px);
+ border:4px solid #d5b4f6;
+ border-radius:25px;
+ background:linear-gradient(160deg,#fcf7ff,#ffffff 55%,#f4f0ff);
+ box-shadow:0 8px 0 #9270c6,0 22px 65px #11204692;
+ color:#41526b;
+}
+.vqc-reward-modal--treasure .vqc-reward-modal__panel{
+ border-color:#a7d9af;
+ background:linear-gradient(160deg,#f2fff3,#ffffff 55%,#faffea);
+ box-shadow:0 8px 0 #6da77e,0 22px 65px #112e3492;
+}
+.vqc-reward-modal__close{
+ position:absolute;
+ right:12px;
+ top:12px;
+ display:grid;
+ place-items:center;
+ width:39px;
+ height:39px;
+ border:2px solid #e7d9e9;
+ border-radius:50%;
+ background:#fff;
+ color:#806c90;
+ font-size:26px;
+ font-weight:800;
+ cursor:pointer;
+ z-index:2;
+}
+.vqc-reward-modal__hero{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:6px;
+ text-align:center;
+ padding:10px 30px 18px;
+}
+.vqc-reward-modal__hero-icon{
+ display:grid;
+ place-items:center;
+ width:72px;
+ height:72px;
+ border:3px solid #e4c2ff;
+ border-radius:24px;
+ background:linear-gradient(140deg,#fdf3ff,#e5c5ff);
+ font-size:38px;
+ box-shadow:0 5px 0 #ac8ed45b;
+}
+.vqc-reward-modal--treasure .vqc-reward-modal__hero-icon{
+ border-color:#a7d7a8;
+ background:linear-gradient(140deg,#fff6cb,#d3f7c9);
+ box-shadow:0 5px 0 #89b88a5b;
+}
+.vqc-reward-modal__eyebrow{
+ font-size:11px;
+ letter-spacing:1px;
+ font-weight:900;
+ color:#9467bc;
+}
+.vqc-reward-modal--treasure .vqc-reward-modal__eyebrow{color:#4f935f}
+.vqc-reward-modal__hero h2{
+ margin:0;
+ font-size:clamp(23px,3vw,33px);
+ line-height:1.3;
+ font-weight:900;
+ color:#7547aa;
+}
+.vqc-reward-modal--treasure .vqc-reward-modal__hero h2{color:#40804d}
+.vqc-reward-modal__hero p{
+ margin:0;
+ color:#63738a;
+ font-size:14px;
+ line-height:1.55;
+}
+.vqc-badge-list,
+.vqc-treasure-list{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+ margin:5px auto 18px;
+}
+.vqc-badge-item,
+.vqc-treasure-item{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ min-width:0;
+ min-height:117px;
+ padding:13px;
+ border:2px solid #e3dfe8;
+ border-radius:17px;
+ background:#f4f5f7;
+}
+.vqc-badge-item.is-locked,
+.vqc-treasure-item.is-unavailable{opacity:.68}
+.vqc-badge-item.is-earned{
+ border-color:#d1b7f6;
+ background:linear-gradient(145deg,#fff9e9,#f4eaff);
+}
+.vqc-treasure-item.is-opened{
+ border-color:#b7dfa9;
+ background:linear-gradient(145deg,#fffbe5,#e4f8e1);
+}
+.vqc-treasure-item.is-pending{
+ border-color:#d4e5c2;
+ background:#f7faee;
+}
+.vqc-badge-symbol,
+.vqc-treasure-item__chest{
+ flex:0 0 57px;
+ height:57px;
+ display:grid;
+ place-items:center;
+ border:2px solid #e3dbea;
+ border-radius:18px;
+ background:#fff;
+ box-shadow:0 4px 0 #bfc5bf45;
+ font-size:29px;
+}
+.is-earned .vqc-badge-symbol,
+.is-opened .vqc-treasure-item__chest{border-color:#ebc86f;background:#fff8dd}
+.vqc-badge-item__details,
+.vqc-treasure-item__details{
+ display:flex;
+ flex:1;
+ min-width:0;
+ flex-direction:column;
+ gap:5px;
+}
+.vqc-badge-item__name,.vqc-treasure-item__name{
+ font-size:15px;
+ color:#3e5272;
+ line-height:1.35;
+}
+.vqc-badge-item__description,.vqc-badge-item__state,
+.vqc-treasure-item__state{
+ margin:0;
+ font-size:12px;
+ line-height:1.4;
+ color:#6e7788;
+}
+.vqc-badge-item__state{font-weight:800;color:#8255af}
+.vqc-treasure-item__state{font-weight:700}
+.vqc-treasure-item__amount{
+ flex-shrink:0;
+ font-size:13px;
+ font-weight:900;
+ white-space:nowrap;
+ color:#a77728;
+}
+.is-opened .vqc-treasure-item__amount{color:#388453}
+.vqc-reward-modal__note{
+ margin:8px auto 16px;
+ max-width:620px;
+ color:#6c7480;
+ font-size:12px;
+ text-align:center;
+ line-height:1.6;
+}
+.vqc-reward-modal__done{
+ display:block;
+ margin:0 auto;
+ min-height:46px;
+ padding:10px 28px;
+ border:0;
+ border-radius:14px;
+ background:linear-gradient(180deg,#b58cf0,#8e58dc);
+ box-shadow:0 4px 0 #6741a8;
+ color:#fff;
+ font:inherit;
+ font-weight:900;
+ font-size:15px;
+ cursor:pointer;
+}
+.vqc-reward-modal--treasure .vqc-reward-modal__done{
+ background:linear-gradient(180deg,#7acc8f,#3aaa69);
+ box-shadow:0 4px 0 #28864f;
+}
+.vqc-reward-modal button:focus-visible{
+ outline:3px solid #348edf;
+ outline-offset:3px;
+}
+.vqc-reward-toast{
+ position:fixed;
+ left:50%;
+ bottom:max(20px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);
+ z-index:30000;
+ box-sizing:border-box;
+ max-width:min(92vw,580px);
+ padding:14px 20px;
+ border:3px solid #ddba79;
+ border-radius:15px;
+ background:#f6e8ff;
+ color:#62399b;
+ box-shadow:0 12px 32px #16314c5c;
+ font-weight:900;
+ font-size:14px;
+ text-align:center;
+}
+@media(max-width:700px){
+ .vqc-badge-list,.vqc-treasure-list{grid-template-columns:1fr}
+ .vqc-reward-modal__panel{padding:17px 11px;border-radius:20px}
+ .vqc-badge-item,.vqc-treasure-item{min-height:93px;padding:9px}
+ .vqc-reward-modal__hero{padding:12px 30px 15px}
+ .vqc-badge-symbol,.vqc-treasure-item__chest{flex-basis:48px;height:48px;font-size:24px}
+ .vqc-adventure .chess-reward-card--badges .chess-reward-card__content,
+ .vqc-adventure .chess-reward-card--treasure .chess-reward-card__content{padding:15px}
+}
+@media(max-width:420px){
+ .vqc-adventure .vqc-badge-art__icons{gap:5px}
+ .vqc-adventure .vqc-badge-art__icons span{width:48px;height:48px;font-size:23px}
+ .vqc-treasure-item__amount{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-adventure .vqc-badge-button,.vqc-adventure .vqc-treasure-button{transition:none!important}
+ .vqc-adventure .vqc-badge-button:hover,.vqc-adventure .vqc-treasure-button:hover{transform:none!important}
+}

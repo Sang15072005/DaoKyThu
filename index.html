@@ -30,7 +30,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=character-shop-20261019">
+<link rel="stylesheet" href="./css/adventure.css?v=treasure-badges-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
 
 
@@ -230,22 +230,30 @@
             <button id="vqcCharacterShopOpen" class="vqc-character-shop-button" type="button" aria-haspopup="dialog" aria-controls="vqcAvatarModal">🛍️ Mở cửa hàng nhân vật <span aria-hidden="true">→</span></button>
           </div>
         </article>
-        <article class="chess-reward-card">
-          <div class="chess-reward-card__image">
-            <img src="https://placehold.co/800x500/E2D7FF/6842A4?text=Huy+Hieu" alt="Hình minh họa huy hiệu thành tích" width="800" height="500" loading="lazy">
+        <article class="chess-reward-card chess-reward-card--badges" aria-label="Bộ sưu tập huy hiệu thành tích">
+          <div class="chess-reward-card__image vqc-badge-art">
+            <div class="vqc-badge-art__icons" aria-hidden="true">
+              <span>⚓</span><span>⭐</span><span>⚔️</span><span>🛡️</span>
+            </div>
+            <span class="vqc-badge-art__eyebrow">BỘ SƯU TẬP THÀNH TÍCH</span>
+            <strong class="vqc-badge-art__headline"><span id="vqcBadgeOwnedCount">0</span>/4 huy hiệu</strong>
           </div>
           <div class="chess-reward-card__content">
             <h3>🏅 Huy hiệu thành tích</h3>
-            <p>Chinh phục Vùng 1–4 để nhận huy hiệu Đầu xuôi đuôi lọt, Bậc thầy nhặt sao, Bậc thầy ăn quân và Bậc thầy phòng thủ. Nhấn để xem bộ sưu tập.</p>
+            <p>Vượt qua các vùng đất để sưu tập huy hiệu Đầu xuôi đuôi lọt, Bậc thầy nhặt sao, Bậc thầy ăn quân và Bậc thầy phòng thủ.</p>
+            <button id="vqcBadgeCollectionOpen" class="vqc-badge-button" type="button" aria-haspopup="dialog" aria-controls="vqcBadgeModal">🏅 Xem bộ sưu tập <span aria-hidden="true">→</span></button>
           </div>
         </article>
-        <article class="chess-reward-card">
-          <div class="chess-reward-card__image">
-            <img src="https://placehold.co/800x500/D9F5CE/397B4E?text=Kho+Bau" alt="Hình minh họa rương kho báu" width="800" height="500" loading="lazy">
+        <article class="chess-reward-card chess-reward-card--treasure" aria-label="Rương kho báu chinh phục vùng đất">
+          <div class="chess-reward-card__image vqc-treasure-art">
+            <div class="vqc-treasure-art__chest" aria-hidden="true">🧰</div>
+            <span class="vqc-treasure-art__eyebrow">KHO BÁU ĐẢO KỲ THỦ</span>
+            <strong class="vqc-treasure-art__headline"><span id="vqcTreasureOwnedCount">0</span>/7 rương đã mở</strong>
           </div>
           <div class="chess-reward-card__content">
             <h3>🎁 Rương kho báu</h3>
-            <p>Phần thưởng được xác định trước sau những cột mốc học tập, không cần quay thưởng ngẫu nhiên.</p>
+            <p>Khám phá các rương theo cột mốc chinh phục vùng đất. Phần thưởng được xác định trước và không quay ngẫu nhiên.</p>
+            <button id="vqcTreasureOpen" class="vqc-treasure-button" type="button" aria-haspopup="dialog" aria-controls="vqcTreasureModal">🎁 Xem kho báu <span aria-hidden="true">→</span></button>
           </div>
         </article>
       </div>
@@ -330,6 +338,38 @@
  </div>
 </div>
 <div id="vqcCoinsToast" class="vqc-coin-toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Reward collection dialogs: at document root to avoid clipping inside the island map. -->
+<div id="vqcBadgeModal" class="vqc-reward-modal vqc-reward-modal--badges" role="dialog" aria-modal="true" aria-labelledby="vqcBadgeTitle" aria-describedby="vqcBadgeSummary" hidden>
+ <div class="vqc-reward-modal__panel" tabindex="-1">
+  <button id="vqcBadgeClose" class="vqc-reward-modal__close" type="button" aria-label="Đóng bộ sưu tập huy hiệu">×</button>
+  <div class="vqc-reward-modal__hero">
+   <span class="vqc-reward-modal__hero-icon" aria-hidden="true">🏅</span>
+   <span class="vqc-reward-modal__eyebrow">THÀNH TÍCH CỦA EM</span>
+   <h2 id="vqcBadgeTitle">Bộ sưu tập huy hiệu</h2>
+   <p id="vqcBadgeSummary" role="status">Hoàn thành từng vùng đất để thu thập huy hiệu.</p>
+  </div>
+  <div id="vqcBadgeList" class="vqc-badge-list" aria-label="Bốn huy hiệu chinh phục"></div>
+  <p class="vqc-reward-modal__note">Huy hiệu được cấp tự động theo tiến độ học tập, không cần sử dụng Xu Kỳ Thủ.</p>
+  <button id="vqcBadgeDone" class="vqc-reward-modal__done" type="button">Tiếp tục hành trình</button>
+ </div>
+</div>
+<div id="vqcBadgeToast" class="vqc-reward-toast vqc-reward-toast--badge" role="status" aria-live="polite" hidden></div>
+
+<div id="vqcTreasureModal" class="vqc-reward-modal vqc-reward-modal--treasure" role="dialog" aria-modal="true" aria-labelledby="vqcTreasureTitle" aria-describedby="vqcTreasureSummary" hidden>
+ <div class="vqc-reward-modal__panel" tabindex="-1">
+  <button id="vqcTreasureClose" class="vqc-reward-modal__close" type="button" aria-label="Đóng kho báu">×</button>
+  <div class="vqc-reward-modal__hero">
+   <span class="vqc-reward-modal__hero-icon" aria-hidden="true">🎁</span>
+   <span class="vqc-reward-modal__eyebrow">PHẦN THƯỞNG CHINH PHỤC</span>
+   <h2 id="vqcTreasureTitle">Kho báu Đảo Kỳ Thủ</h2>
+   <p id="vqcTreasureSummary" role="status">Hoàn thành các vùng đất để mở rương.</p>
+  </div>
+  <div id="vqcTreasureList" class="vqc-treasure-list" aria-label="Bảy rương theo cột mốc"></div>
+  <p class="vqc-reward-modal__note">Rương hiển thị những phần thưởng đã có trong hệ thống Xu Kỳ Thủ. Xem rương không cộng thêm xu và không có phần thưởng ngẫu nhiên.</p>
+  <button id="vqcTreasureDone" class="vqc-reward-modal__done" type="button">Tiếp tục khám phá</button>
+ </div>
+</div>
 
 <div id="vqcAvatarModal" class="vqc-avatar-modal" role="dialog" aria-modal="true" aria-labelledby="vqcAvatarModalTitle" aria-describedby="vqcAvatarModalDesc" hidden>
  <div class="vqc-avatar-modal__dialog" tabindex="-1">
@@ -1064,7 +1104,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=badges-20261019"></script>
+<script src="./js/adventure.js?v=treasure-badges-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
