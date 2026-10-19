@@ -1,0 +1,14 @@
+.vqc-challenge-overlay[hidden]{display:none!important}
+.vqc-challenge-overlay{position:fixed;inset:0;z-index:29995;background:#132b43c4;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto}
+.vqc-challenge-dialog{background:#f6fbff;color:#285776;border:4px solid #c6e3f5;border-radius:20px;padding:18px;width:min(95vw,610px);max-height:94vh;overflow:auto}
+.vqc-challenge-dialog h2{font-size:21px;margin:0}
+.vqc-challenge-dialog>p{font-size:14px;line-height:1.5}
+#vqcChallengeList{display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow:auto}
+.vqc-challenge-card{border:1px solid #c8dfec;border-radius:12px;background:white;padding:13px}
+.vqc-challenge-card strong{font-size:16px}
+.vqc-challenge-detail{font-size:13px;color:#57778e;margin:7px 0}
+.vqc-challenge-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.vqc-challenge-buttons button,#vqcChallengeFriends{background:#e7f1f9;color:#24678d;border:0;border-radius:9px;padding:9px 13px;font-weight:800;cursor:pointer}
+.vqc-challenge-buttons button.accept{background:#27936d;color:white}
+.vqc-challenge-buttons button.decline{background:#f7e8e8;color:#9b4444}
+#vqcChallengeFriends{margin-top:14px}
