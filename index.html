@@ -30,7 +30,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=coin-wallet-20261019">
+<link rel="stylesheet" href="./css/adventure.css?v=character-shop-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
 
 
@@ -214,13 +214,20 @@
             <button id="vqcCoinWalletOpen" class="vqc-coin-wallet-button" type="button" aria-haspopup="dialog" aria-controls="vqcCoinModal">🪙 Mở ví Xu Kỳ Thủ <span aria-hidden="true">→</span></button>
           </div>
         </article>
-        <article class="chess-reward-card">
-          <div class="chess-reward-card__image">
-            <img src="https://placehold.co/800x500/CDEFFF/236AA4?text=Nhan+Vat" alt="Hình minh họa nhân vật thám hiểm" width="800" height="500" loading="lazy">
+        <article class="chess-reward-card chess-reward-card--characters" aria-label="Cửa hàng nhân vật đã mở khóa">
+          <div class="chess-reward-card__image vqc-character-art">
+            <div class="vqc-character-art__images" aria-hidden="true">
+              <img src="./assets/nhanvat%20(5).png" alt="" width="150" height="150" loading="lazy">
+              <img src="./assets/nhanvat%20(6).png" alt="" width="185" height="185" loading="lazy">
+              <img src="./assets/nhanvat%20(4).png" alt="" width="150" height="150" loading="lazy">
+            </div>
+            <span class="vqc-character-art__eyebrow">NHỮNG NGƯỜI BẠN ĐỒNG HÀNH</span>
+            <strong class="vqc-character-art__headline"><span id="vqcOwnedAvatarCount">2</span>/5 nhân vật</strong>
           </div>
           <div class="chess-reward-card__content">
             <h3>🧙 Nhân vật thám hiểm</h3>
-            <p>Học sinh chọn nhân vật, đổi mũ, áo choàng, balô và phụ kiện.</p>
+            <p>Học giả và Nhà thám hiểm miễn phí. Dùng Xu Kỳ Thủ mở khóa Hiệp sĩ, Nữ hoàng và Nhà vua để trang bị trên bản đồ!</p>
+            <button id="vqcCharacterShopOpen" class="vqc-character-shop-button" type="button" aria-haspopup="dialog" aria-controls="vqcAvatarModal">🛍️ Mở cửa hàng nhân vật <span aria-hidden="true">→</span></button>
           </div>
         </article>
         <article class="chess-reward-card">
@@ -329,30 +336,31 @@
   <button id="vqcAvatarClose" type="button" class="vqc-avatar-modal__close" aria-label="Đóng cửa sổ chọn nhân vật">×</button>
   <span class="vqc-avatar-modal__eyebrow">✨ TẠO HÌNH NHÀ THÁM HIỂM</span>
   <h2 id="vqcAvatarModalTitle">Chọn nhân vật của bạn</h2>
-  <p id="vqcAvatarModalDesc">Em thích đồng hành cùng ai trong chuyến phiêu lưu trên Đảo Kỳ Thủ?</p>
+  <p id="vqcAvatarModalDesc">Học giả và Nhà thám hiểm được sử dụng miễn phí. Em có thể dùng Xu Kỳ Thủ để mở khóa những nhân vật khác!</p>
+  <div class="vqc-avatar-wallet">🪙 Xu hiện có: <strong id="vqcAvatarCoins">0</strong> xu</div>
   <div class="vqc-avatar-choices" id="vqcAvatarChoices" aria-label="Năm nhân vật có thể lựa chọn">
     <button class="vqc-avatar-option" type="button" data-avatar="king" aria-pressed="false">
      <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(2).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
-     <span class="vqc-avatar-option__label">Nhà vua</span>
+     <span class="vqc-avatar-option__label">Nhà vua</span><span class="vqc-avatar-option__status" data-avatar-price="king">🪙 7.000 xu</span>
     </button>
     <button class="vqc-avatar-option" type="button" data-avatar="queen" aria-pressed="false">
      <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(3).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
-     <span class="vqc-avatar-option__label">Nữ hoàng</span>
+     <span class="vqc-avatar-option__label">Nữ hoàng</span><span class="vqc-avatar-option__status" data-avatar-price="queen">🪙 7.000 xu</span>
     </button>
     <button class="vqc-avatar-option" type="button" data-avatar="knight" aria-pressed="false">
      <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(4).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
-     <span class="vqc-avatar-option__label">Hiệp sĩ</span>
+     <span class="vqc-avatar-option__label">Hiệp sĩ</span><span class="vqc-avatar-option__status" data-avatar-price="knight">🪙 3.000 xu</span>
     </button>
     <button class="vqc-avatar-option" type="button" data-avatar="scholar" aria-pressed="false">
      <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(5).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
-     <span class="vqc-avatar-option__label">Học giả</span>
+     <span class="vqc-avatar-option__label">Học giả</span><span class="vqc-avatar-option__status" data-avatar-price="scholar">Miễn phí</span>
     </button>
     <button class="vqc-avatar-option" type="button" data-avatar="explorer" aria-pressed="false">
      <span class="vqc-avatar-option__photo"><img src="./assets/nhanvat%20(6).png" alt="" width="240" height="240" loading="lazy"><span class="vqc-avatar-option__check" aria-hidden="true">✓</span></span>
-     <span class="vqc-avatar-option__label">Nhà thám hiểm</span>
+     <span class="vqc-avatar-option__label">Nhà thám hiểm</span><span class="vqc-avatar-option__status" data-avatar-price="explorer">Miễn phí</span>
     </button>
   </div>
-  <p class="vqc-avatar-modal__tip">Nhân vật em chọn sẽ xuất hiện trên bản đồ. Em có thể đổi bất cứ lúc nào!</p>
+  <p class="vqc-avatar-modal__tip" id="vqcAvatarShopMessage" role="status" aria-live="polite">Nhân vật đã mua được dùng vĩnh viễn và có thể đổi bất cứ lúc nào.</p>
   <button id="vqcAvatarConfirm" class="vqc-avatar-modal__confirm" type="button">✓ Xác nhận nhân vật</button>
  </div>
 </div>
@@ -1056,7 +1064,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=coin-wallet-20261019"></script>
+<script src="./js/adventure.js?v=character-shop-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */

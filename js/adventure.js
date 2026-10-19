@@ -38,43 +38,100 @@ const QUESTIONS=[
  {title:'Thử thách cuối bến cảng',question:'Khi Vua đang bị chiếu, em cần làm gì?',options:['Bỏ qua và đi quân bất kỳ','Thực hiện nước đi hợp lệ để hết bị chiếu','Đưa Vua vào ô đang bị tấn công'],answer:1,explain:'Khi bị chiếu, em phải chọn một nước đi hợp lệ giúp Vua thoát chiếu.',board:'check'}
 ];
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
-let progress={done:[],forestDone:[],canyonDone:[],rewardedRegions:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+let progress={done:[],forestDone:[],canyonDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
 let lastAnnouncedRewards=new Set(),coinToastTimer=null,coinWalletReady=false,coinWalletReturnFocus=null;
 
-/* Five selectable assets are kept on the adventure side only; live classroom is unaffected. */
+/* Avatar shop: free characters + permanent unlocks using earned virtual coins. */
 const AVAILABLE_AVATARS=[
- {id:'king', name:'Nhà vua', src:'./assets/nhanvat%20(2).png'},
- {id:'queen', name:'Nữ hoàng', src:'./assets/nhanvat%20(3).png'},
- {id:'knight', name:'Hiệp sĩ', src:'./assets/nhanvat%20(4).png'},
- {id:'scholar', name:'Học giả', src:'./assets/nhanvat%20(5).png'},
- {id:'explorer', name:'Nhà thám hiểm', src:'./assets/nhanvat%20(6).png'}
+ {id:'king',name:'Nhà vua',src:'./assets/nhanvat%20(2).png',price:7000},
+ {id:'queen',name:'Nữ hoàng',src:'./assets/nhanvat%20(3).png',price:7000},
+ {id:'knight',name:'Hiệp sĩ',src:'./assets/nhanvat%20(4).png',price:3000},
+ {id:'scholar',name:'Học giả',src:'./assets/nhanvat%20(5).png',price:0},
+ {id:'explorer',name:'Nhà thám hiểm',src:'./assets/nhanvat%20(6).png',price:0}
 ];
-const AVATAR_STORAGE_KEY='selectedAvatar';
-let selectedAvatar=AVAILABLE_AVATARS[4],avatarPickerInitialized=false,avatarPreviousFocus=null;
+const PAID_AVATAR_IDS=['knight','queen','king'];
+const AVATAR_STORAGE_KEY='selectedAvatar'; // Backwards-compatible old key.
+let selectedAvatar=AVAILABLE_AVATARS[4],previewAvatar=selectedAvatar;
+let avatarPickerInitialized=false,avatarPreviousFocus=null,purchaseInFlight=false;
 
+function avatarStorageKey(){return AVATAR_STORAGE_KEY+':'+(identity()||'guest');}
+function ownsAvatar(avatar){
+ return !!avatar&&(avatar.price===0||progress.purchasedAvatars.includes(avatar.id));
+}
 function readAvatarSelection(){
- let value=null;
- try{value=localStorage.getItem(AVATAR_STORAGE_KEY);}catch(error){console.warn('Không thể đọc lựa chọn nhân vật',error);}
- // Only allow known local assets, never arbitrary URLs from localStorage.
- return AVAILABLE_AVATARS.find(avatar=>avatar.src===value||avatar.id===value)
-   ||AVAILABLE_AVATARS[4];
+ let stored=null;
+ try{stored=localStorage.getItem(avatarStorageKey())||localStorage.getItem(AVATAR_STORAGE_KEY);}
+ catch(error){console.warn('Không thể đọc lựa chọn nhân vật',error);}
+ const chosen=AVAILABLE_AVATARS.find(avatar=>avatar.src===stored||avatar.id===stored);
+ return ownsAvatar(chosen)?chosen:AVAILABLE_AVATARS[4];
+}
+function restoreAvatarSelection(){
+ applyAvatarSelection(readAvatarSelection(),false);
+}
+function setAvatarMessage(message){
+ const el=$('vqcAvatarShopMessage');
+ if(el)el.textContent=message;
+}
+function refreshCharacterShop(){
+ const balance=formatCoins(progress.coins);
+ const count=AVAILABLE_AVATARS.filter(ownsAvatar).length;
+ const counter=$('vqcOwnedAvatarCount');
+ if(counter)counter.textContent=String(count);
+ const modalCoins=$('vqcAvatarCoins');
+ if(modalCoins)modalCoins.textContent=balance;
+ document.querySelectorAll('#vqcAvatarChoices .vqc-avatar-option').forEach(button=>{
+  const avatar=AVAILABLE_AVATARS.find(item=>item.id===button.dataset.avatar);
+  if(!avatar)return;
+  const owned=ownsAvatar(avatar);
+  const equipped=selectedAvatar.id===avatar.id;
+  const preview=previewAvatar.id===avatar.id;
+  button.classList.toggle('selected',equipped);
+  button.classList.toggle('is-preview',preview&&!equipped);
+  button.classList.toggle('is-locked',!owned);
+  button.setAttribute('aria-pressed',String(equipped));
+  button.setAttribute('aria-label',avatar.name+'. '+(equipped?'Đang trang bị':owned?'Đã sở hữu':formatCoins(avatar.price)+' xu'));
+  const status=button.querySelector('.vqc-avatar-option__status');
+  if(status)status.textContent=equipped?'✓ Đang trang bị':owned?(avatar.price===0?'Miễn phí':'✓ Đã sở hữu'):'🔒 '+formatCoins(avatar.price)+' xu';
+ });
+ const confirm=$('vqcAvatarConfirm');
+ if(!confirm)return;
+ const owned=ownsAvatar(previewAvatar);
+ const missing=Math.max(0,previewAvatar.price-progress.coins);
+ confirm.disabled=purchaseInFlight||(!owned&&missing>0);
+ confirm.classList.toggle('is-buy',!owned);
+ confirm.textContent=purchaseInFlight?'⌛ Đang xử lý...':
+  owned?'✓ Trang bị '+previewAvatar.name:
+  missing>0?'🔒 Cần thêm '+formatCoins(missing)+' xu':
+  '🪙 Mua '+previewAvatar.name+' · '+formatCoins(previewAvatar.price)+' xu';
 }
 function applyAvatarSelection(avatar,save=true){
  const valid=AVAILABLE_AVATARS.find(item=>item.id===avatar?.id);
- if(!valid)return;
+ if(!ownsAvatar(valid))return false;
  selectedAvatar=valid;
+ previewAvatar=valid;
  const picture=$('playerAvatar'),preview=$('vqcAvatarButtonPreview');
  if(picture){picture.src=valid.src;picture.alt='Nhân vật '+valid.name;}
  if(preview){preview.src=valid.src;preview.alt='';}
- document.querySelectorAll('#vqcAvatarChoices .vqc-avatar-option').forEach(button=>{
-  const active=button.dataset.avatar===valid.id;
-  button.classList.toggle('selected',active);
-  button.setAttribute('aria-pressed',String(active));
- });
  if(save){
-  try{localStorage.setItem(AVATAR_STORAGE_KEY,valid.src);}
+  try{localStorage.setItem(avatarStorageKey(),valid.src);}
   catch(error){console.warn('Không thể lưu nhân vật trên thiết bị',error);}
  }
+ refreshCharacterShop();
+ return true;
+}
+function chooseAvatar(avatar){
+ if(!avatar||purchaseInFlight)return;
+ previewAvatar=avatar;
+ if(ownsAvatar(avatar)){
+  applyAvatarSelection(avatar);
+  setAvatarMessage('✓ Đã trang bị '+avatar.name+'. Em có thể đổi nhân vật bất cứ lúc nào.');
+ }else{
+  const missing=Math.max(0,avatar.price-progress.coins);
+  setAvatarMessage(missing>0
+   ?'🔒 Em cần thêm '+formatCoins(missing)+' xu để mở khóa '+avatar.name+'.'
+   :'🪙 '+avatar.name+' có giá '+formatCoins(avatar.price)+' xu. Bấm Mua để mở khóa vĩnh viễn.');
+ }
+ refreshCharacterShop();
 }
 function closeAvatarPicker(){
  const modal=$('vqcAvatarModal');
@@ -88,30 +145,106 @@ function openAvatarPicker(){
  const modal=$('vqcAvatarModal');
  if(!modal)return;
  avatarPreviousFocus=document.activeElement;
- applyAvatarSelection(selectedAvatar,false);
+ previewAvatar=selectedAvatar;
+ refreshCharacterShop();
+ setAvatarMessage('Nhân vật miễn phí: Học giả và Nhà thám hiểm. Nhân vật mua sẽ sở hữu vĩnh viễn.');
  modal.hidden=false;
  document.body.classList.add('vqc-avatar-open');
- const active=modal.querySelector('.vqc-avatar-option.selected');
- (active||$('vqcAvatarClose'))?.focus();
+ (modal.querySelector('.vqc-avatar-option.selected')||$('vqcAvatarClose'))?.focus();
+}
+function avatarPurchaseLocal(avatar){
+ if(ownsAvatar(avatar))return true;
+ if(progress.coins<avatar.price)return false;
+ progress=sanitize({...progress,purchasedAvatars:[...progress.purchasedAvatars,avatar.id]});
+ localSave();render();
+ return true;
+}
+async function purchaseAvatar(avatar){
+ if(!avatar||ownsAvatar(avatar)||purchaseInFlight)return;
+ if(progress.coins<avatar.price){
+  setAvatarMessage('Chưa đủ xu để mua '+avatar.name+'.');
+  return;
+ }
+ const remaining=progress.coins-avatar.price;
+ if(!window.confirm('Mua '+avatar.name+' với '+formatCoins(avatar.price)+' Xu Kỳ Thủ? Sau khi mua còn '+formatCoins(remaining)+' xu.'))return;
+ purchaseInFlight=true;
+ refreshCharacterShop();
+ clearTimeout(saveTimer); // Prevent an old progress save racing with this purchase.
+ const ref=cloudRef();
+ let synced=false;
+ let failure=null;
+ try{
+  if(ref&&typeof db!=='undefined'&&typeof db.runTransaction==='function'){
+   const purchased=await db.runTransaction(async transaction=>{
+    const snap=await transaction.get(ref);
+    const merged=mergeProgress(progress,snap.exists?snap.data():{});
+    if(merged.purchasedAvatars.includes(avatar.id))return merged;
+    if(merged.coins<avatar.price)throw new Error('NOT_ENOUGH_COINS');
+    const next=sanitize({...merged,purchasedAvatars:[...merged.purchasedAvatars,avatar.id]});
+    transaction.set(ref,progressPayload(next),{merge:true});
+    return next;
+   });
+   progress=mergeProgress(progress,purchased);
+   localSave();render();synced=true;
+  }else{
+   if(!avatarPurchaseLocal(avatar))throw new Error('NOT_ENOUGH_COINS');
+  }
+ }catch(error){
+  failure=error;
+  if(error?.message==='NOT_ENOUGH_COINS'){
+   setAvatarMessage('Không đủ xu sau khi đồng bộ. Vui lòng kiểm tra ví xu.');
+   try{
+    const current=await ref?.get();
+    if(current?.exists){progress=mergeProgress(progress,current.data());localSave();render();}
+   }catch(ignore){}
+   return;
+  }
+  // Offline or undeployed Firestore Rules: keep a local purchase.
+  if(!avatarPurchaseLocal(avatar)){
+   setAvatarMessage('Không đủ xu để hoàn tất giao dịch.');
+   return;
+  }
+ }finally{
+  purchaseInFlight=false;
+  refreshCharacterShop();
+ }
+ if(!ownsAvatar(avatar)){
+  setAvatarMessage('Giao dịch chưa thành công.');
+  return;
+ }
+ applyAvatarSelection(avatar);
+ setAvatarMessage(synced
+  ?'🎉 Mua thành công '+avatar.name+'! Nhân vật đã trang bị và lưu vào tài khoản.'
+  :'🎉 Đã mở khóa '+avatar.name+' trên thiết bị này! Cần cập nhật quyền Firebase để đồng bộ sang thiết bị khác.');
+ if(!synced&&ref){
+  // Retain purchase locally; ordinary saves retry cloud synchronisation later.
+  saveProgress();
+  if(failure)console.warn('Chưa lưu được giao dịch lên Firebase',failure);
+ }
+}
+async function confirmAvatarChoice(){
+ if(purchaseInFlight)return;
+ if(ownsAvatar(previewAvatar)){
+  applyAvatarSelection(previewAvatar);
+  closeAvatarPicker();
+ }else await purchaseAvatar(previewAvatar);
 }
 function initAvatarPicker(){
  if(avatarPickerInitialized)return;
  const modal=$('vqcAvatarModal'),trigger=$('vqcChangeAvatarBtn');
  if(!modal||!trigger||!$('playerAvatar'))return;
  avatarPickerInitialized=true;
- applyAvatarSelection(readAvatarSelection(),false);
+ restoreAvatarSelection();
  trigger.addEventListener('click',openAvatarPicker);
+ $('vqcCharacterShopOpen')?.addEventListener('click',openAvatarPicker);
  $('vqcAvatarClose')?.addEventListener('click',closeAvatarPicker);
- $('vqcAvatarConfirm')?.addEventListener('click',closeAvatarPicker);
+ $('vqcAvatarConfirm')?.addEventListener('click',confirmAvatarChoice);
  modal.querySelectorAll('.vqc-avatar-option').forEach(button=>{
   button.addEventListener('click',()=>{
-   const choice=AVAILABLE_AVATARS.find(avatar=>avatar.id===button.dataset.avatar);
-   if(choice)applyAvatarSelection(choice);
+   chooseAvatar(AVAILABLE_AVATARS.find(avatar=>avatar.id===button.dataset.avatar));
   });
  });
- modal.addEventListener('click',event=>{
-  if(event.target===modal)closeAvatarPicker();
- });
+ modal.addEventListener('click',event=>{if(event.target===modal)closeAvatarPicker();});
  modal.addEventListener('keydown',event=>{
   if(event.key==='Escape'){event.preventDefault();closeAvatarPicker();return;}
   if(event.key!=='Tab')return;
@@ -145,8 +278,18 @@ function sanitize(data){
  if(forestDone.length===FOREST_PIECES.length)rewarded.add(1);
  if(canyonDone.length===CANYON_TOTAL)rewarded.add(2);
  const rewardedRegions=[...rewarded].sort((a,b)=>a-b);
- const coins=rewardedRegions.reduce((sum,n)=>sum+REGION_COIN_REWARDS[n],0);
- return {done,forestDone,canyonDone,rewardedRegions,stars:done.length*3+forestDone.length*6+canyonDone.length*3,coins};
+ const purchasedAvatars=Array.isArray(data?.purchasedAvatars)
+  ?[...new Set(data.purchasedAvatars.filter(id=>PAID_AVATAR_IDS.includes(id)))]
+  :[];
+ const earnedCoins=rewardedRegions.reduce((sum,n)=>sum+REGION_COIN_REWARDS[n],0);
+ const spentCoins=purchasedAvatars.reduce((sum,id)=>{
+  const avatar=AVAILABLE_AVATARS.find(a=>a.id===id);
+  return sum+(avatar?.price||0);
+ },0);
+ const coins=Math.max(0,earnedCoins-spentCoins);
+ return {done,forestDone,canyonDone,rewardedRegions,purchasedAvatars,
+  stars:done.length*3+forestDone.length*6+canyonDone.length*3,
+  earnedCoins,spentCoins,coins};
 }
 
 function formatCoins(value){
@@ -232,31 +375,60 @@ function showCoinRewardToast(regions){
  coinToastTimer=setTimeout(()=>{toast.hidden=true;},6000);
 }
 
+
+function mergeProgress(...snapshots){
+ const parts=snapshots.map(data=>data||{});
+ return sanitize({
+  done:parts.flatMap(data=>Array.isArray(data.done)?data.done:[]),
+  forestDone:parts.flatMap(data=>Array.isArray(data.forestDone)?data.forestDone:[]),
+  canyonDone:parts.flatMap(data=>Array.isArray(data.canyonDone)?data.canyonDone:[]),
+  rewardedRegions:parts.flatMap(data=>Array.isArray(data.rewardedRegions)?data.rewardedRegions:[]),
+  purchasedAvatars:parts.flatMap(data=>Array.isArray(data.purchasedAvatars)?data.purchasedAvatars:[])
+ });
+}
+function progressPayload(data){
+ return {
+  studentId:identity(),
+  done:[...data.done],forestDone:[...data.forestDone],canyonDone:[...data.canyonDone],
+  rewardedRegions:[...data.rewardedRegions],purchasedAvatars:[...data.purchasedAvatars],
+  stars:data.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+ };
+}
 function localLoad(){try{return sanitize(JSON.parse(localStorage.getItem(storageKey())||'{}'));}catch(e){return sanitize({});}}
 function localSave(){try{localStorage.setItem(storageKey(),JSON.stringify(progress));}catch(e){console.warn('Không lưu được tiến độ trên thiết bị',e);}}
 function cloudRef(){return identity()&&typeof db!=='undefined'?db.collection('adventureProgress').doc(identity()):null;}
 async function loadProgress(){
+ const accountKey=storageKey();
  progress=localLoad();
  lastAnnouncedRewards=new Set(progress.rewardedRegions);
- localSave();render();
- const ref=cloudRef();if(!ref){setSaveStatus('Đăng nhập để đồng bộ tiến độ giữa các thiết bị.');return;}
+ localSave();restoreAvatarSelection();render();
+ const ref=cloudRef();
+ if(!ref){setSaveStatus('Đăng nhập để đồng bộ tiến độ giữa các thiết bị.');return;}
  try{
   const snap=await ref.get();
+  if(storageKey()!==accountKey)return;
   if(!snap.exists){
    cloudOk=true;
-   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.rewardedRegions.length)saveProgress();
+   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
    else setSaveStatus('Tiến độ lưu trên thiết bị.');
    return;
   }
-  const remote=sanitize(snap.data());
-  // Merge the latest in-memory progress as well, including actions made while fetching.
-  progress=sanitize({done:[...progress.done,...remote.done],forestDone:[...progress.forestDone,...remote.forestDone],canyonDone:[...progress.canyonDone,...remote.canyonDone],rewardedRegions:[...progress.rewardedRegions,...remote.rewardedRegions]});
+  progress=mergeProgress(progress,snap.data());
   lastAnnouncedRewards=new Set(progress.rewardedRegions);
-  localSave();cloudOk=true;render();
-  if(!Array.isArray(snap.data().rewardedRegions)||JSON.stringify([...snap.data().rewardedRegions].sort((a,b)=>a-b))!==JSON.stringify(progress.rewardedRegions)){
-   saveProgress(); // Backfill one-time coins earned before the wallet launched.
-  }else setSaveStatus('Đã tải tiến độ tài khoản.');
- }catch(e){cloudOk=false;setSaveStatus('Tiến độ đang lưu trên thiết bị này; chưa đồng bộ đám mây.');}
+  localSave();restoreAvatarSelection();cloudOk=true;render();
+  const remote=sanitize(snap.data());
+  if(JSON.stringify(progress.rewardedRegions)!==JSON.stringify(remote.rewardedRegions)||
+     JSON.stringify([...progress.purchasedAvatars].sort())!==JSON.stringify([...remote.purchasedAvatars].sort())||
+     progress.done.length!==remote.done.length||
+     progress.forestDone.length!==remote.forestDone.length||
+     progress.canyonDone.length!==remote.canyonDone.length){
+   saveProgress();
+  }else setSaveStatus('Đã tải tiến độ và nhân vật trong tài khoản.');
+ }catch(error){
+  cloudOk=false;
+  console.warn('Không thể tải tiến độ từ Firebase',error);
+  setSaveStatus('Tiến độ đang lưu trên thiết bị này; chưa đồng bộ đám mây.');
+ }
 }
 function saveProgress(){
  const newlyRewarded=progress.rewardedRegions.filter(n=>!lastAnnouncedRewards.has(n));
@@ -264,11 +436,33 @@ function saveProgress(){
  localSave();render();
  if(newlyRewarded.length)showCoinRewardToast(newlyRewarded);
  clearTimeout(saveTimer);
- const ref=cloudRef();if(!ref){setSaveStatus('Đã lưu trên thiết bị. Đăng nhập để lưu trực tuyến.');return;}
+ const ref=cloudRef();
+ if(!ref){setSaveStatus('Đã lưu trên thiết bị. Đăng nhập để lưu trực tuyến.');return;}
+ const expectedAccount=storageKey();
  saveTimer=setTimeout(async()=>{
-  try{await ref.set({studentId:identity(),done:[...progress.done],forestDone:[...progress.forestDone],canyonDone:[...progress.canyonDone],rewardedRegions:[...progress.rewardedRegions],stars:progress.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});cloudOk=true;setSaveStatus('✓ Đã lưu tiến độ vào tài khoản.');}
-  catch(e){cloudOk=false;console.warn('Không thể lưu hành trình lên Firestore',e);setSaveStatus('✓ Đã lưu trên thiết bị; đồng bộ tài khoản chưa khả dụng.');}
- },180);
+  try{
+   let latest;
+   if(typeof db.runTransaction==='function'){
+    latest=await db.runTransaction(async transaction=>{
+     const snapshot=await transaction.get(ref);
+     const merged=mergeProgress(progress,snapshot.exists?snapshot.data():{});
+     transaction.set(ref,progressPayload(merged),{merge:true});
+     return merged;
+    });
+   }else{
+    latest=progress;
+    await ref.set(progressPayload(progress),{merge:true});
+   }
+   if(storageKey()!==expectedAccount)return;
+   progress=mergeProgress(progress,latest);
+   localSave();restoreAvatarSelection();render();
+   cloudOk=true;setSaveStatus('✓ Đã lưu tiến độ, xu và nhân vật vào tài khoản.');
+  }catch(error){
+   cloudOk=false;
+   console.warn('Không thể đồng bộ tiến độ và nhân vật',error);
+   setSaveStatus('✓ Đã lưu trên thiết bị; đồng bộ tài khoản chưa khả dụng.');
+  }
+ },220);
 }
 function setSaveStatus(msg){if($('vqcAdventureSave'))$('vqcAdventureSave').textContent=msg;}
 function unlocked(n){return n===0||progress.done.includes(n-1);}
@@ -433,6 +627,7 @@ function render(){
  if($('vqcMapHudCoins'))$('vqcMapHudCoins').textContent=balance;
  if($('vqcCoinWalletBalance'))$('vqcCoinWalletBalance').textContent=balance;
  renderCoinWallet();
+ refreshCharacterShop();
  if($('vqcMapHudStars'))$('vqcMapHudStars').textContent=String(progress.stars);
  if($('vqcMapHudLessons'))$('vqcMapHudLessons').textContent=progress.done.length+'/'+QUESTIONS.length+' màn';
  if($('vqcMapHudProgress'))$('vqcMapHudProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
@@ -727,7 +922,7 @@ function next(){
 }
 function closeRegion(){$('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;render();showAdventureMap();}
 window.vqcAdventureStart=function(){
- if(avatarPickerInitialized)applyAvatarSelection(readAvatarSelection(),false);
+ if(avatarPickerInitialized)restoreAvatarSelection();
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá hòn đảo.','warning');return;}
  $('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;
  if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
@@ -741,7 +936,7 @@ window.vqcAdventureBack=closeRegion;
 window.vqcAdventureNext=next;
 window.vqcAdventureReset=function(){
  if(!confirm('Em có muốn chơi lại từ màn đầu? Tiến độ cũ sẽ được đặt lại.'))return;
- progress=sanitize({rewardedRegions:progress.rewardedRegions});saveProgress();closeRegion();
+ progress=sanitize({rewardedRegions:progress.rewardedRegions,purchasedAvatars:progress.purchasedAvatars});saveProgress();closeRegion();
 };
 window.addEventListener('DOMContentLoaded',()=>{initCoinWallet();initAvatarPicker();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
 })();

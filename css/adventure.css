@@ -1402,3 +1402,212 @@ body.vqc-coin-wallet-open{overflow:hidden}
  .vqc-adventure .vqc-coin-wallet-button{transition:none}
  .vqc-adventure .vqc-coin-wallet-button:hover{transform:none}
 }
+
+/* =============================================================
+   CHARACTER SHOP - VIRTUAL COINS AND PERMANENT EQUIPMENT UNLOCKS
+   ============================================================= */
+.vqc-adventure .chess-reward-card--characters{
+ min-height:465px;
+ border-color:#9ed8f9;
+ box-shadow:0 8px 28px rgba(58,144,204,.17);
+}
+.vqc-adventure .chess-reward-card--characters .chess-reward-card__content{
+ padding:15px 21px 20px;
+ justify-content:center;
+ gap:5px;
+}
+.vqc-adventure .chess-reward-card--characters .chess-reward-card__content h3{margin:0 0 2px}
+.vqc-adventure .chess-reward-card--characters .chess-reward-card__content p{
+ margin:0;
+ font-size:13px;
+ line-height:1.4;
+ color:#50738b;
+}
+.vqc-adventure .vqc-character-art{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+ overflow:hidden;
+ border-radius:22px 22px 0 0;
+ background:radial-gradient(circle at 50% 35%,#ebfaff 0%,#cbeeff 55%,#90d5f4 100%);
+}
+.vqc-adventure .vqc-character-art__images{
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:0;
+ width:min(94%,400px);
+ height:145px;
+ filter:drop-shadow(0 9px 6px #276d9260);
+}
+.vqc-adventure .vqc-character-art__images img{
+ position:relative;
+ display:block;
+ flex-shrink:1;
+ width:31%;
+ height:auto;
+ aspect-ratio:1;
+ border-radius:50%;
+ border:4px solid #ffffffc9;
+ background:#fff6dd;
+ object-fit:contain;
+ box-shadow:0 6px 15px #1c72904d;
+}
+.vqc-adventure .vqc-character-art__images img:nth-child(2){
+ width:38%;
+ z-index:2;
+ margin-inline:-4%;
+ border-color:#ffe5ab;
+ transform:translateY(-7px);
+}
+.vqc-adventure .chess-reward-card--characters:hover .vqc-character-art__images img:nth-child(2){
+ transform:translateY(-7px);
+}
+.vqc-adventure .vqc-character-art__eyebrow{
+ font-size:11px;
+ color:#2374ab;
+ font-weight:900;
+ letter-spacing:1.1px;
+}
+.vqc-adventure .vqc-character-art__headline{
+ padding:5px 14px;
+ border:2px solid #8ecce6;
+ border-radius:999px;
+ background:#ffffffe5;
+ color:#236b9d;
+ font-size:clamp(17px,2vw,23px);
+ box-shadow:0 4px 0 #7ab5d56b;
+}
+.vqc-adventure .vqc-character-shop-button{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:9px;
+ width:100%;
+ min-height:39px;
+ margin-top:8px;
+ padding:9px 12px;
+ border:0;
+ border-radius:13px;
+ background:linear-gradient(180deg,#7bc8ff,#438bd5);
+ box-shadow:0 4px 0 #2c6ca7;
+ color:#fff;
+ font:inherit;
+ font-size:14px;
+ font-weight:900;
+ cursor:pointer;
+ transition:transform .15s ease,box-shadow .15s ease;
+}
+.vqc-adventure .vqc-character-shop-button:hover{
+ transform:translateY(-2px);
+ box-shadow:0 6px 0 #2c6ca7;
+}
+.vqc-adventure .vqc-character-shop-button:focus-visible{
+ outline:3px solid #dc8d30;
+ outline-offset:3px;
+}
+.vqc-avatar-wallet{
+ display:inline-flex;
+ gap:5px;
+ align-items:center;
+ margin:0 auto;
+ padding:8px 15px;
+ border:2px solid #e6c57b;
+ border-radius:999px;
+ background:#fff4d6;
+ color:#9e641a;
+ font-weight:800;
+ font-size:14px;
+}
+.vqc-avatar-wallet strong{font-variant-numeric:tabular-nums}
+.vqc-avatar-option .vqc-avatar-option__status{
+ display:block;
+ min-height:20px;
+ padding:4px 7px;
+ border-radius:10px;
+ color:#328565;
+ background:#eaf8ed;
+ font-size:12px;
+ line-height:1.3;
+ font-weight:900;
+}
+.vqc-avatar-option.is-locked{
+ border-color:#ccd2d7;
+ background:linear-gradient(165deg,#fafbfc,#edf0f2);
+ box-shadow:0 5px 0 #b8bec5;
+ color:#687781;
+}
+.vqc-avatar-option.is-locked .vqc-avatar-option__photo img{
+ filter:grayscale(1) contrast(.85);
+ opacity:.68;
+}
+.vqc-avatar-option.is-locked .vqc-avatar-option__photo:after{
+ content:'🔒';
+ position:absolute;
+ display:grid;
+ place-items:center;
+ right:3px;
+ bottom:5px;
+ width:31px;
+ height:31px;
+ border-radius:50%;
+ background:#ffffffed;
+ box-shadow:0 2px 6px #30414b37;
+ font-size:17px;
+ pointer-events:none;
+}
+.vqc-avatar-option.is-locked .vqc-avatar-option__status{
+ color:#8d661e;
+ background:#fff0c7;
+}
+.vqc-avatar-option.is-preview{
+ border-color:#69b9ef;
+ box-shadow:0 5px 0 #7cb8d6,0 0 0 3px #d8f6ff;
+}
+.vqc-avatar-option.is-preview.is-locked{
+ border-color:#e6ad52;
+ box-shadow:0 5px 0 #ba914c,0 0 0 3px #fef0c0;
+}
+.vqc-avatar-option.selected .vqc-avatar-option__status{
+ color:#2b8451;
+ background:#d2f4da;
+}
+.vqc-avatar-modal__confirm.is-buy{
+ background:linear-gradient(180deg,#f6c76c,#e3a034);
+ box-shadow:0 5px 0 #b67e23;
+ color:#573b18;
+}
+.vqc-avatar-modal__confirm:disabled{
+ opacity:.65;
+ cursor:not-allowed;
+ background:#d5dade;
+ color:#516575;
+ box-shadow:0 3px 0 #9aa7b1;
+}
+.vqc-avatar-modal__confirm:disabled:hover{
+ transform:none;
+ box-shadow:0 3px 0 #9aa7b1;
+}
+.vqc-avatar-modal__dialog .vqc-avatar-modal__tip{
+ min-height:39px;
+ max-width:540px;
+ margin:12px auto 17px;
+ padding:8px 10px;
+ border-radius:12px;
+ background:#eef9f3;
+ color:#366f64;
+ font-size:13px;
+}
+@media(max-width:690px){
+ .vqc-adventure .chess-reward-card--characters .chess-reward-card__content{padding:15px}
+ .vqc-adventure .vqc-character-art__images{height:124px}
+ .vqc-avatar-option .vqc-avatar-option__status{font-size:11px}
+ .vqc-avatar-wallet{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-adventure .vqc-character-shop-button{transition:none}
+ .vqc-adventure .vqc-character-shop-button:hover{transform:none}
+}

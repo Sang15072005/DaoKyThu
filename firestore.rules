@@ -29,7 +29,7 @@ service cloud.firestore {
   match /adventureProgress/{uid} {
    allow read: if active() && request.auth.uid==uid;
    allow create,update: if student() && request.auth.uid==uid
-     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','rewardedRegions','stars','updatedAt'])
+     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','rewardedRegions','purchasedAvatars','stars','updatedAt'])
      && request.resource.data.studentId==uid
      && request.resource.data.done is list
      && request.resource.data.done.size()<=10
@@ -39,6 +39,21 @@ service cloud.firestore {
      && request.resource.data.canyonDone.size()<=13
      && request.resource.data.rewardedRegions is list
      && request.resource.data.rewardedRegions.size()<=7
+     // The launched areas are 1–3. Other regions cannot award coins yet.
+     && request.resource.data.rewardedRegions.hasOnly([0,1,2])
+     && request.resource.data.purchasedAvatars is list
+     && request.resource.data.purchasedAvatars.size()<=3
+     && request.resource.data.purchasedAvatars.hasOnly(['knight','queen','king'])
+     // Owned characters must not disappear after refresh or concurrent saves.
+     && (resource == null ||
+       request.resource.data.purchasedAvatars.hasAll(resource.data.get('purchasedAvatars',[])))
+     // The virtual shop never permits a negative balance.
+     && ((('knight' in request.resource.data.purchasedAvatars) ? 3000 : 0)
+         + (('queen' in request.resource.data.purchasedAvatars) ? 7000 : 0)
+         + (('king' in request.resource.data.purchasedAvatars) ? 7000 : 0))
+       <= ((0 in request.resource.data.rewardedRegions ? 1000 : 0)
+         + (1 in request.resource.data.rewardedRegions ? 2000 : 0)
+         + (2 in request.resource.data.rewardedRegions ? 3000 : 0))
      && request.resource.data.stars is int
      && request.resource.data.stars>=0
      && request.resource.data.stars<=105;
