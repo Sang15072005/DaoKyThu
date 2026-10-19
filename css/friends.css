@@ -197,3 +197,27 @@ body > .header #accountBar{margin-left:0;flex-wrap:wrap;gap:5px}
 .vqc-friend-interact{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:9px 0;padding:9px;background:#f5faff;border-radius:11px}
 .vqc-friend-phrase{flex:1 1 190px;min-width:0;padding:8px;border:1px solid #bad8ea;border-radius:8px;background:white;color:#28536a}
 .vqc-friend-chatline{width:100%;font-size:12px;color:#32728d;margin:4px 0}
+
+/* Nút Bạn bè được gom chung vào cụm tài khoản ở góc phải, không đứng lẻ. */
+.header #accountBar #vqcFriendsOpen{
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ position:relative;flex:0 0 auto;margin:0;padding:8px 13px;
+ border-radius:12px;border:1px solid #c4dbea;
+ background:#eef6fc;color:#245a81;font-weight:750;
+ box-shadow:none;white-space:nowrap;min-height:39px;
+}
+.header #accountBar #vqcFriendsOpen:hover,
+.header #accountBar #vqcFriendsOpen:focus-visible{
+ background:#dcefff;border-color:#91c0e3;outline-offset:2px;
+}
+.header #accountBar #vqcFriendsUnread:not([hidden]){
+ position:absolute;top:-5px;right:-5px;min-width:10px;min-height:10px;
+ border-radius:20px;background:#e84f56;border:2px solid white;
+}
+@media(max-width:950px){
+ .header #accountBar{max-width:none;flex-wrap:wrap;justify-content:flex-end}
+}
+@media(max-width:600px){
+ .header #accountBar #vqcFriendsOpen{min-height:35px;padding:7px 10px;font-size:12px}
+ .header #accountBar{max-width:100%;gap:5px}
+}
