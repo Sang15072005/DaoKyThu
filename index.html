@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
 <link rel="stylesheet" href="./css/adventure.css?v=volcano-region5-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
-<link rel="stylesheet" href="./css/friends.css?v=friend-search-20261020">
+<link rel="stylesheet" href="./css/friends.css?v=friend-settings-20261020">
 
 
 
@@ -1097,6 +1097,15 @@
    <div id="vqcFriendsFound" class="vqc-friends-found" hidden><span aria-hidden="true">♟️</span> <strong id="vqcFriendsFoundName"></strong></div>
    <small id="vqcFriendsInviteHint">Bạn nhận được lời mời sẽ chọn Đồng ý hoặc Từ chối. Không có trò chuyện riêng.</small>
   </section>
+  <section class="vqc-friends-settings-wrap">
+   <button id="vqcFriendsSettingsToggle" type="button" aria-controls="vqcFriendsSettings">⚙️ Cài đặt bạn bè</button>
+   <div id="vqcFriendsSettings" class="vqc-friends-settings" hidden>
+    <label class="vqc-friends-setting-line"><input id="vqcFriendsShareName" type="checkbox"> Cho phép bạn bè đã kết bạn xem họ và tên của em</label>
+    <p>Họ tên chỉ hiện với bạn bè đã xác nhận; có thể tắt bất cứ lúc nào.</p>
+    <label for="vqcFriendsView">Kiểu hiển thị danh sách</label>
+    <select id="vqcFriendsView"><option value="cards">Thẻ có thành tích</option><option value="compact">Danh sách gọn</option></select>
+   </div>
+  </section>
   <div class="vqc-friends-tabs" role="tablist" aria-label="Các mục bạn bè">
    <button type="button" role="tab" class="is-active" aria-selected="true" data-friends-tab="friends">👥 Bạn bè <span id="vqcFriendsCount">0</span></button>
    <button type="button" role="tab" aria-selected="false" data-friends-tab="incoming">📩 Lời mời <span id="vqcFriendsIncomingCount">0</span></button>
@@ -1116,7 +1125,7 @@
    <button id="vqcFriendsDiagnose" type="button" class="vqc-friends-debug__button">🔍 Kiểm tra quyền Firebase</button>
    <ol id="vqcFriendsDiagnostics" class="vqc-friends-debug__results" role="status" aria-live="polite" aria-label="Kết quả kiểm tra quyền kết bạn" hidden></ol>
   </div>
-  <p class="vqc-friends-safety">🛡️ Không hiển thị tên thật, số điện thoại hoặc địa chỉ. Có thể hủy kết bạn, từ chối hay chặn lời mời. Nếu có điều khiến em khó chịu, hãy báo cho giáo viên hoặc người lớn tin cậy.</p>
+  <p class="vqc-friends-safety">🛡️ Họ tên chỉ chia sẻ khi được cho phép; không hiển thị số điện thoại hoặc địa chỉ. Có thể hủy kết bạn, từ chối hay chặn lời mời. Nếu có điều khiến em khó chịu, hãy báo cho giáo viên hoặc người lớn tin cậy.</p>
   <button id="vqcFriendsDone" class="vqc-friends-done" type="button">Quay lại Đảo Kỳ Thủ</button>
  </div>
 </div>
@@ -1223,7 +1232,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
 <script src="./js/adventure.js?v=friends-20261019"></script>
-<script src="./js/friends.js?v=friend-search-20261020"></script>
+<script src="./js/friends.js?v=friend-settings-20261020"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
