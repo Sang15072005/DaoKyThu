@@ -6,6 +6,7 @@ service cloud.firestore {
   function active(){return signed() && me().data.active==true;}
   function teacher(){return active() && me().data.role=='teacher';}
   function student(){return active() && me().data.role=='student';}
+  function friendUser(){return active() && me().data.role in ['student','teacher'];}
   match /users/{uid} {
    allow read: if active() && (request.auth.uid==uid || (teacher() && resource.data.role=='student' && resource.data.teacherId==request.auth.uid));
    allow write: if false;
@@ -68,9 +69,9 @@ service cloud.firestore {
   // Private friend-code identity. Only an exact 12-character code can be looked up.
   // Codes and settings must be created together in one atomic transaction.
   match /friendSettings/{uid} {
-   allow get: if student() && request.auth.uid==uid;
+   allow get: if friendUser() && request.auth.uid==uid;
    allow list: if false;
-   allow create: if student() && request.auth.uid==uid
+   allow create: if friendUser() && request.auth.uid==uid
      && request.resource.data.keys().hasOnly(['code','createdAt'])
      && request.resource.data.code is string
      && request.resource.data.code.matches('KT[A-HJ-NP-Z2-9]{10}')
@@ -79,9 +80,9 @@ service cloud.firestore {
    allow update,delete: if false;
   }
   match /friendDirectory/{code} {
-   allow get: if student();
+   allow get: if friendUser();
    allow list: if false;
-   allow create: if student() && code.matches('KT[A-HJ-NP-Z2-9]{10}')
+   allow create: if friendUser() && code.matches('KT[A-HJ-NP-Z2-9]{10}')
      && request.resource.data.keys().hasOnly(['ownerId','createdAt'])
      && request.resource.data.ownerId==request.auth.uid
      && request.resource.data.createdAt==request.time
@@ -93,8 +94,8 @@ service cloud.firestore {
    return a < b ? a+'_'+b : b+'_'+a;
   }
   match /friendships/{pair} {
-   allow get,list: if student() && request.auth.uid in resource.data.members;
-   allow create: if student()
+   allow get,list: if friendUser() && request.auth.uid in resource.data.members;
+   allow create: if friendUser()
      && request.resource.data.keys().hasOnly([
        'members','requesterId','recipientId','status','createdAt','updatedAt'])
      && request.resource.data.requesterId==request.auth.uid
@@ -108,15 +109,15 @@ service cloud.firestore {
      && request.resource.data.createdAt==request.time
      && request.resource.data.updatedAt==request.time
      && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientId))
-     && get(/databases/$(database)/documents/users/$(request.resource.data.recipientId)).data.role=='student'
+     && get(/databases/$(database)/documents/users/$(request.resource.data.recipientId)).data.role in ['student','teacher']
      && get(/databases/$(database)/documents/users/$(request.resource.data.recipientId)).data.active==true;
-   allow update: if student()
+   allow update: if friendUser()
      && request.auth.uid==resource.data.recipientId
      && resource.data.status=='pending'
      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
      && request.resource.data.status in ['accepted','declined','blocked']
      && request.resource.data.updatedAt==request.time;
-   allow delete: if student()
+   allow delete: if friendUser()
      && request.auth.uid in resource.data.members
      && (resource.data.status=='accepted' ||
        (resource.data.status=='pending'&&resource.data.requesterId==request.auth.uid));
@@ -124,12 +125,12 @@ service cloud.firestore {
   // Only a confirmed friend can read these non-identifying chess achievements.
   // Never store names, contact details, exact location, or dates of birth here.
   match /friendPublicProfiles/{uid} {
-   allow get: if student() &&
+   allow get: if friendUser() &&
      (request.auth.uid==uid ||
       (exists(/databases/$(database)/documents/friendships/$(friendPair(request.auth.uid,uid))) &&
        get(/databases/$(database)/documents/friendships/$(friendPair(request.auth.uid,uid))).data.status=='accepted'));
    allow list: if false;
-   allow create,update: if student() && request.auth.uid==uid
+   allow create,update: if friendUser() && request.auth.uid==uid
      && request.resource.data.keys().hasOnly(['avatar','stars','regions','badges','sharedName','updatedAt'])
      && request.resource.data.sharedName is string
      && request.resource.data.sharedName.size()<=100
