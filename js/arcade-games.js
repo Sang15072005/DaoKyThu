@@ -44,9 +44,9 @@ function allMoves(who=turn,state=pos,ep=enPassant){
 }
 function move(from,to,promotion){
  const piece=pos[from];if(!piece||side(piece)!==turn||!possible(from).includes(to)||ended||waitingPromotion)return false;
+ const previousState=mode==='online'?state():null;
  const captured=pos[to];const epCapture=piece.toLowerCase()==='p'&&from[0]!==to[0]&&!captured&&to===enPassant;
  if(epCapture)delete pos[to[0]+from[1]];
- const previousState=mode==='online'?state():null;
  enPassant='';
  if(piece.toLowerCase()==='p'&&Math.abs(Number(to[1])-Number(from[1]))===2)enPassant=from[0]+((Number(to[1])+Number(from[1]))/2);
  delete pos[from];pos[to]=piece;last=from+' → '+to;moves++;
