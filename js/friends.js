@@ -216,7 +216,8 @@
     'challenge.respondedAt':timeStamp(),
     updatedAt:timeStamp()
    });
-   note(accept?'Đã nhận lời thách đấu. Chức năng vào bàn đấu sẽ được kết nối sau.':'Đã từ chối lời thách đấu.');
+   note(accept?'Đã nhận lời thách đấu. Mở bàn đấu để bắt đầu!':'Đã từ chối lời thách đấu.');
+    if(accept&&typeof window.vqcFriendDuelOpen==='function')window.vqcFriendDuelOpen(other);
   }catch(error){note(errorText(error),true);}
  }
  function render(){
@@ -228,7 +229,8 @@
   if($('vqcFriendsIncomingCount'))$('vqcFriendsIncomingCount').textContent=String(incoming.length);
   if($('vqcFriendsOutgoingCount'))$('vqcFriendsOutgoingCount').textContent=String(outgoing.length);
   const indicator=$('vqcFriendsUnread');
-  if(indicator){indicator.hidden=!incoming.length;indicator.textContent=incoming.length>9?'9+':String(incoming.length);}
+  const pendingDuels=friends.filter(x=>x.data.challenge?.status==='pending'&&x.data.challenge.from!==user).length;
+  if(indicator){const count=incoming.length+pendingDuels;indicator.hidden=!count;indicator.textContent=count>9?'9+':String(count);}
   const buildEntries=(target,list,category)=>{
    const root=$(target);if(!root)return;
    root.replaceChildren();
@@ -280,7 +282,13 @@
        linkButton('challenge-accept','✓ Nhận lời',()=>respondChallenge(other,true)),
        linkButton('challenge-decline','Từ chối',()=>respondChallenge(other,false))
       );
-     }else if(challenge?.status==='accepted')chat.append(build('p','vqc-friend-chatline','⚔️ Hai bạn đã đồng ý thách đấu. Chờ mở bàn đấu.'));
+     }else if(challenge?.status==='accepted'){
+      chat.append(build('p','vqc-friend-chatline','⚔️ Hai bạn đã đồng ý thách đấu.'));
+      chat.append(linkButton('challenge-play','♟️ Vào bàn đấu',()=>{
+       if(typeof window.vqcFriendDuelOpen==='function')window.vqcFriendDuelOpen(other);
+       else note('Bàn đấu đang được tải. Hãy thử tải lại trang.',true);
+      }));
+     }
      item.append(chat);
     }
     item.append(heading,subtitle);
