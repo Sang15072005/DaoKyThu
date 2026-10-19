@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id);
 const pair=(a,b)=>[a,b].sort().join('_');
 const uid=()=>typeof auth!=='undefined'&&auth.currentUser?.uid||'';
-let unlisten=null,friend='',sending=false,lastSent=0,blocked=false,peerBlocked=false,viewToken=0,displayName='';
+let unlisten=null,friend='',sending=false,lastSent=0,blocked=false,peerBlocked=false,viewToken=0,displayName='',clearedAt=null,latestSnapshot=null;
 function status(text){const e=$('vqcFriendChatNotice');if(e)e.textContent=text;}
 function close(){
  viewToken++;if(unlisten){unlisten();unlisten=null;}friend='';blocked=false;peerBlocked=false;
@@ -27,6 +27,33 @@ async function refreshBlock(other,token){
  if(token!==viewToken)return;
  blocked=a.exists;peerBlocked=b.exists;setComposer();
 }
+function showMessages(snapshot,user){
+ const root=$('vqcFriendChatMessages');if(!root||!snapshot)return;
+ root.replaceChildren();let visible=0;
+ [...snapshot.docs].reverse().forEach(doc=>{
+  const d=doc.data();if(typeof d.text!=='string'||typeof d.from!=='string')return;
+  const when=d.at?.toMillis?.()||0;
+  if(clearedAt&&when<=clearedAt) return;
+  root.appendChild(bubble(d,doc.id,user));visible++;
+ });
+ if(!visible)root.textContent='Chưa có tin nhắn. Hãy gửi một lời chào!';
+ root.scrollTop=root.scrollHeight;
+}
+async function clearHistory(){
+ const user=uid(),other=friend;
+ if(!user||!other||!confirm('Xóa lịch sử trò chuyện khỏi tài khoản của bạn? Bạn bè vẫn xem được các tin nhắn cũ của họ.'))return;
+ const token=viewToken;
+ try{
+  await db.collection('chatClears').doc(user).collection('pairs').doc(pair(user,other)).set({
+   owner:user,pairId:pair(user,other),clearedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  const snap=await db.collection('chatClears').doc(user).collection('pairs').doc(pair(user,other)).get();
+  if(token!==viewToken)return;
+  clearedAt=snap.data()?.clearedAt?.toMillis?.()||Date.now();
+  showMessages(latestSnapshot,user);
+  status('Đã xóa lịch sử khỏi giao diện tài khoản của bạn. Tin nhắn vẫn còn với người kia.');
+ }catch(e){status('Không xóa được lịch sử: '+(e.code==='permission-denied'?'Cần xuất bản quy tắc Firestore mới.':e.message));}
+}
 function bubble(data,id,user){
  const row=document.createElement('div');row.className='vqc-chat-entry'+(data.from===user?' is-mine':'');
  const msg=document.createElement('p');msg.className='vqc-chat-bubble';msg.textContent=(data.from===user?'Bạn: ':'Kỳ thủ: ')+data.text;
@@ -40,7 +67,7 @@ function bubble(data,id,user){
 }
 async function open(other){
  const user=uid();if(!user||!other||user===other)return;
- close();friend=other;const token=++viewToken;
+ close();friend=other;clearedAt=null;latestSnapshot=null;const token=++viewToken;
  const modal=$('vqcFriendChat');modal.hidden=false;
  displayName='Kỳ thủ '+other.slice(-4).toUpperCase();
  $('vqcFriendChatHeading').textContent='💬 Trò chuyện với '+displayName;
@@ -56,17 +83,14 @@ async function open(other){
     $('vqcFriendChatHeading').textContent='💬 Trò chuyện với '+displayName;
    }
   }).catch(()=>{});
+  const clearDoc=await db.collection('chatClears').doc(user).collection('pairs').doc(id).get();
+  if(token!==viewToken)return;
+  clearedAt=clearDoc.data()?.clearedAt?.toMillis?.()||null;
   await refreshBlock(other,token);
   if(token!==viewToken)return;
   unlisten=db.collection('friendChats').doc(id).collection('messages').orderBy('at','desc').limit(60).onSnapshot(snapshot=>{
    if(token!==viewToken)return;
-   const root=$('vqcFriendChatMessages');root.replaceChildren();
-   if(snapshot.empty){root.textContent='Chưa có tin nhắn. Hãy gửi một lời chào!';return;}
-   [...snapshot.docs].reverse().forEach(doc=>{
-    const d=doc.data();if(typeof d.text!=='string'||typeof d.from!=='string')return;
-    root.appendChild(bubble(d,doc.id,user));
-   });
-   root.scrollTop=root.scrollHeight;
+   latestSnapshot=snapshot;showMessages(snapshot,user);
   },e=>status('Không tải được tin nhắn: '+e.message));
  }catch(e){if(token===viewToken)status('⚠️ '+e.message);}
 }
@@ -105,11 +129,12 @@ async function reportMessage(id,content){
 }
 function init(){
  const modal=document.createElement('div');modal.id='vqcFriendChat';modal.className='vqc-chat-overlay';modal.hidden=true;
- modal.innerHTML='<section class="vqc-chat-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcFriendChatHeading"><div class="vqc-duel-top"><h2 id="vqcFriendChatHeading">💬 Trò chuyện bạn bè</h2><button type="button" id="vqcFriendChatClose">✕ Đóng</button></div><p id="vqcFriendChatNotice" class="vqc-chat-safety" aria-live="polite">Chỉ nhắn tin với bạn bè đã xác nhận.</p><div id="vqcFriendChatMessages" class="vqc-chat-messages" aria-label="Nội dung trò chuyện" aria-live="polite"></div><label for="vqcFriendChatInput">Viết tin nhắn</label><textarea id="vqcFriendChatInput" maxlength="500" rows="2" placeholder="Nhập lời nhắn cho bạn..."></textarea><div class="vqc-chat-compose"><button type="button" id="vqcFriendChatBlock">🚫 Chặn</button><button type="button" id="vqcFriendChatSend">➤ Gửi</button></div><p class="vqc-chat-safety">Enter để gửi · Shift + Enter để xuống dòng. Có thể báo cáo tin nhắn không phù hợp.</p></section>';
+ modal.innerHTML='<section class="vqc-chat-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcFriendChatHeading"><div class="vqc-duel-top"><h2 id="vqcFriendChatHeading">💬 Trò chuyện bạn bè</h2><button type="button" id="vqcFriendChatClose">✕ Đóng</button></div><p id="vqcFriendChatNotice" class="vqc-chat-safety" aria-live="polite">Chỉ nhắn tin với bạn bè đã xác nhận.</p><div id="vqcFriendChatMessages" class="vqc-chat-messages" aria-label="Nội dung trò chuyện" aria-live="polite"></div><label for="vqcFriendChatInput">Viết tin nhắn</label><textarea id="vqcFriendChatInput" maxlength="500" rows="2" placeholder="Nhập lời nhắn cho bạn..."></textarea><div class="vqc-chat-compose"><button type="button" id="vqcFriendChatClear">🗑 Xóa lịch sử</button><button type="button" id="vqcFriendChatBlock">🚫 Chặn</button><button type="button" id="vqcFriendChatSend">➤ Gửi</button></div><p class="vqc-chat-safety">Enter để gửi · Shift + Enter để xuống dòng. Có thể báo cáo tin nhắn không phù hợp.</p></section>';
  document.body.appendChild(modal);
  $('vqcFriendChatClose').addEventListener('click',close);
  $('vqcFriendChatSend').addEventListener('click',send);
  $('vqcFriendChatBlock').addEventListener('click',toggleBlock);
+ $('vqcFriendChatClear').addEventListener('click',clearHistory);
  $('vqcFriendChatInput').addEventListener('input',setComposer);
  $('vqcFriendChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
  modal.addEventListener('click',e=>{if(e.target===modal)close();});
