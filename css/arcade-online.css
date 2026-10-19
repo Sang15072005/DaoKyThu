@@ -1,0 +1,14 @@
+.vqc-online-overlay[hidden]{display:none!important}
+.vqc-online-overlay{position:fixed;inset:0;z-index:30010;background:#16384fc9;display:flex;justify-content:center;align-items:center;overflow:auto;padding:12px}
+.vqc-online-dialog{width:min(96vw,590px);max-height:92vh;overflow:auto;background:#f5fbff;color:#275673;border:4px solid #b9dfef;border-radius:19px;padding:17px;box-shadow:0 15px 50px #10263a66}
+.vqc-online-dialog h2{font-size:21px;margin:0}
+.vqc-online-dialog p{font-size:14px;line-height:1.5}
+#vqcOnlineStatus{background:#e5f3fb;border-radius:10px;padding:10px;font-weight:700}
+#vqcOnlineFriends{display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow:auto}
+.vqc-online-friend{background:white;border:1px solid #c8e2f0;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px}
+.vqc-online-friend span{font-size:13px;color:#577b94}
+.vqc-online-actions{display:flex;flex-wrap:wrap;gap:7px}
+.vqc-online-actions button{border:0;background:#e7f2fb;color:#27658c;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}
+.vqc-online-actions button.accept{background:#28966d;color:white}
+.vqc-online-dialog small{display:block;margin-top:12px;color:#64839a}
+#vqcArcadeOnlineButton{background:#2289bb;color:white}
