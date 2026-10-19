@@ -203,9 +203,11 @@ service cloud.firestore {
   }
   // Real-time conversation: only fixed, child-friendly phrases; no free text.
   match /friendChats/{pairId}/messages/{messageId} {
-   allow get,list: if friendUser() && acceptedDuel(pairId)
+   allow get,list: if friendUser() && exists(/databases/$(database)/documents/friendships/$(pairId))
+    && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
     && request.auth.uid in get(/databases/$(database)/documents/friendships/$(pairId)).data.members;
-   allow create: if friendUser() && acceptedDuel(pairId)
+   allow create: if friendUser() && exists(/databases/$(database)/documents/friendships/$(pairId))
+    && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
     && request.auth.uid in get(/databases/$(database)/documents/friendships/$(pairId)).data.members
     && request.resource.data.keys().hasOnly(['from','text','at'])
     && request.resource.data.from==request.auth.uid
