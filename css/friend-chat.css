@@ -23,3 +23,5 @@
 #vqcFriendChatSend:disabled{opacity:.5;cursor:not-allowed}
 #vqcFriendChatBlock{border:1px solid #e5b4b4;border-radius:10px;background:#fff5f5;color:#9c3d3d;padding:10px 14px;font-weight:700;cursor:pointer}
 .vqc-chat-safety{line-height:1.5}
+
+#vqcFriendChatClear{border:1px solid #d7e2eb;border-radius:10px;background:#f2f7fb;color:#436e8d;padding:10px 12px;font-weight:700;cursor:pointer}
