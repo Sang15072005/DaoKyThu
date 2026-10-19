@@ -21,3 +21,6 @@
 .vqc-world-extras__actions{display:flex;flex-wrap:wrap;gap:10px}
 .vqc-world-extras__actions button{border:0;border-radius:12px;padding:12px 17px;background:#2f8cbe;color:white;font-weight:800;cursor:pointer}
 .vqc-world-extras__actions button:last-child{background:#35a26d}
+
+#vqcDuelRetry[hidden]{display:none!important}
+#vqcDuelRetry{border:0;border-radius:10px;background:#f7e4ae;color:#704c13;font-weight:800;padding:9px 14px;margin:6px 0 12px;cursor:pointer}
