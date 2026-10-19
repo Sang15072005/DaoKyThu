@@ -10,6 +10,7 @@
  const AVATAR_PATHS={king:'./assets/nhanvat%20(2).png',queen:'./assets/nhanvat%20(3).png',knight:'./assets/nhanvat%20(4).png',scholar:'./assets/nhanvat%20(5).png',explorer:'./assets/nhanvat%20(6).png'};
  const MAX_FRIENDS=50,MAX_PENDING=20;
  let currentUid=null,ownCode='',friendDocs=[],unsub=null,busy=false,modalFocus=null,statsTimer=null,profileSignature='';
+ let foundFriend=null,lookupVersion=0;
  const backend=()=>typeof db!=='undefined'&&typeof auth!=='undefined'&&auth.currentUser;
  const currentProfile=()=>window.accountProfile;
  const activeStudent=()=>!!(backend()&&currentProfile()?.role==='student'&&currentProfile()?.uid===auth.currentUser.uid);
@@ -88,7 +89,8 @@
  }
  function stopListening(){
   if(unsub){unsub();unsub=null;}
-  currentUid=null;ownCode='';friendDocs=[];profileSignature='';
+  currentUid=null;ownCode='';friendDocs=[];profileSignature='';foundFriend=null;lookupVersion++;
+  if($('vqcFriendsFound'))$('vqcFriendsFound').hidden=true;
   clearTimeout(statsTimer);
   if($('vqcFriendsMyCode'))$('vqcFriendsMyCode').textContent='Đang tải...';
   if($('vqcFriendsUnread'))$('vqcFriendsUnread').hidden=true;
@@ -266,11 +268,31 @@
    },error=>note('Không đọc được danh sách friendships: '+errorText(error),true));
   window.vqcFriendsScheduleStatsSync();
  }
+ async function findFriend(){
+  const value=$('vqcFriendsCodeInput')?.value.trim().toUpperCase().replace(/[ -]/g,'');
+  const result=$('vqcFriendsFound'),nameEl=$('vqcFriendsFoundName');
+  const version=++lookupVersion;
+  foundFriend=null;
+  if(result)result.hidden=true;
+  if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh.',true);
+  if(!/^KT[A-HJ-NP-Z2-9]{10}$/.test(value))return note('Mã Kỳ Thủ chưa đúng định dạng.',true);
+  if(value===ownCode)return note('Đây là mã của em.',true);
+  try{
+   const snap=await db.collection('friendDirectory').doc(value).get();
+   if(version!==lookupVersion||$('vqcFriendsCodeInput')?.value.trim().toUpperCase().replace(/[ -]/g,'')!==value)return;
+   if(!snap.exists||!snap.data().ownerId)return note('Không tìm thấy mã Kỳ Thủ.',true);
+   foundFriend={code:value,uid:snap.data().ownerId};
+   if(nameEl)nameEl.textContent=snap.data().sharedName||('Kỳ thủ '+value.slice(0,4)+'••••'+value.slice(-2));
+   if(result)result.hidden=false;
+   note('Đã tìm thấy tài khoản. Em có thể gửi lời mời kết bạn.');
+  }catch(error){note(errorText(error),true);}
+ }
  async function sendInvite(){
   if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh.',true);
   const value=$('vqcFriendsCodeInput').value.trim().toUpperCase().replace(/[ -]/g,'');
   if(!/^KT[A-HJ-NP-Z2-9]{10}$/.test(value))return note('Mã không hợp lệ. Hãy nhập đủ 12 ký tự của mã Kỳ Thủ.',true);
   if(value===ownCode)return note('Em không thể tự kết bạn với mình.',true);
+  if(!foundFriend||foundFriend.code!==value)return note('Hãy nhấn Tìm bạn trước khi gửi lời mời.',true);
   const friends=friendDocs.filter(x=>x.data.status==='accepted').length;
   const pending=friendDocs.filter(x=>x.data.status==='pending'&&x.data.requesterId===currentUid).length;
   if(friends>=MAX_FRIENDS)return note('Danh sách đã đủ 50 bạn bè.',true);
@@ -279,6 +301,7 @@
    const found=await db.collection('friendDirectory').doc(value).get();
    if(!found.exists)throw Error('Không tìm thấy mã Kỳ Thủ. Hãy kiểm tra lại.');
    const recipientId=found.data().ownerId;
+   if(recipientId!==foundFriend?.uid)throw Error('Mã bạn bè đã thay đổi. Hãy tìm lại.');
    if(!recipientId||recipientId===currentUid)throw Error('Không thể gửi lời mời đến mã này.');
    const myId=currentUid;
    const ref=db.collection('friendships').doc(ownPair(myId,recipientId));
@@ -297,7 +320,8 @@
     }
     throw error;
    }
-   $('vqcFriendsCodeInput').value='';
+   $('vqcFriendsCodeInput').value='';foundFriend=null;
+   if($('vqcFriendsFound'))$('vqcFriendsFound').hidden=true;
   },'Đã gửi lời mời. Bạn kia cần đồng ý trước khi kết bạn.');
  }
 // Step-by-step permission check against live Firebase; no passwords or UIDs are displayed.
@@ -405,6 +429,8 @@ async function diagnoseFirebasePermissions(){
    }else note('Mã của em: '+text);
   });
   $('vqcFriendsSend')?.addEventListener('click',sendInvite);
+  $('vqcFriendsFind')?.addEventListener('click',findFriend);
+  $('vqcFriendsCodeInput')?.addEventListener('input',()=>{foundFriend=null;lookupVersion++;if($('vqcFriendsFound'))$('vqcFriendsFound').hidden=true;});
   $('vqcFriendsDiagnose')?.addEventListener('click',diagnoseFirebasePermissions);
   $('vqcFriendsCodeInput')?.addEventListener('keydown',event=>{
    if(event.key==='Enter'){event.preventDefault();sendInvite();}
