@@ -239,6 +239,98 @@ service cloud.firestore {
     && !exists(/databases/$(database)/documents/chatBlocks/$(chatPeer(pairId))/blocked/$(request.auth.uid));
    allow update,delete: if false;
   }
+
+  // Online pawn/knight invitations for a confirmed pair, scoped to each mini-game.
+  function arcadeFriend(d) {
+   return friendUser() && d.members is list && d.members.size()==2
+    && request.auth.uid in d.members
+    && exists(/databases/$(database)/documents/friendships/$(friendPair(d.members[0],d.members[1])))
+    && get(/databases/$(database)/documents/friendships/$(friendPair(d.members[0],d.members[1]))).data.status=='accepted';
+  }
+  function arcadeInviteId(d) {
+   return friendPair(d.members[0],d.members[1])+'_'+d.game;
+  }
+  match /arcadeInvites/{id} {
+   allow get: if friendUser()
+    && id.matches('.*_[01]')
+    && exists(/databases/$(database)/documents/arcadeInvites/$(id))
+    && arcadeFriend(resource.data);
+   allow list: if false;
+   allow create: if arcadeFriend(request.resource.data)
+    && request.resource.data.keys().hasOnly(['members','from','game','status','at'])
+    && request.resource.data.game in [0,1]
+    && id==arcadeInviteId(request.resource.data)
+    && request.resource.data.from==request.auth.uid
+    && request.resource.data.status=='pending'
+    && request.resource.data.at==request.time;
+   allow update: if arcadeFriend(resource.data)
+    && request.resource.data.members==resource.data.members
+    && request.resource.data.game==resource.data.game
+    && id==arcadeInviteId(resource.data)
+    && (
+      (request.auth.uid==request.resource.data.from
+       && request.resource.data.keys().hasOnly(['members','from','game','status','at','respondedAt'])
+       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['from','status','at','respondedAt'])
+       && request.resource.data.status=='pending'
+       && request.resource.data.at==request.time
+       && request.resource.data.get('respondedAt',null)==resource.data.get('respondedAt',null))
+      ||
+      (resource.data.status=='pending'
+       && request.auth.uid!=resource.data.from
+       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','respondedAt'])
+       && request.resource.data.status in ['accepted','declined']
+       && request.resource.data.respondedAt==request.time)
+    );
+   allow delete: if false;
+  }
+  function arcadeStart(d,id) {
+   return d.keys().hasOnly(['members','game','inviteAt','white','black','pos','turn','enPassant','ended','last','moves','updatedAt'])
+    && id==arcadeInviteId(d)
+    && d.game in [0,1]
+    && d.members is list && d.members.size()==2
+    && d.members.hasAll([d.white,d.black])
+    && d.white!=d.black
+    && d.white==get(/databases/$(database)/documents/arcadeInvites/$(id)).data.from
+    && d.inviteAt==get(/databases/$(database)/documents/arcadeInvites/$(id)).data.at
+    && d.turn=='w' && d.moves==0 && d.enPassant=='' && d.ended=='' && d.last==''
+    && d.updatedAt==request.time
+    && d.pos==(d.game==0?{'a2':'P','a7':'p','b2':'P','b7':'p','c2':'P','c7':'p','d2':'P','d7':'p','e2':'P','e7':'p','f2':'P','f7':'p','g2':'P','g7':'p','h2':'P','h7':'p'}:{'e1':'N','d7':'p','e7':'p','f7':'p'});
+  }
+  function arcadeAccepted(id) {
+   return exists(/databases/$(database)/documents/arcadeInvites/$(id))
+    && get(/databases/$(database)/documents/arcadeInvites/$(id)).data.status=='accepted';
+  }
+  match /arcadeMatches/{id} {
+   allow get: if friendUser() && arcadeFriend(resource.data);
+   allow list: if false;
+   allow create: if arcadeAccepted(id) && arcadeFriend(request.resource.data)
+    && arcadeStart(request.resource.data,id);
+   allow update: if arcadeAccepted(id) && arcadeFriend(resource.data)
+    && (
+      (resource.data.inviteAt!=get(/databases/$(database)/documents/arcadeInvites/$(id)).data.at
+       && arcadeStart(request.resource.data,id))
+      ||
+      (resource.data.inviteAt==get(/databases/$(database)/documents/arcadeInvites/$(id)).data.at
+       && resource.data.ended==''
+       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pos','turn','enPassant','ended','last','moves','updatedAt'])
+       && request.resource.data.moves==resource.data.moves+1
+       && request.resource.data.moves<=200
+       && request.resource.data.pos is map
+       && request.resource.data.pos.size()<=16
+       && request.resource.data.turn in ['w','b']
+       && request.resource.data.turn!=(resource.data.turn)
+       && request.auth.uid==(resource.data.turn=='w'?resource.data.white:resource.data.black)
+       && request.resource.data.enPassant is string
+       && (request.resource.data.enPassant=='' || request.resource.data.enPassant.matches('[a-h][1-8]'))
+       && request.resource.data.ended is string
+       && request.resource.data.ended.size()<=130
+       && request.resource.data.last is string
+       && request.resource.data.last.matches('[a-h][1-8] → [a-h][1-8]')
+       && request.resource.data.updatedAt==request.time)
+    );
+   allow delete: if false;
+  }
+
   // Each participant may hide earlier chat messages only in their own account.
   match /chatClears/{owner}/pairs/{pairId} {
    allow get: if friendUser() && request.auth.uid==owner;
