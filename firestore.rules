@@ -65,6 +65,82 @@ service cloud.firestore {
      && request.resource.data.stars<=186;
    allow delete: if false;
   }
+  // Private friend-code identity. Only an exact 12-character code can be looked up.
+  // Codes and settings must be created together in one atomic transaction.
+  match /friendSettings/{uid} {
+   allow get: if student() && request.auth.uid==uid;
+   allow list: if false;
+   allow create: if student() && request.auth.uid==uid
+     && request.resource.data.keys().hasOnly(['code','createdAt'])
+     && request.resource.data.code is string
+     && request.resource.data.code.matches('KT[A-HJ-NP-Z2-9]{10}')
+     && request.resource.data.createdAt==request.time
+     && getAfter(/databases/$(database)/documents/friendDirectory/$(request.resource.data.code)).data.ownerId==uid;
+   allow update,delete: if false;
+  }
+  match /friendDirectory/{code} {
+   allow get: if student();
+   allow list: if false;
+   allow create: if student() && code.matches('KT[A-HJ-NP-Z2-9]{10}')
+     && request.resource.data.keys().hasOnly(['ownerId','createdAt'])
+     && request.resource.data.ownerId==request.auth.uid
+     && request.resource.data.createdAt==request.time
+     && getAfter(/databases/$(database)/documents/friendSettings/$(request.auth.uid)).data.code==code;
+   allow update,delete: if false;
+  }
+  // A canonical pair prevents duplicate invitations even if a client is modified.
+  function friendPair(a,b) {
+   return a < b ? a+'_'+b : b+'_'+a;
+  }
+  match /friendships/{pair} {
+   allow get,list: if student() && request.auth.uid in resource.data.members;
+   allow create: if student()
+     && request.resource.data.keys().hasOnly([
+       'members','requesterId','recipientId','status','createdAt','updatedAt'])
+     && request.resource.data.requesterId==request.auth.uid
+     && request.resource.data.recipientId is string
+     && request.resource.data.recipientId!=request.auth.uid
+     && pair==friendPair(request.auth.uid,request.resource.data.recipientId)
+     && request.resource.data.members is list
+     && request.resource.data.members.size()==2
+     && request.resource.data.members.hasAll([request.auth.uid,request.resource.data.recipientId])
+     && request.resource.data.status=='pending'
+     && request.resource.data.createdAt==request.time
+     && request.resource.data.updatedAt==request.time
+     && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientId))
+     && get(/databases/$(database)/documents/users/$(request.resource.data.recipientId)).data.role=='student'
+     && get(/databases/$(database)/documents/users/$(request.resource.data.recipientId)).data.active==true;
+   allow update: if student()
+     && request.auth.uid==resource.data.recipientId
+     && resource.data.status=='pending'
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+     && request.resource.data.status in ['accepted','declined','blocked']
+     && request.resource.data.updatedAt==request.time;
+   allow delete: if student()
+     && request.auth.uid in resource.data.members
+     && (resource.data.status=='accepted' ||
+       (resource.data.status=='pending'&&resource.data.requesterId==request.auth.uid));
+  }
+  // Only a confirmed friend can read these non-identifying chess achievements.
+  // Never store names, contact details, exact location, or dates of birth here.
+  match /friendPublicProfiles/{uid} {
+   allow get: if student() &&
+     (request.auth.uid==uid ||
+      (exists(/databases/$(database)/documents/friendships/$(friendPair(request.auth.uid,uid))) &&
+       get(/databases/$(database)/documents/friendships/$(friendPair(request.auth.uid,uid))).data.status=='accepted'));
+   allow list: if false;
+   allow create,update: if student() && request.auth.uid==uid
+     && request.resource.data.keys().hasOnly(['avatar','stars','regions','badges','updatedAt'])
+     && request.resource.data.avatar in ['king','queen','knight','scholar','explorer']
+     && request.resource.data.stars is int
+     && request.resource.data.stars>=0 && request.resource.data.stars<=186
+     && request.resource.data.regions is int
+     && request.resource.data.regions>=0 && request.resource.data.regions<=5
+     && request.resource.data.badges is int
+     && request.resource.data.badges>=0 && request.resource.data.badges<=5
+     && request.resource.data.updatedAt==request.time;
+   allow delete: if false;
+  }
   // Existing live classroom: restrict authenticated access. For production,
   // replace this with membership-aware rules before using real student data.
   match /rooms/{roomId} {

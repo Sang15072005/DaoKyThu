@@ -2431,7 +2431,7 @@ async function accountSignOut(){if(roomRef&&role==="student")await leaveClassroo
 let accountProgressUnsub=null;
 auth.onAuthStateChanged(async user=>{
  if(accountProgressUnsub){accountProgressUnsub();accountProgressUnsub=null;}
- if(!user){window.accountProfile=null;document.getElementById('accountLoginArea').style.display='block';document.getElementById('accountLoggedArea').style.display='none';document.getElementById('accountUserLabel').textContent='Chưa đăng nhập';showAccountPanel();return;}
+ if(!user){window.accountProfile=null;window.dispatchEvent(new Event('vqc:account-change'));document.getElementById('accountLoginArea').style.display='block';document.getElementById('accountLoggedArea').style.display='none';document.getElementById('accountUserLabel').textContent='Chưa đăng nhập';showAccountPanel();return;}
  try{
   const snap=await db.collection('users').doc(user.uid).get();
   if(!snap.exists||snap.data().active===false||!['teacher','student'].includes(snap.data().role))throw Error('Tài khoản chưa được giáo viên kích hoạt hoặc không có hồ sơ.');
@@ -2444,6 +2444,7 @@ auth.onAuthStateChanged(async user=>{
   document.getElementById('accountManageTab').style.display=window.accountProfile.role==='teacher'?'':'none';
   document.getElementById('accountClassTab').style.display=window.accountProfile.role==='teacher'?'':'none';
   accountShowTab('profile');hideAccountPanel();
+  window.dispatchEvent(new Event('vqc:account-change'));
  }catch(e){await auth.signOut();document.getElementById('accountLoginError').textContent=e.message;}
 });
 async function accountChangePassword(){const a=document.getElementById('newAccountPassword').value;if(a.length<10){accountMsg('Mật khẩu cần ít nhất 10 ký tự.',true);return;}try{await auth.currentUser.updatePassword(a);accountMsg('Đã đổi mật khẩu.');}catch(e){accountMsg('Vui lòng đăng nhập lại trước khi đổi mật khẩu.',true);}}

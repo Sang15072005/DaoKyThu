@@ -51,6 +51,7 @@ const QUESTIONS=[
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
 let progress={done:[],forestDone:[],canyonDone:[],crystalDone:[],volcanoDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
 let lastAnnouncedRewards=new Set(),coinToastTimer=null,coinWalletReady=false,coinWalletReturnFocus=null;
+let friendStatsReadyUser=null;
 
 /* Avatar shop: free characters + permanent unlocks using earned virtual coins. */
 const AVAILABLE_AVATARS=[
@@ -128,6 +129,7 @@ function applyAvatarSelection(avatar,save=true){
   catch(error){console.warn('Không thể lưu nhân vật trên thiết bị',error);}
  }
  refreshCharacterShop();
+ if(save)window.vqcFriendsScheduleStatsSync?.();
  return true;
 }
 function chooseAvatar(avatar){
@@ -419,6 +421,7 @@ function localLoad(){try{return sanitize(JSON.parse(localStorage.getItem(storage
 function localSave(){try{localStorage.setItem(storageKey(),JSON.stringify(progress));}catch(e){console.warn('Không lưu được tiến độ trên thiết bị',e);}}
 function cloudRef(){return identity()&&typeof db!=='undefined'?db.collection('adventureProgress').doc(identity()):null;}
 async function loadProgress(){
+ friendStatsReadyUser=null;
  const accountKey=storageKey();
  progress=localLoad();
  lastBadgeUnlocks=ADVENTURE_BADGES.map((_,index)=>isBadgeUnlocked(index));
@@ -431,6 +434,8 @@ async function loadProgress(){
   if(storageKey()!==accountKey)return;
   if(!snap.exists){
    cloudOk=true;
+   friendStatsReadyUser=identity();
+   window.vqcFriendsScheduleStatsSync?.();
    if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.crystalDone.length||progress.volcanoDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
    else setSaveStatus('Tiến độ lưu trên thiết bị.');
    return;
@@ -439,6 +444,8 @@ async function loadProgress(){
   lastBadgeUnlocks=ADVENTURE_BADGES.map((_,index)=>isBadgeUnlocked(index));
   lastAnnouncedRewards=new Set(progress.rewardedRegions);
   localSave();restoreAvatarSelection();cloudOk=true;render();
+  friendStatsReadyUser=identity();
+  window.vqcFriendsScheduleStatsSync?.();
   const remote=sanitize(snap.data());
   if(JSON.stringify(progress.rewardedRegions)!==JSON.stringify(remote.rewardedRegions)||
      JSON.stringify([...progress.purchasedAvatars].sort())!==JSON.stringify([...remote.purchasedAvatars].sort())||
@@ -482,6 +489,7 @@ function saveProgress(){
    progress=mergeProgress(progress,latest);
    localSave();restoreAvatarSelection();render();
    cloudOk=true;setSaveStatus('✓ Đã lưu tiến độ, xu và nhân vật vào tài khoản.');
+   window.vqcFriendsScheduleStatsSync?.();
   }catch(error){
    cloudOk=false;
    console.warn('Không thể đồng bộ tiến độ và nhân vật',error);
@@ -1297,6 +1305,16 @@ function next(){
  showStage(current+1);
 }
 function closeRegion(){$('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;render();showAdventureMap();}
+// Share only non-identifying gameplay milestones with confirmed friends.
+window.vqcGetFriendStats=function(){
+ if(window.accountProfile?.role!=='student'||!identity()||friendStatsReadyUser!==identity())return null;
+ return {
+  avatar:selectedAvatar.id,
+  stars:progress.stars,
+  regions:progress.rewardedRegions.length,
+  badges:ADVENTURE_BADGES.filter((_,i)=>isBadgeUnlocked(i)).length
+ };
+};
 window.vqcAdventureStart=function(){
  if(avatarPickerInitialized)restoreAvatarSelection();
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá hòn đảo.','warning');return;}

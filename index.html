@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
 <link rel="stylesheet" href="./css/adventure.css?v=volcano-region5-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
+<link rel="stylesheet" href="./css/friends.css?v=friends-20261019">
 
 
 
@@ -137,7 +138,7 @@
 
 
 
-<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
+<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
 
 
 
@@ -1072,6 +1073,48 @@
  <small>Giáo viên chọn màu trước khi bắt đầu. Học sinh tự động nhận màu còn lại. Chỉ được đi đúng lượt.</small>
  </div></div></div>
 </div>
+
+<!-- Kết bạn an toàn bằng mã ngẫu nhiên. Chỉ hiển thị bí danh và thành tích cờ vua. -->
+<div id="vqcFriendsModal" class="vqc-friends-modal" role="dialog" aria-modal="true" aria-labelledby="vqcFriendsTitle" aria-describedby="vqcFriendsDescription" hidden>
+ <div class="vqc-friends-dialog">
+  <button id="vqcFriendsClose" class="vqc-friends-modal__close" type="button" aria-label="Đóng danh sách bạn bè">×</button>
+  <div class="vqc-friends-hero">
+   <span class="vqc-friends-hero__emoji" aria-hidden="true">👥</span>
+   <span class="vqc-friends-hero__eyebrow">ĐỒNG HÀNH CÙNG KỲ THỦ</span>
+   <h2 id="vqcFriendsTitle">Bạn bè Kỳ Thủ</h2>
+   <p id="vqcFriendsDescription">Kết bạn bằng mã riêng, cùng nhau khám phá thành tích học cờ!</p>
+  </div>
+  <section class="vqc-friends-codebox" aria-label="Mã kết bạn của em">
+   <div><strong>🔑 Mã Kỳ Thủ của em</strong><p>Chỉ chia sẻ mã với bạn quen biết ngoài đời.</p></div>
+   <div class="vqc-friends-codebox__row"><code id="vqcFriendsMyCode">Đang tải...</code><button id="vqcFriendsCopyCode" type="button">Sao chép</button></div>
+  </section>
+  <section class="vqc-friends-invite" aria-labelledby="vqcFriendsInviteHeading">
+   <label id="vqcFriendsInviteHeading" for="vqcFriendsCodeInput">✉️ Gửi lời mời kết bạn</label>
+   <div class="vqc-friends-invite__row">
+    <input id="vqcFriendsCodeInput" type="text" inputmode="text" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Nhập mã KTXXXXXXXXXX" aria-describedby="vqcFriendsInviteHint">
+    <button id="vqcFriendsSend" type="button">Gửi lời mời</button>
+   </div>
+   <small id="vqcFriendsInviteHint">Bạn nhận được lời mời sẽ chọn Đồng ý hoặc Từ chối. Không có trò chuyện riêng.</small>
+  </section>
+  <div class="vqc-friends-tabs" role="tablist" aria-label="Các mục bạn bè">
+   <button type="button" role="tab" class="is-active" aria-selected="true" data-friends-tab="friends">👥 Bạn bè <span id="vqcFriendsCount">0</span></button>
+   <button type="button" role="tab" aria-selected="false" data-friends-tab="incoming">📩 Lời mời <span id="vqcFriendsIncomingCount">0</span></button>
+   <button type="button" role="tab" aria-selected="false" data-friends-tab="outgoing">📤 Đã gửi <span id="vqcFriendsOutgoingCount">0</span></button>
+  </div>
+  <div id="vqcFriendsPaneFriends" class="vqc-friends-pane" role="tabpanel">
+   <div id="vqcFriendsList" class="vqc-friends-list"><p class="vqc-friends-empty">Đang tải bạn bè...</p></div>
+  </div>
+  <div id="vqcFriendsPaneIncoming" class="vqc-friends-pane" role="tabpanel" hidden>
+   <div id="vqcFriendsIncomingList" class="vqc-friends-list"></div>
+  </div>
+  <div id="vqcFriendsPaneOutgoing" class="vqc-friends-pane" role="tabpanel" hidden>
+   <div id="vqcFriendsOutgoingList" class="vqc-friends-list"></div>
+  </div>
+  <p id="vqcFriendsStatus" role="status" aria-live="polite" class="vqc-friends-status">Chỉ những người được em đồng ý mới vào danh sách bạn bè.</p>
+  <p class="vqc-friends-safety">🛡️ Không hiển thị tên thật, số điện thoại hoặc địa chỉ. Có thể hủy kết bạn, từ chối hay chặn lời mời. Nếu có điều khiến em khó chịu, hãy báo cho giáo viên hoặc người lớn tin cậy.</p>
+  <button id="vqcFriendsDone" class="vqc-friends-done" type="button">Quay lại Đảo Kỳ Thủ</button>
+ </div>
+</div>
 <div id="accountOverlay" class="account-overlay" role="dialog" aria-modal="true" aria-label="Đăng nhập Đảo Kỳ Thủ">
   <div class="vqc-login-layout">
     <div class="vqc-login-scene" aria-hidden="true">
@@ -1122,7 +1165,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 
-  <script src="./js/core.js?v=board-draw-20261019"></script>
+  <script src="./js/core.js?v=friends-20261019"></script>
 
 
 
@@ -1174,7 +1217,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=volcano-region5-20261019"></script>
+<script src="./js/adventure.js?v=friends-20261019"></script>
+<script src="./js/friends.js?v=friends-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
