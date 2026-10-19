@@ -151,6 +151,56 @@ service cloud.firestore {
      && (resource.data.status=='accepted' ||
        (resource.data.status=='pending'&&resource.data.requesterId==request.auth.uid));
   }
+  // One live match per confirmed friend pair; only an accepted challenge starts a new game.
+  function acceptedDuel(pairId) {
+   return exists(/databases/$(database)/documents/friendships/$(pairId))
+    && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
+    && get(/databases/$(database)/documents/friendships/$(pairId)).data.challenge.status=='accepted';
+  }
+  function duelChallenge(pairId) {
+   return get(/databases/$(database)/documents/friendships/$(pairId)).data.challenge;
+  }
+  function initialDuel(d, pairId) {
+   return d.keys().hasOnly(['members','friendshipId','challengeAt','white','black','fen','turn','moves','status','lastMove','updatedAt'])
+    && d.friendshipId==pairId
+    && d.members is list && d.members.size()==2
+    && d.members.hasAll([d.white,d.black])
+    && d.white!=d.black
+    && pairId==friendPair(d.white,d.black)
+    && d.white==duelChallenge(pairId).from
+    && d.challengeAt==duelChallenge(pairId).at
+    && d.turn==d.white && d.moves==0 && d.status=='playing'
+    && d.lastMove=='' && d.updatedAt==request.time
+    && d.fen=='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  }
+  match /friendMatches/{pairId} {
+   allow get: if friendUser() && acceptedDuel(pairId)
+    && request.auth.uid in resource.data.members;
+   allow list: if false;
+   allow create: if friendUser() && acceptedDuel(pairId)
+    && request.auth.uid in request.resource.data.members
+    && initialDuel(request.resource.data,pairId);
+   allow update: if friendUser() && acceptedDuel(pairId)
+    && request.auth.uid in resource.data.members
+    && (
+      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fen','turn','moves','status','lastMove','updatedAt'])
+       && resource.data.status=='playing'
+       && resource.data.turn==request.auth.uid
+       && request.resource.data.moves==resource.data.moves+1
+       && request.resource.data.moves<=400
+       && request.resource.data.fen is string
+       && request.resource.data.fen.size()<=110
+       && request.resource.data.lastMove is string
+       && request.resource.data.lastMove.matches('[a-h][1-8][a-h][1-8]')
+       && request.resource.data.status in ['playing','finished']
+       && request.resource.data.turn==(request.resource.data.status=='finished'?'':(resource.data.white==request.auth.uid?resource.data.black:resource.data.white))
+       && request.resource.data.updatedAt==request.time)
+      ||
+      (resource.data.challengeAt!=duelChallenge(pairId).at
+       && initialDuel(request.resource.data,pairId))
+    );
+   allow delete: if false;
+  }
   // Only a confirmed friend can read these non-identifying chess achievements.
   // Never store names, contact details, exact location, or dates of birth here.
   match /friendPublicProfiles/{uid} {
