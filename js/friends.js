@@ -282,20 +282,21 @@
    if(!recipientId||recipientId===currentUid)throw Error('Không thể gửi lời mời đến mã này.');
    const myId=currentUid;
    const ref=db.collection('friendships').doc(ownPair(myId,recipientId));
-   await db.runTransaction(async tx=>{
-    const snap=await tx.get(ref);
-    if(snap.exists){
-     const status=snap.data().status;
-     throw Error(status==='accepted'?'Hai em đã là bạn bè.':
-      status==='pending'?'Lời mời đã tồn tại. Hãy chờ người kia xác nhận.':
-      'Không thể gửi lại lời mời đến tài khoản này.');
-    }
-    tx.set(ref,{
+   // Firestore denies get() on a missing friendship under member-only read rules.
+   // Write as a create instead; existing relationships cannot be overwritten because
+   // security rules allow no requester-side update.
+   try{
+    await ref.set({
      members:[myId,recipientId].sort(),
      requesterId:myId,recipientId,status:'pending',
      createdAt:timeStamp(),updatedAt:timeStamp()
     });
-   });
+   }catch(error){
+    if(error?.code==='permission-denied'){
+     throw Error('Không tạo được lời mời. Có thể lời mời đã tồn tại, đã bị từ chối/chặn, hoặc Firebase chưa cho phép tạo friendships.');
+    }
+    throw error;
+   }
    $('vqcFriendsCodeInput').value='';
   },'Đã gửi lời mời. Bạn kia cần đồng ý trước khi kết bạn.');
  }
