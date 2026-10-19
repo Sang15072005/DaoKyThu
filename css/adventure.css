@@ -1080,3 +1080,325 @@ body.vqc-avatar-open{overflow:hidden}
  .vqc-adventure .vqc-canyon-meter span{transition:none}
  .vqc-adventure .vqc-canyon-task:hover{transform:none}
 }
+
+/* ============================================================
+   COIN WALLET - ONE-TIME REWARDS FOR CONQUERING EACH ISLAND
+   ============================================================ */
+.vqc-adventure .vqc-coin-top-balance{
+ display:inline-flex;
+ align-items:center;
+ gap:4px;
+ padding:7px 11px;
+ border:2px solid #ebd298;
+ border-radius:999px;
+ background:linear-gradient(145deg,#fff8dc,#ffe9aa);
+ color:#975b1f;
+ white-space:nowrap;
+}
+.vqc-adventure .vqc-map-hud__coin{
+ display:inline-flex;
+ align-items:center;
+ gap:5px;
+ padding:4px 9px;
+ border-radius:999px;
+ background:#ffe2a9ed;
+ box-shadow:0 2px 3px #794b2b33;
+ font-size:clamp(11px,1.1vw,15px);
+ color:#824b20;
+ font-weight:900;
+ margin-top:5px;
+}
+.vqc-adventure .chess-reward-card--coins{
+ min-height:465px;
+ border-color:#ebcd82;
+ background:#fffdfa;
+ box-shadow:0 8px 28px rgba(170,116,43,.19);
+}
+.vqc-adventure .chess-reward-card--coins .chess-reward-card__content{
+ padding:15px 21px 20px;
+ justify-content:center;
+ gap:5px;
+}
+.vqc-adventure .chess-reward-card--coins .chess-reward-card__content h3{
+ margin:0 0 2px;
+}
+.vqc-adventure .chess-reward-card--coins .chess-reward-card__content p{
+ margin:0;
+ font-size:13px;
+ line-height:1.4;
+ color:#735a3b;
+}
+.vqc-adventure .vqc-coin-art{
+ position:relative;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:4px;
+ overflow:hidden;
+ border-radius:22px 22px 0 0;
+ background:
+  radial-gradient(circle at 48% 45%,#fffaf0 0%,#fff5b4 43%,transparent 80%),
+  linear-gradient(145deg,#f9df84,#f3b24d);
+ color:#865010;
+}
+.vqc-adventure .vqc-coin-art::before,
+.vqc-adventure .vqc-coin-art::after{
+ content:'✦';
+ position:absolute;
+ font-size:44px;
+ color:#fff8cbad;
+}
+.vqc-adventure .vqc-coin-art::before{top:7%;left:8%}
+.vqc-adventure .vqc-coin-art::after{bottom:12%;right:11%;font-size:30px}
+.vqc-adventure .vqc-coin-art__glow{
+ display:block;
+ font-size:clamp(62px,8vw,105px);
+ line-height:1.1;
+ filter:drop-shadow(0 9px 5px #99551b55);
+ transform:rotate(-11deg);
+}
+.vqc-adventure .vqc-coin-art__caption{
+ font-size:12px;
+ font-weight:900;
+ letter-spacing:1.7px;
+ color:#a26721;
+}
+.vqc-adventure .vqc-coin-art__balance{
+ padding:6px 19px;
+ border:2px solid #deac47;
+ border-radius:999px;
+ background:#fffce1;
+ color:#875316;
+ box-shadow:0 4px 0 #c08b3655;
+ font-size:clamp(17px,2vw,25px);
+}
+.vqc-adventure .vqc-coin-wallet-button{
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:8px;
+ margin-top:8px;
+ width:100%;
+ min-height:39px;
+ padding:9px 12px;
+ border:0;
+ border-radius:13px;
+ background:linear-gradient(180deg,#f9ca65,#e9a52e);
+ color:#693d16;
+ font:inherit;
+ font-weight:900;
+ font-size:14px;
+ cursor:pointer;
+ box-shadow:0 4px 0 #bf7f27;
+ transition:transform .15s ease,box-shadow .15s ease;
+}
+.vqc-adventure .vqc-coin-wallet-button:hover{
+ transform:translateY(-2px);
+ box-shadow:0 6px 0 #bf7f27;
+}
+.vqc-adventure .vqc-coin-wallet-button:focus-visible{
+ outline:3px solid #2f92d0;
+ outline-offset:3px;
+}
+body.vqc-coin-wallet-open{overflow:hidden}
+.vqc-coin-modal[hidden],.vqc-coin-toast[hidden]{display:none!important}
+.vqc-coin-modal{
+ position:fixed;
+ inset:0;
+ z-index:25000;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ box-sizing:border-box;
+ padding:16px;
+ background:rgba(19,38,57,.77);
+ backdrop-filter:blur(4px);
+}
+.vqc-coin-modal__dialog{
+ position:relative;
+ box-sizing:border-box;
+ width:min(780px,100%);
+ max-height:calc(100dvh - 32px);
+ padding:clamp(17px,3vw,30px);
+ overflow-y:auto;
+ border:5px solid #f4d077;
+ border-radius:26px;
+ background:linear-gradient(160deg,#fff9e8,#fffefd 50%,#f4fcf2);
+ color:#6c4b27;
+ box-shadow:0 9px 0 #ad793b,0 25px 65px rgba(9,29,51,.5);
+ font-family:"Segoe UI",Arial,sans-serif;
+}
+.vqc-coin-modal__close{
+ position:absolute;
+ top:11px;
+ right:13px;
+ width:38px;
+ height:38px;
+ display:grid;
+ place-items:center;
+ border:2px solid #edd2a1;
+ border-radius:50%;
+ background:#fff;
+ font-size:27px;
+ font-weight:900;
+ color:#986336;
+ cursor:pointer;
+}
+.vqc-coin-modal__heading{
+ display:flex;
+ align-items:center;
+ gap:13px;
+ margin:5px 42px 12px 0;
+}
+.vqc-coin-modal__symbol{
+ display:grid;
+ place-items:center;
+ width:71px;
+ height:71px;
+ flex-shrink:0;
+ border-radius:22px;
+ border:3px solid #efc87b;
+ background:#fff2c6;
+ font-size:37px;
+}
+.vqc-coin-modal__eyebrow{
+ color:#bb8335;
+ font-size:11px;
+ font-weight:900;
+ letter-spacing:1px;
+}
+.vqc-coin-modal__heading h2{
+ margin:4px 0;
+ color:#975a21;
+ font-size:clamp(23px,3vw,32px);
+ font-weight:900;
+}
+.vqc-coin-modal__dialog p{
+ color:#74644c;
+ line-height:1.6;
+ font-size:14px;
+ margin:0 0 15px;
+}
+.vqc-coin-modal__balance{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ gap:6px;
+ margin:16px 0;
+ padding:17px;
+ border-radius:19px;
+ border:2px solid #f1c77b;
+ background:radial-gradient(circle at top left,#fffbd5,#ffebb4);
+ text-align:center;
+ font-weight:800;
+}
+.vqc-coin-modal__balance strong{
+ color:#945719;
+ font-size:clamp(26px,4vw,42px);
+ font-weight:900;
+ line-height:1.2;
+}
+.vqc-coin-modal__balance small{color:#987242;font-size:13px}
+.vqc-coin-modal__regions{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:11px;
+}
+.vqc-coin-region{
+ min-width:0;
+ display:flex;
+ align-items:center;
+ gap:9px;
+ padding:11px 13px;
+ border:2px solid #ede1bf;
+ border-radius:16px;
+ background:#fffdf4;
+}
+.vqc-coin-region__icon{font-size:23px;flex-shrink:0}
+.vqc-coin-region__description{
+ flex:1;
+ display:flex;
+ flex-direction:column;
+ gap:4px;
+ min-width:0;
+}
+.vqc-coin-region__description strong{
+ font-size:13px;
+ color:#72512e;
+ line-height:1.3;
+}
+.vqc-coin-region__description small{
+ font-size:11px;
+ color:#8c7c67;
+ line-height:1.35;
+}
+.vqc-coin-region__amount{
+ flex-shrink:0;
+ font-size:13px;
+ white-space:nowrap;
+ color:#ab752b;
+}
+.vqc-coin-region.is-received{
+ background:#e6fae1;
+ border-color:#9cd190;
+}
+.vqc-coin-region.is-received .vqc-coin-region__amount{color:#357745}
+.vqc-coin-region.is-unavailable{
+ background:#f1f2f2;
+ border-color:#dadde0;
+ opacity:.73;
+ filter:grayscale(.55);
+}
+.vqc-coin-modal__dialog .vqc-coin-modal__note{
+ text-align:center;
+ margin:16px auto;
+ font-size:12px;
+ max-width:650px;
+}
+.vqc-coin-modal__done{
+ display:block;
+ min-height:45px;
+ margin:0 auto;
+ padding:10px 26px;
+ border:0;
+ border-radius:14px;
+ background:linear-gradient(180deg,#68c581,#339e5b);
+ box-shadow:0 4px 0 #2c7f4a;
+ color:#fff;
+ font:inherit;
+ font-size:15px;
+ font-weight:900;
+ cursor:pointer;
+}
+.vqc-coin-modal button:focus-visible{outline:3px solid #348ad2;outline-offset:3px}
+.vqc-coin-toast{
+ position:fixed;
+ left:50%;
+ bottom:max(30px,env(safe-area-inset-bottom));
+ transform:translateX(-50%);
+ z-index:30000;
+ box-sizing:border-box;
+ max-width:min(90vw,570px);
+ padding:15px 23px;
+ border:3px solid #e8c35e;
+ border-radius:18px;
+ background:linear-gradient(130deg,#fff7d3,#ffeca3);
+ box-shadow:0 10px 26px #1d436756;
+ color:#83511b;
+ text-align:center;
+ font:900 15px/1.5 "Segoe UI",Arial,sans-serif;
+}
+@media(max-width:710px){
+ .vqc-coin-modal__regions{grid-template-columns:1fr}
+ .vqc-coin-modal__dialog{padding:17px 12px;border-radius:20px}
+ .vqc-coin-modal__heading{gap:9px;margin-right:35px}
+ .vqc-coin-modal__symbol{width:55px;height:55px;font-size:27px;border-radius:17px}
+ .vqc-coin-region{padding:9px 10px}
+ .vqc-adventure .chess-reward-card--coins .chess-reward-card__content{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-adventure .vqc-coin-wallet-button{transition:none}
+ .vqc-adventure .vqc-coin-wallet-button:hover{transform:none}
+}

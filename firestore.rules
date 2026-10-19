@@ -29,7 +29,7 @@ service cloud.firestore {
   match /adventureProgress/{uid} {
    allow read: if active() && request.auth.uid==uid;
    allow create,update: if student() && request.auth.uid==uid
-     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','stars','updatedAt'])
+     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','rewardedRegions','stars','updatedAt'])
      && request.resource.data.studentId==uid
      && request.resource.data.done is list
      && request.resource.data.done.size()<=10
@@ -37,6 +37,8 @@ service cloud.firestore {
      && request.resource.data.forestDone.size()<=6
      && request.resource.data.canyonDone is list
      && request.resource.data.canyonDone.size()<=13
+     && request.resource.data.rewardedRegions is list
+     && request.resource.data.rewardedRegions.size()<=7
      && request.resource.data.stars is int
      && request.resource.data.stars>=0
      && request.resource.data.stars<=105;

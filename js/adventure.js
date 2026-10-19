@@ -15,6 +15,9 @@ const CANYON_GROUPS=[
  {kind:'freecapture',title:'Ăn quân không được bảo vệ',count:8,prefix:'Hình',icon:'🎯',container:'vqcCanyonFreeCaptureTasks'}
 ];
 const CANYON_TOTAL=13;
+const REGION_COIN_REWARDS=REGIONS.map((region,index)=>(index+1)*1000);
+const AVAILABLE_REWARD_REGIONS=3; // Vùng 4–7 chưa có bài tập, chưa thể nhận xu.
+
 let canyonActive=false,canyonCurrentKind=null;
 
 const FOREST_PIECES=[
@@ -35,7 +38,8 @@ const QUESTIONS=[
  {title:'Thử thách cuối bến cảng',question:'Khi Vua đang bị chiếu, em cần làm gì?',options:['Bỏ qua và đi quân bất kỳ','Thực hiện nước đi hợp lệ để hết bị chiếu','Đưa Vua vào ô đang bị tấn công'],answer:1,explain:'Khi bị chiếu, em phải chọn một nước đi hợp lệ giúp Vua thoát chiếu.',board:'check'}
 ];
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
-let progress={done:[],forestDone:[],canyonDone:[],stars:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+let progress={done:[],forestDone:[],canyonDone:[],rewardedRegions:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+let lastAnnouncedRewards=new Set(),coinToastTimer=null,coinWalletReady=false,coinWalletReturnFocus=null;
 
 /* Five selectable assets are kept on the adventure side only; live classroom is unaffected. */
 const AVAILABLE_AVATARS=[
@@ -132,28 +136,137 @@ function sanitize(data){
     return Number.isInteger(index)&&index>=0&&index<g.count&&key===g.kind+':'+index;
    })))]
   :[];
- return {done,forestDone,canyonDone,stars:done.length*3+forestDone.length*6+canyonDone.length*3};
+ // Rewards are a permanent one-time record: 1,000 / 2,000 / ... / 7,000 Xu.
+ // Keep earlier claims even if learners replay/reset a lesson.
+ const rewarded=new Set(Array.isArray(data?.rewardedRegions)
+  ?data.rewardedRegions.filter(n=>Number.isInteger(n)&&n>=0&&n<AVAILABLE_REWARD_REGIONS)
+  :[]);
+ if(done.length===QUESTIONS.length)rewarded.add(0);
+ if(forestDone.length===FOREST_PIECES.length)rewarded.add(1);
+ if(canyonDone.length===CANYON_TOTAL)rewarded.add(2);
+ const rewardedRegions=[...rewarded].sort((a,b)=>a-b);
+ const coins=rewardedRegions.reduce((sum,n)=>sum+REGION_COIN_REWARDS[n],0);
+ return {done,forestDone,canyonDone,rewardedRegions,stars:done.length*3+forestDone.length*6+canyonDone.length*3,coins};
 }
+
+function formatCoins(value){
+ return new Intl.NumberFormat('vi-VN').format(Math.max(0,Number(value)||0));
+}
+function renderCoinWallet(){
+ const container=$('vqcCoinRewardList');
+ if(!container)return;
+ container.replaceChildren();
+ REGIONS.forEach((region,index)=>{
+  const received=progress.rewardedRegions.includes(index);
+  const available=index<AVAILABLE_REWARD_REGIONS;
+  const row=document.createElement('div');
+  row.className='vqc-coin-region'+(received?' is-received':!available?' is-unavailable':' is-pending');
+  const badge=document.createElement('span');
+  badge.className='vqc-coin-region__icon';
+  badge.textContent=received?'✅':available?'🏝️':'🔒';
+  badge.setAttribute('aria-hidden','true');
+  const description=document.createElement('span');
+  description.className='vqc-coin-region__description';
+  const name=document.createElement('strong');
+  name.textContent='Vùng '+(index+1)+' · '+region[1];
+  const status=document.createElement('small');
+  status.textContent=received?'Đã nhận thưởng':available?'Hoàn thành tất cả bài để nhận xu':'Sắp ra mắt';
+  description.append(name,status);
+  const amount=document.createElement('strong');
+  amount.className='vqc-coin-region__amount';
+  amount.textContent='+'+formatCoins(REGION_COIN_REWARDS[index])+' xu';
+  row.append(badge,description,amount);
+  container.appendChild(row);
+ });
+ const obtained=$('vqcCoinEarnedRegions');
+ if(obtained)obtained.textContent=progress.rewardedRegions.length+'/7 vùng';
+}
+function closeCoinWallet(){
+ const modal=$('vqcCoinModal');
+ if(!modal||modal.hidden)return;
+ modal.hidden=true;
+ document.body.classList.remove('vqc-coin-wallet-open');
+ if(coinWalletReturnFocus?.isConnected&&document.body.classList.contains('vqc-mode-world'))coinWalletReturnFocus.focus();
+ coinWalletReturnFocus=null;
+}
+function openCoinWallet(){
+ const modal=$('vqcCoinModal');
+ if(!modal)return;
+ coinWalletReturnFocus=document.activeElement;
+ renderCoinWallet();
+ modal.hidden=false;
+ document.body.classList.add('vqc-coin-wallet-open');
+ $('vqcCoinModalClose')?.focus();
+}
+function initCoinWallet(){
+ if(coinWalletReady)return;
+ const modal=$('vqcCoinModal'),button=$('vqcCoinWalletOpen');
+ if(!modal||!button)return;
+ coinWalletReady=true;
+ button.addEventListener('click',openCoinWallet);
+ $('vqcCoinModalClose')?.addEventListener('click',closeCoinWallet);
+ $('vqcCoinModalDone')?.addEventListener('click',closeCoinWallet);
+ modal.addEventListener('click',event=>{
+  if(event.target===modal)closeCoinWallet();
+ });
+ modal.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+   event.preventDefault();closeCoinWallet();return;
+  }
+  if(event.key!=='Tab')return;
+  const focusables=[...modal.querySelectorAll('button:not([disabled])')];
+  const first=focusables[0],last=focusables[focusables.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ });
+ renderCoinWallet();
+}
+function showCoinRewardToast(regions){
+ const toast=$('vqcCoinsToast');
+ if(!toast)return;
+ const received=regions.reduce((sum,n)=>sum+REGION_COIN_REWARDS[n],0);
+ const placeNames=regions.map(n=>'Vùng '+(n+1)).join(', ');
+ toast.textContent='🏆 Chinh phục '+placeNames+'! +'+formatCoins(received)+' Xu Kỳ Thủ 🪙';
+ toast.hidden=false;
+ clearTimeout(coinToastTimer);
+ coinToastTimer=setTimeout(()=>{toast.hidden=true;},6000);
+}
+
 function localLoad(){try{return sanitize(JSON.parse(localStorage.getItem(storageKey())||'{}'));}catch(e){return sanitize({});}}
 function localSave(){try{localStorage.setItem(storageKey(),JSON.stringify(progress));}catch(e){console.warn('Không lưu được tiến độ trên thiết bị',e);}}
 function cloudRef(){return identity()&&typeof db!=='undefined'?db.collection('adventureProgress').doc(identity()):null;}
 async function loadProgress(){
- progress=localLoad();render();
+ progress=localLoad();
+ lastAnnouncedRewards=new Set(progress.rewardedRegions);
+ localSave();render();
  const ref=cloudRef();if(!ref){setSaveStatus('Đăng nhập để đồng bộ tiến độ giữa các thiết bị.');return;}
  try{
   const snap=await ref.get();
-  if(!snap.exists){cloudOk=true;setSaveStatus('Tiến độ lưu trên thiết bị.');return;}
+  if(!snap.exists){
+   cloudOk=true;
+   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.rewardedRegions.length)saveProgress();
+   else setSaveStatus('Tiến độ lưu trên thiết bị.');
+   return;
+  }
   const remote=sanitize(snap.data());
-  progress=sanitize({done:[...progress.done,...remote.done],forestDone:[...progress.forestDone,...remote.forestDone],canyonDone:[...progress.canyonDone,...remote.canyonDone]});
-  localSave();cloudOk=true;render();setSaveStatus('Đã tải tiến độ tài khoản.');
+  // Merge the latest in-memory progress as well, including actions made while fetching.
+  progress=sanitize({done:[...progress.done,...remote.done],forestDone:[...progress.forestDone,...remote.forestDone],canyonDone:[...progress.canyonDone,...remote.canyonDone],rewardedRegions:[...progress.rewardedRegions,...remote.rewardedRegions]});
+  lastAnnouncedRewards=new Set(progress.rewardedRegions);
+  localSave();cloudOk=true;render();
+  if(!Array.isArray(snap.data().rewardedRegions)||JSON.stringify([...snap.data().rewardedRegions].sort((a,b)=>a-b))!==JSON.stringify(progress.rewardedRegions)){
+   saveProgress(); // Backfill one-time coins earned before the wallet launched.
+  }else setSaveStatus('Đã tải tiến độ tài khoản.');
  }catch(e){cloudOk=false;setSaveStatus('Tiến độ đang lưu trên thiết bị này; chưa đồng bộ đám mây.');}
 }
 function saveProgress(){
+ const newlyRewarded=progress.rewardedRegions.filter(n=>!lastAnnouncedRewards.has(n));
+ lastAnnouncedRewards=new Set(progress.rewardedRegions);
  localSave();render();
+ if(newlyRewarded.length)showCoinRewardToast(newlyRewarded);
  clearTimeout(saveTimer);
  const ref=cloudRef();if(!ref){setSaveStatus('Đã lưu trên thiết bị. Đăng nhập để lưu trực tuyến.');return;}
  saveTimer=setTimeout(async()=>{
-  try{await ref.set({studentId:identity(),done:[...progress.done],forestDone:[...progress.forestDone],canyonDone:[...progress.canyonDone],stars:progress.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});cloudOk=true;setSaveStatus('✓ Đã lưu tiến độ vào tài khoản.');}
+  try{await ref.set({studentId:identity(),done:[...progress.done],forestDone:[...progress.forestDone],canyonDone:[...progress.canyonDone],rewardedRegions:[...progress.rewardedRegions],stars:progress.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});cloudOk=true;setSaveStatus('✓ Đã lưu tiến độ vào tài khoản.');}
   catch(e){cloudOk=false;console.warn('Không thể lưu hành trình lên Firestore',e);setSaveStatus('✓ Đã lưu trên thiết bị; đồng bộ tài khoản chưa khả dụng.');}
  },180);
 }
@@ -314,6 +427,12 @@ function render(){
   nodes.appendChild(button);
  });
  $('vqcAdventureStars').textContent=String(progress.stars);
+ const balance=formatCoins(progress.coins);
+ if($('vqcCoinsBalance'))$('vqcCoinsBalance').textContent=balance;
+ if($('vqcCoinCardBalance'))$('vqcCoinCardBalance').textContent=balance;
+ if($('vqcMapHudCoins'))$('vqcMapHudCoins').textContent=balance;
+ if($('vqcCoinWalletBalance'))$('vqcCoinWalletBalance').textContent=balance;
+ renderCoinWallet();
  if($('vqcMapHudStars'))$('vqcMapHudStars').textContent=String(progress.stars);
  if($('vqcMapHudLessons'))$('vqcMapHudLessons').textContent=progress.done.length+'/'+QUESTIONS.length+' màn';
  if($('vqcMapHudProgress'))$('vqcMapHudProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
@@ -564,6 +683,7 @@ window.vqcAdventurePieceCompleted=function(piece){
  // Preserve the original 6-star reward dialog and its existing continue button.
 };
 window.vqcAdventureLeaveWorld=function(){
+ closeCoinWallet();
  closeAvatarPicker();
  if(canyonActive)closeCanyon();
  if(forestActive)closeForest();
@@ -621,7 +741,7 @@ window.vqcAdventureBack=closeRegion;
 window.vqcAdventureNext=next;
 window.vqcAdventureReset=function(){
  if(!confirm('Em có muốn chơi lại từ màn đầu? Tiến độ cũ sẽ được đặt lại.'))return;
- progress=sanitize({});saveProgress();closeRegion();
+ progress=sanitize({rewardedRegions:progress.rewardedRegions});saveProgress();closeRegion();
 };
-window.addEventListener('DOMContentLoaded',()=>{initAvatarPicker();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
+window.addEventListener('DOMContentLoaded',()=>{initCoinWallet();initAvatarPicker();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
 })();

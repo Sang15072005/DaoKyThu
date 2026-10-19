@@ -30,7 +30,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=canyon-3-20261018">
+<link rel="stylesheet" href="./css/adventure.css?v=coin-wallet-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
 
 
@@ -158,12 +158,12 @@
   <span class="vqc-avatar-change__gear" aria-hidden="true">⚙️</span>
  </button>
  <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
- <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
+ <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><span class="vqc-adventure-stat vqc-coin-top-balance">🪙 <strong id="vqcCoinsBalance">0</strong> xu</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
  <div id="vqcAdventureMap">
   <div class="vqc-level-scroll" id="vqcLevelScroll" tabindex="0" aria-label="Bản đồ 7 vùng đất. Trên điện thoại, vuốt ngang để khám phá">
    <div class="vqc-adventure-map vqc-level-map" id="vqcLevelMap">
     <div class="vqc-map-hud vqc-map-hud--left" aria-label="Thành tích hiện tại">
-      <div class="vqc-map-hud__star">⭐ <strong id="vqcMapHudStars">0</strong> sao</div>
+      <div class="vqc-map-hud__star">⭐ <strong id="vqcMapHudStars">0</strong> sao</div><div class="vqc-map-hud__coin" aria-label="Số Xu Kỳ Thủ">🪙 <strong id="vqcMapHudCoins">0</strong> xu</div>
       <div class="vqc-map-hud__progress" role="presentation"><span id="vqcMapHudProgress"></span></div>
     </div>
     <div class="vqc-map-hud vqc-map-hud--right" aria-label="Số màn đã hoàn thành">
@@ -191,7 +191,7 @@
    </div>
   </div>
   <p class="vqc-level-hint">🧭 Chọn trạm đã mở để xem thông tin và di chuyển nhân vật. <span>Vuốt ngang trên điện thoại để xem hết bản đồ.</span></p>
-  <p class="vqc-adventure-legend">⚓ Bến Cảng và 🌳 Rừng Sao đã mở • Các vùng đất còn lại đang được phát triển.</p>
+  <p class="vqc-adventure-legend">⚓ Bến Cảng, 🌳 Rừng Sao và ⛰️ Hẻm Núi đã mở • Chinh phục các vùng đất để nhận Xu Kỳ Thủ.</p>
 
   <!-- Rewards showcase inside the adventure map; no gameplay or progress logic changed. -->
   <section class="chess-rewards" id="chessRewards" aria-labelledby="chessRewardsTitle">
@@ -202,13 +202,16 @@
         <p>Hoàn thành thử thách, tích lũy thành tích và khám phá những phần thưởng thú vị!</p>
       </div>
       <div class="chess-rewards__grid">
-        <article class="chess-reward-card">
-          <div class="chess-reward-card__image">
-            <img src="https://placehold.co/800x500/FEE5A2/855000?text=Xu+Ky+Thu" alt="Hình minh họa Xu Kỳ Thủ" width="800" height="500" loading="lazy">
+        <article class="chess-reward-card chess-reward-card--coins" aria-label="Xu Kỳ Thủ đã mở khóa">
+          <div class="chess-reward-card__image vqc-coin-art">
+            <div class="vqc-coin-art__glow" aria-hidden="true">🪙</div>
+            <span class="vqc-coin-art__caption">KHO BÁU CỦA EM</span>
+            <strong class="vqc-coin-art__balance"><span id="vqcCoinCardBalance">0</span> xu</strong>
           </div>
           <div class="chess-reward-card__content">
             <h3>🪙 Xu Kỳ Thủ</h3>
-            <p>Nhận khi hoàn thành thử thách, dùng để mở khóa trang phục hoặc đồ trang trí.</p>
+            <p>Chinh phục vùng đất để nhận xu: Vùng 1 được 1.000 xu, mỗi vùng tiếp theo tăng thêm 1.000 xu. Chỉ nhận một lần cho mỗi vùng.</p>
+            <button id="vqcCoinWalletOpen" class="vqc-coin-wallet-button" type="button" aria-haspopup="dialog" aria-controls="vqcCoinModal">🪙 Mở ví Xu Kỳ Thủ <span aria-hidden="true">→</span></button>
           </div>
         </article>
         <article class="chess-reward-card">
@@ -298,6 +301,29 @@
 </section>
 
 <!-- Character selection lives at body root so parent map overflow cannot clip the backdrop. -->
+<!-- Coin wallet is rendered outside the scrollable island so it cannot be clipped. -->
+<div id="vqcCoinModal" class="vqc-coin-modal" role="dialog" aria-modal="true" aria-labelledby="vqcCoinModalTitle" aria-describedby="vqcCoinModalDescription" hidden>
+ <div class="vqc-coin-modal__dialog">
+  <button class="vqc-coin-modal__close" id="vqcCoinModalClose" type="button" aria-label="Đóng ví Xu Kỳ Thủ">×</button>
+  <div class="vqc-coin-modal__heading">
+   <span class="vqc-coin-modal__symbol" aria-hidden="true">🪙</span>
+   <div>
+    <span class="vqc-coin-modal__eyebrow">PHẦN THƯỞNG CHINH PHỤC</span>
+    <h2 id="vqcCoinModalTitle">Ví Xu Kỳ Thủ</h2>
+   </div>
+  </div>
+  <p id="vqcCoinModalDescription">Mỗi vùng đất hoàn thành toàn bộ thử thách sẽ nhận phần thưởng một lần. Làm lại bài không được cộng xu lần nữa.</p>
+  <div class="vqc-coin-modal__balance" aria-label="Tổng Xu Kỳ Thủ hiện có">
+   <span>Xu hiện có</span><strong>🪙 <span id="vqcCoinWalletBalance">0</span> xu</strong>
+   <small>Đã chinh phục: <span id="vqcCoinEarnedRegions">0/7 vùng</span></small>
+  </div>
+  <div class="vqc-coin-modal__regions" id="vqcCoinRewardList" aria-label="Phần thưởng 7 vùng đất"></div>
+  <p class="vqc-coin-modal__note">Tổng cộng tối đa 28.000 xu khi hoàn thành cả 7 vùng đất. Các vùng chưa mở sẽ được nhận xu khi có thử thách và hoàn thành.</p>
+  <button class="vqc-coin-modal__done" id="vqcCoinModalDone" type="button">Tiếp tục khám phá</button>
+ </div>
+</div>
+<div id="vqcCoinsToast" class="vqc-coin-toast" role="status" aria-live="polite" hidden></div>
+
 <div id="vqcAvatarModal" class="vqc-avatar-modal" role="dialog" aria-modal="true" aria-labelledby="vqcAvatarModalTitle" aria-describedby="vqcAvatarModalDesc" hidden>
  <div class="vqc-avatar-modal__dialog" tabindex="-1">
   <button id="vqcAvatarClose" type="button" class="vqc-avatar-modal__close" aria-label="Đóng cửa sổ chọn nhân vật">×</button>
@@ -1030,7 +1056,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=canyon-3-20261018"></script>
+<script src="./js/adventure.js?v=coin-wallet-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
