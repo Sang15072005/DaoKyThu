@@ -201,6 +201,10 @@ service cloud.firestore {
     );
    allow delete: if false;
   }
+  function chatPeer(pairId) {
+   let members=get(/databases/$(database)/documents/friendships/$(pairId)).data.members;
+   return members[0]==request.auth.uid?members[1]:members[0];
+  }
   // Private chat between accepted friends. A block prevents both sides from messaging.
   match /chatBlocks/{owner}/blocked/{other} {
    allow get: if friendUser() && request.auth.uid in [owner,other];
@@ -228,8 +232,8 @@ service cloud.firestore {
     && request.resource.data.text.size()>0
     && request.resource.data.text.size()<=500
     && request.resource.data.at==request.time
-    && !exists(/databases/$(database)/documents/chatBlocks/$(request.auth.uid)/blocked/$(get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]==request.auth.uid?get(/databases/$(database)/documents/friendships/$(pairId)).data.members[1]:get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]))
-    && !exists(/databases/$(database)/documents/chatBlocks/$(get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]==request.auth.uid?get(/databases/$(database)/documents/friendships/$(pairId)).data.members[1]:get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0])/blocked/$(request.auth.uid));
+    && !exists(/databases/$(database)/documents/chatBlocks/$(request.auth.uid)/blocked/$(chatPeer(pairId)))
+    && !exists(/databases/$(database)/documents/chatBlocks/$(chatPeer(pairId))/blocked/$(request.auth.uid));
    allow update,delete: if false;
   }
   // Reports can be submitted by chat participants; only admins review via Firebase Console.
