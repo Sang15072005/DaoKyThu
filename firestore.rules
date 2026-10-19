@@ -117,6 +117,35 @@ service cloud.firestore {
      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
      && request.resource.data.status in ['accepted','declined','blocked']
      && request.resource.data.updatedAt==request.time;
+   // Only confirmed friends can send preset phrases or challenge each other.
+   allow update: if friendUser()
+     && resource.data.status=='accepted'
+     && request.auth.uid in resource.data.members
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quickMessage','challenge','updatedAt'])
+     && request.resource.data.updatedAt==request.time
+     && (
+       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quickMessage','updatedAt'])
+        && request.resource.data.quickMessage.keys().hasOnly(['text','from','at'])
+        && request.resource.data.quickMessage.from==request.auth.uid
+        && request.resource.data.quickMessage.text in ['👋 Chào bạn!','♟️ Bạn chơi cờ với mình nhé?','👏 Bạn chơi hay quá!','🎉 Chúc mừng bạn!','😊 Cảm ơn bạn!']
+        && request.resource.data.quickMessage.at==request.time)
+       ||
+       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['challenge','updatedAt'])
+        && request.resource.data.challenge.keys().hasOnly(['status','from','at','respondedAt'])
+        && request.resource.data.challenge.from in resource.data.members
+        && (
+          (request.resource.data.challenge.from==request.auth.uid
+           && request.resource.data.challenge.status=='pending'
+           && request.resource.data.challenge.at==request.time)
+          ||
+          (resource.data.get('challenge',{}).get('status','')=='pending'
+           && resource.data.challenge.from!=request.auth.uid
+           && request.resource.data.challenge.from==resource.data.challenge.from
+           && request.resource.data.challenge.at==resource.data.challenge.at
+           && request.resource.data.challenge.status in ['accepted','declined']
+           && request.resource.data.challenge.respondedAt==request.time)
+        ))
+     );
    allow delete: if friendUser()
      && request.auth.uid in resource.data.members
      && (resource.data.status=='accepted' ||
