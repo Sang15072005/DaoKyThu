@@ -40,6 +40,7 @@
 
 
 <link rel="stylesheet" href="./css/board-appearance.css?v=20261020-2">
+<link rel="stylesheet" href="./css/friend-duel.css?v=friend-duel-20261020-1">
 </head>
 
 
@@ -161,6 +162,15 @@
  </button>
  <div class="vqc-entry-head"><span class="vqc-entry-emoji">🏝️</span><h1>Khám phá Đảo Kỳ Thủ</h1><p>Chinh phục từng vùng đất, học cờ qua mỗi thử thách!</p></div>
  <div class="vqc-adventure-toolbar" aria-label="Tiến độ phiêu lưu"><span class="vqc-adventure-stat">⭐ <span id="vqcAdventureStars">0</span> sao</span><span class="vqc-adventure-stat vqc-coin-top-balance">🪙 <strong id="vqcCoinsBalance">0</strong> xu</span><div class="vqc-adventure-meter" aria-label="Tiến độ Bến Cảng"><span id="vqcAdventureProgress"></span></div><span class="vqc-adventure-stat">⚓ <span id="vqcAdventureCount">0/10</span> màn</span></div>
+<section class="vqc-world-extras" aria-label="Chơi cùng bạn bè và giải trí">
+ <h2>🎮 Góc giải trí và thách đấu</h2>
+ <p>Chơi Tốt và Mã để luyện chiến thuật hoặc gửi lời thách đấu cho bạn bè đã kết bạn. Trò chơi giải trí không tính sao hay xu.</p>
+ <div class="vqc-world-extras__actions">
+  <button type="button" onclick="vqcOpenPawnArcade(0)">♟️ Trò chơi Tốt</button>
+  <button type="button" onclick="vqcOpenPawnArcade(1)">♞ Mã chống Tốt</button>
+  <button type="button" onclick="document.getElementById('vqcFriendsOpen').click()">⚔️ Thách đấu bạn bè</button>
+ </div>
+</section>
  <div id="vqcAdventureMap">
   <div class="vqc-level-scroll" id="vqcLevelScroll" tabindex="0" aria-label="Bản đồ 7 vùng đất. Trên điện thoại, vuốt ngang để khám phá">
    <div class="vqc-adventure-map vqc-level-map" id="vqcLevelMap">
@@ -1233,7 +1243,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
 <script src="./js/adventure.js?v=friends-20261019"></script>
-<script src="./js/friends.js?v=friend-chat-challenge-20261020"></script>
+<script src="./js/friends.js?v=friend-duel-20261020-1"></script>
+<script src="./js/friend-duel.js?v=friend-duel-20261020-1"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */
