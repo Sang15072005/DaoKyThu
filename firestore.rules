@@ -201,19 +201,54 @@ service cloud.firestore {
     );
    allow delete: if false;
   }
-  // Real-time conversation: only fixed, child-friendly phrases; no free text.
+  // Private chat between accepted friends. A block prevents both sides from messaging.
+  match /chatBlocks/{owner}/blocked/{other} {
+   allow get: if friendUser() && request.auth.uid in [owner,other];
+   allow list: if false;
+   allow create,update: if friendUser() && request.auth.uid==owner
+    && request.resource.data.keys().hasOnly(['owner','other','at'])
+    && request.resource.data.owner==owner
+    && request.resource.data.other==other
+    && owner!=other
+    && request.resource.data.at==request.time;
+   allow delete: if friendUser() && request.auth.uid==owner;
+  }
   match /friendChats/{pairId}/messages/{messageId} {
-   allow get,list: if friendUser() && exists(/databases/$(database)/documents/friendships/$(pairId))
+   allow get,list: if friendUser()
+    && exists(/databases/$(database)/documents/friendships/$(pairId))
     && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
     && request.auth.uid in get(/databases/$(database)/documents/friendships/$(pairId)).data.members;
-   allow create: if friendUser() && exists(/databases/$(database)/documents/friendships/$(pairId))
+   allow create: if friendUser()
+    && exists(/databases/$(database)/documents/friendships/$(pairId))
     && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
     && request.auth.uid in get(/databases/$(database)/documents/friendships/$(pairId)).data.members
     && request.resource.data.keys().hasOnly(['from','text','at'])
     && request.resource.data.from==request.auth.uid
-    && request.resource.data.text in ['👋 Chào bạn!','♟️ Bạn chơi cờ với mình nhé?','👏 Bạn chơi hay quá!','🎉 Chúc mừng bạn!','😊 Cảm ơn bạn!']
-    && request.resource.data.at==request.time;
+    && request.resource.data.text is string
+    && request.resource.data.text.size()>0
+    && request.resource.data.text.size()<=500
+    && request.resource.data.at==request.time
+    && !exists(/databases/$(database)/documents/chatBlocks/$(request.auth.uid)/blocked/$(get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]==request.auth.uid?get(/databases/$(database)/documents/friendships/$(pairId)).data.members[1]:get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]))
+    && !exists(/databases/$(database)/documents/chatBlocks/$(get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0]==request.auth.uid?get(/databases/$(database)/documents/friendships/$(pairId)).data.members[1]:get(/databases/$(database)/documents/friendships/$(pairId)).data.members[0])/blocked/$(request.auth.uid));
    allow update,delete: if false;
+  }
+  // Reports can be submitted by chat participants; only admins review via Firebase Console.
+  match /chatReports/{reportId} {
+   allow create: if friendUser()
+    && request.resource.data.keys().hasOnly(['reporter','reported','pairId','messageId','reason','text','at'])
+    && request.resource.data.reporter==request.auth.uid
+    && request.resource.data.reported is string
+    && request.resource.data.reported!=request.auth.uid
+    && request.resource.data.pairId==friendPair(request.auth.uid,request.resource.data.reported)
+    && request.resource.data.messageId is string
+    && request.resource.data.messageId.size()>0
+    && request.resource.data.reason=='inappropriate'
+    && request.resource.data.text is string
+    && request.resource.data.text.size()<=500
+    && request.resource.data.at==request.time
+    && exists(/databases/$(database)/documents/friendships/$(request.resource.data.pairId))
+    && get(/databases/$(database)/documents/friendships/$(request.resource.data.pairId)).data.status=='accepted';
+   allow read,update,delete: if false;
   }
   // Only a confirmed friend can read these non-identifying chess achievements.
   // Never store names, contact details, exact location, or dates of birth here.
