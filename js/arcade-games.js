@@ -10,6 +10,9 @@ const sq=(x,y)=>files[x]+y;
 const coord=s=>[files.indexOf(s[0]),Number(s[1])];
 const title=()=>game===0?'Trò chơi Tốt':'Mã chống Tốt';
 const isMine=()=>mode==='local'||turn===human;
+let onlineBusy=false;
+const state=()=>({pos:{...pos},turn,enPassant,ended,last,moves});
+function applyOnline(data){pos={...data.pos};turn=data.turn;enPassant=data.enPassant||'';ended=data.ended||'';last=data.last||'';moves=data.moves||0;selected='';waitingPromotion=null;onlineBusy=false;render();}
 function setup(){
  clearTimeout(botTimer);botTimer=null;thinking=false;pos={};turn='w';selected='';enPassant='';ended='';last='';moves=0;waitingPromotion=null;flipped=false;
  if(game===0){for(const f of files){pos[f+'2']='P';pos[f+'7']='p';}}
@@ -43,7 +46,8 @@ function move(from,to,promotion){
  const piece=pos[from];if(!piece||side(piece)!==turn||!possible(from).includes(to)||ended||waitingPromotion)return false;
  const captured=pos[to];const epCapture=piece.toLowerCase()==='p'&&from[0]!==to[0]&&!captured&&to===enPassant;
  if(epCapture)delete pos[to[0]+from[1]];
- const oldEnPassant=enPassant;enPassant='';
+ const previousState=mode==='online'?state():null;
+ enPassant='';
  if(piece.toLowerCase()==='p'&&Math.abs(Number(to[1])-Number(from[1]))===2)enPassant=from[0]+((Number(to[1])+Number(from[1]))/2);
  delete pos[from];pos[to]=piece;last=from+' → '+to;moves++;
  selected='';
@@ -51,14 +55,16 @@ function move(from,to,promotion){
  if(game===1&&!Object.values(pos).includes('p'))ended='🏆 Trắng thắng! Mã đã ăn hết ba Tốt.';
  if(piece.toLowerCase()==='p'&&(to[1]==='8'||to[1]==='1')){
   if(game===1){ended='🏆 Đen thắng! Một Tốt đã đến hàng cuối và phong cấp.';}
-  else if(promotion){pos[to]=piece==='P'?promotion.toUpperCase():promotion.toLowerCase();ended='🏆 '+(piece==='P'?'Trắng':'Đen')+' thắng! Tốt đã phong cấp thành '+({q:'Hậu',r:'Xe',b:'Tượng',n:'Mã'}[promotion]||'Hậu')+'.';}
+  else if(promotion||mode==='online'){pos[to]=piece==='P'?(promotion||'q').toUpperCase():(promotion||'q').toLowerCase();ended='🏆 '+(piece==='P'?'Trắng':'Đen')+' thắng! Tốt đã phong cấp thành '+({q:'Hậu',r:'Xe',b:'Tượng',n:'Mã'}[promotion||'q']||'Hậu')+'.';}
   else{waitingPromotion={square:to,color:turn};render();if(mode==='computer'&&turn!==human)botTimer=setTimeout(()=>promote('q'),500);return true;}
  }
  if(!ended){
   turn=turn==='w'?'b':'w';
   if(!allMoves(turn).length)ended='🏁 Ván kết thúc: '+(turn==='w'?'Trắng':'Đen')+' không còn nước đi hợp lệ.';
  }
- render();queueBot();return true;
+ if(mode==='online'){
+  onlineBusy=true;render();window.vqcArcadeOnline?.submit(previousState,state(),from,to).catch(e=>{applyOnline(previousState);$('vqcArcadeStatus').textContent='⚠️ '+(e.message||e);});
+ }else{render();queueBot();}return true;
 }
 function promote(piece){
  if(!waitingPromotion||!['q','r','b','n'].includes(piece))return;
@@ -97,7 +103,7 @@ function queueBot(){
  botTimer=setTimeout(()=>{thinking=false;botTimer=null;if(!open||mode!=='computer'||turn===human||ended)return;const choice=botPick();if(choice)move(choice.from,choice.to);},600);
 }
 function clickSquare(square){
- if(ended||waitingPromotion||thinking||!isMine())return;
+ if(ended||waitingPromotion||thinking||onlineBusy||!isMine())return;
  if(selected&&possible(selected).includes(square)){move(selected,square);return;}
  selected=pos[square]&&side(pos[square])===turn?square:'';
  render();
@@ -105,7 +111,7 @@ function clickSquare(square){
 function render(){
  if(!open)return;
  const board=$('vqcArcadeBoard');if(!board)return;
- const orientation=mode==='computer'&&human==='b'?!flipped:flipped;
+ const orientation=(mode==='computer'||mode==='online')&&human==='b'?!flipped:flipped;
  const f=orientation?'hgfedcba':'abcdefgh',r=orientation?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];
  const hints=selected?possible(selected):[];
  board.replaceChildren();
@@ -121,11 +127,14 @@ function render(){
  $('vqcArcadeTitle').textContent=game===0?'♟️ Trò chơi Tốt':'♞ Mã chống Tốt';
  $('vqcArcadeMode').value=mode;$('vqcArcadeColor').value=human;
  $('vqcArcadeColorRow').hidden=mode!=='computer';
+ $('vqcArcadeMode').disabled=mode==='online';
+ $('vqcArcadeRestart').hidden=mode==='online';
+ $('vqcArcadeGame0').disabled=mode==='online';$('vqcArcadeGame1').disabled=mode==='online';
  $('vqcArcadeGame0').classList.toggle('active',game===0);$('vqcArcadeGame1').classList.toggle('active',game===1);
  $('vqcArcadeRules').textContent=game===0?
   'Mỗi bên có 8 quân Tốt. Trắng đi trước. Tốt đi thẳng 1 ô (lần đầu có thể đi 2 ô nếu đường trống), ăn chéo 1 ô và được bắt Tốt qua đường ngay nước kế tiếp. Bên nào đưa Tốt đến hàng cuối để phong cấp sẽ thắng.':
   'Trắng có 1 quân Mã tại e1; Đen có 3 Tốt tại d7, e7, f7. Mã đi hình chữ L, thắng khi ăn hết cả 3 Tốt. Đen thắng nếu một Tốt đến hàng 1 để phong cấp hoặc bắt được Mã. Trắng đi trước.';
- $('vqcArcadeStatus').textContent=ended||(waitingPromotion?'♟️ Chọn quân phong cấp để hoàn tất ván.':thinking?'🤖 Máy đang suy nghĩ…':('Đến lượt '+(turn==='w'?'Trắng':'Đen')+(mode==='computer'?(turn===human?' — đến lượt em!':' — chờ máy…'):' — người chơi '+(turn==='w'?'Trắng':'Đen')+' đi.')));
+ $('vqcArcadeStatus').textContent=ended||(onlineBusy?'⏳ Đang đồng bộ nước đi…':waitingPromotion?'♟️ Chọn quân phong cấp để hoàn tất ván.':thinking?'🤖 Máy đang suy nghĩ…':('Đến lượt '+(turn==='w'?'Trắng':'Đen')+(mode==='computer'?(turn===human?' — đến lượt em!':' — chờ máy…'):' — người chơi '+(turn==='w'?'Trắng':'Đen')+' đi.')));
  $('vqcArcadeHistory').textContent='Số lượt đã đi: '+moves+(last?' · Nước vừa đi: '+last:'');
  const promoteEl=$('vqcArcadePromotion'),buttons=$('vqcArcadePromotionButtons');
  promoteEl.hidden=!waitingPromotion||(mode==='computer'&&turn!==human);
@@ -135,25 +144,32 @@ function render(){
  }
 }
 function start(i=0){
+ if(mode==='online'){window.vqcArcadeOnline?.leave();mode='computer';}
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi chơi giải trí.','warning');return;}
  game=i===1?1:0;open=true;$('vqcArcadeOverlay').hidden=false;setup();queueBot();
 }
-function close(){open=false;clearTimeout(botTimer);botTimer=null;thinking=false;$('vqcArcadeOverlay').hidden=true;}
+function close(){if(mode==='online'){window.vqcArcadeOnline?.leave();mode='computer';}open=false;clearTimeout(botTimer);botTimer=null;thinking=false;$('vqcArcadeOverlay').hidden=true;}
 function init(){
  const wrap=document.createElement('div');wrap.id='vqcArcadeOverlay';wrap.className='vqc-arcade-overlay';wrap.hidden=true;
- wrap.innerHTML='<section class="vqc-arcade-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcArcadeTitle"><div class="vqc-arcade-head"><h2 id="vqcArcadeTitle">🎮 Trò chơi giải trí</h2><button type="button" id="vqcArcadeClose">✕ Đóng</button></div><div class="vqc-arcade-tabs"><button type="button" id="vqcArcadeGame0">♟️ Trò chơi Tốt</button><button type="button" id="vqcArcadeGame1">♞ Mã chống Tốt</button></div><div class="vqc-arcade-layout"><div class="vqc-arcade-board-wrap"><div id="vqcArcadeBoard" class="vqc-arcade-board" aria-label="Bàn cờ giải trí"></div><p id="vqcArcadeHistory"></p></div><aside class="vqc-arcade-panel"><label for="vqcArcadeMode">Hình thức chơi</label><select id="vqcArcadeMode"><option value="computer">🤖 Chơi với máy</option><option value="local">👥 Hai người cùng thiết bị</option></select><div id="vqcArcadeColorRow"><label for="vqcArcadeColor">Em chọn bên</label><select id="vqcArcadeColor"><option value="w">⚪ Trắng (Mã ở trò chơi Mã)</option><option value="b">⚫ Đen (3 Tốt ở trò chơi Mã)</option></select></div><h3>📖 Luật chơi giống trong lớp</h3><p id="vqcArcadeRules"></p><p id="vqcArcadeStatus" aria-live="polite"></p><div class="vqc-arcade-actions"><button type="button" id="vqcArcadeRestart">↻ Ván mới</button><button type="button" id="vqcArcadeFlip">⇅ Đảo bàn cờ</button></div><div id="vqcArcadePromotion" hidden><h3>Chọn quân phong cấp</h3><div id="vqcArcadePromotionButtons"></div></div><small>Chế độ giải trí độc lập với lớp học và tiến độ các vùng đất.</small></aside></div></section>';
+ wrap.innerHTML='<section class="vqc-arcade-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcArcadeTitle"><div class="vqc-arcade-head"><h2 id="vqcArcadeTitle">🎮 Trò chơi giải trí</h2><button type="button" id="vqcArcadeClose">✕ Đóng</button></div><div class="vqc-arcade-tabs"><button type="button" id="vqcArcadeGame0">♟️ Trò chơi Tốt</button><button type="button" id="vqcArcadeGame1">♞ Mã chống Tốt</button></div><div class="vqc-arcade-layout"><div class="vqc-arcade-board-wrap"><div id="vqcArcadeBoard" class="vqc-arcade-board" aria-label="Bàn cờ giải trí"></div><p id="vqcArcadeHistory"></p></div><aside class="vqc-arcade-panel"><label for="vqcArcadeMode">Hình thức chơi</label><select id="vqcArcadeMode"><option value="computer">🤖 Chơi với máy</option><option value="local">👥 Hai người cùng thiết bị</option><option value="online">🌐 Đấu trực tuyến với bạn bè</option></select><div id="vqcArcadeColorRow"><label for="vqcArcadeColor">Em chọn bên</label><select id="vqcArcadeColor"><option value="w">⚪ Trắng (Mã ở trò chơi Mã)</option><option value="b">⚫ Đen (3 Tốt ở trò chơi Mã)</option></select></div><h3>📖 Luật chơi giống trong lớp</h3><p id="vqcArcadeRules"></p><p id="vqcArcadeStatus" aria-live="polite"></p><div class="vqc-arcade-actions"><button type="button" id="vqcArcadeOnlineButton">🌐 Tìm bạn đấu trực tuyến</button><button type="button" id="vqcArcadeRestart">↻ Ván mới</button><button type="button" id="vqcArcadeFlip">⇅ Đảo bàn cờ</button></div><div id="vqcArcadePromotion" hidden><h3>Chọn quân phong cấp</h3><div id="vqcArcadePromotionButtons"></div></div><small>Chế độ giải trí độc lập với lớp học và tiến độ các vùng đất.</small></aside></div></section>';
  document.body.appendChild(wrap);
  $('vqcArcadeClose').addEventListener('click',close);
  $('vqcArcadeGame0').addEventListener('click',()=>start(0));
  $('vqcArcadeGame1').addEventListener('click',()=>start(1));
+ $('vqcArcadeOnlineButton').addEventListener('click',()=>window.vqcArcadeOnline?.lobby(game));
  $('vqcArcadeRestart').addEventListener('click',()=>{setup();queueBot();});
  $('vqcArcadeFlip').addEventListener('click',()=>{flipped=!flipped;render();});
- $('vqcArcadeMode').addEventListener('change',e=>{mode=e.target.value==='local'?'local':'computer';setup();queueBot();});
+ $('vqcArcadeMode').addEventListener('change',e=>{if(e.target.value==='online'){window.vqcArcadeOnline?.lobby(game);e.target.value=mode;return;}mode=e.target.value==='local'?'local':'computer';setup();queueBot();});
  $('vqcArcadeColor').addEventListener('change',e=>{human=e.target.value==='b'?'b':'w';setup();queueBot();});
  wrap.addEventListener('click',e=>{if(e.target===wrap)close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&open)close();});
  window.addEventListener('vqc:account-change',close);
 }
 window.vqcArcadeOpen=start;
+window.vqcArcadeOnlineBridge={
+ openMatch(kind,color,data){mode='online';human=color;game=kind;open=true;$('vqcArcadeOverlay').hidden=false;applyOnline(data);},
+ applyOnline, state, getGame:()=>game, close,
+ isOnline:()=>mode==='online', showError:msg=>{$('vqcArcadeStatus').textContent=msg;onlineBusy=false;}
+};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
