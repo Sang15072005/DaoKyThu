@@ -248,7 +248,7 @@ service cloud.firestore {
     && get(/databases/$(database)/documents/friendships/$(friendPair(d.members[0],d.members[1]))).data.status=='accepted';
   }
   function arcadeInviteId(d) {
-   return friendPair(d.members[0],d.members[1])+'_'+d.game;
+   return friendPair(d.members[0],d.members[1])+(d.game==0?'_0':'_1');
   }
   match /arcadeInvites/{id} {
    allow get: if friendUser() && (resource==null || arcadeFriend(resource.data));
