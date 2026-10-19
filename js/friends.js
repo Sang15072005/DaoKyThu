@@ -193,6 +193,32 @@
     Math.min(5,Math.max(0,Number(data.badges)||0))+' huy hiệu'));
   }
  }
+ const PHRASES=['👋 Chào bạn!','♟️ Bạn chơi cờ với mình nhé?','👏 Bạn chơi hay quá!','🎉 Chúc mừng bạn!','😊 Cảm ơn bạn!'];
+ async function friendAction(other,kind,value){
+  if(!activeStudent())return;
+  const id=ownPair(currentUid,other);
+  const ref=db.collection('friendships').doc(id);
+  if(!friendDocs.some(x=>x.id===id&&x.data.status==='accepted'))return note('Chỉ gửi được cho bạn bè đã xác nhận.',true);
+  try{
+   const field=kind==='message'?'quickMessage':'challenge';
+   const payload=kind==='message'?
+    {text:value,from:currentUid,at:timeStamp()}:
+    {status:value,from:currentUid,at:timeStamp()};
+   await ref.update({[field]:payload,updatedAt:timeStamp()});
+   note(kind==='message'?'Đã gửi lời nhắn.':'Đã gửi lời thách đấu. Đợi bạn trả lời.');
+  }catch(error){note('Chưa gửi được: '+errorText(error),true);}
+ }
+ async function respondChallenge(other,accept){
+  const id=ownPair(currentUid,other);
+  try{
+   await db.collection('friendships').doc(id).update({
+    'challenge.status':accept?'accepted':'declined',
+    'challenge.respondedAt':timeStamp(),
+    updatedAt:timeStamp()
+   });
+   note(accept?'Đã nhận lời thách đấu. Chức năng vào bàn đấu sẽ được kết nối sau.':'Đã từ chối lời thách đấu.');
+  }catch(error){note(errorText(error),true);}
+ }
  function render(){
   const user=currentUid;
   const friends=friendDocs.filter(record=>record.data.status==='accepted');
@@ -238,6 +264,24 @@
       if(!window.confirm('Em muốn hủy kết bạn với '+nick(other)+'?'))return;
       perform(()=>ref.delete(),'Đã hủy kết bạn.');
      },true));
+    }
+    if(category==='friends'){
+     const chat=build('div','vqc-friend-interact');
+     const pick=build('select','vqc-friend-phrase');
+     PHRASES.forEach((phrase,i)=>{const option=build('option','',phrase);option.value=String(i);pick.append(option);});
+     chat.append(pick,linkButton('message','💬 Gửi lời nhắn',()=>friendAction(other,'message',PHRASES[Number(pick.value)])));
+     chat.append(linkButton('challenge','⚔️ Thách đấu',()=>friendAction(other,'challenge','pending')));
+     const last=record.data.quickMessage;
+     if(last&&PHRASES.includes(last.text))chat.append(build('p','vqc-friend-chatline',(last.from===currentUid?'Em: ':'Bạn: ')+last.text));
+     const challenge=record.data.challenge;
+     if(challenge?.status==='pending'){
+      chat.append(build('p','vqc-friend-chatline',challenge.from===currentUid?'Đang chờ bạn nhận lời thách đấu.':'Bạn đang thách đấu em!'));
+      if(challenge.from!==currentUid)chat.append(
+       linkButton('challenge-accept','✓ Nhận lời',()=>respondChallenge(other,true)),
+       linkButton('challenge-decline','Từ chối',()=>respondChallenge(other,false))
+      );
+     }else if(challenge?.status==='accepted')chat.append(build('p','vqc-friend-chatline','⚔️ Hai bạn đã đồng ý thách đấu. Chờ mở bàn đấu.'));
+     item.append(chat);
     }
     item.append(heading,subtitle);
     if(category==='friends'){
