@@ -7,6 +7,7 @@ let unsubscribe=null,otherId='',otherDisplay='',matchId='',matchData=null,workin
 function profile(){return window.accountProfile;}
 function myId(){return typeof auth!=='undefined'&&auth.currentUser?.uid;}
 function say(s){const el=$('vqcDuelStatus');if(el)el.textContent=s;}
+function connectionError(e){console.warn('Friend duel connection:',e);say(e?.code==='permission-denied'?'⚠️ Firebase từ chối kết nối. Hãy cập nhật Firestore Rules trong Firebase Console rồi nhấn Thử lại.':'⚠️ Kết nối bàn đấu thất bại: '+String(e?.message||e));$('vqcDuelRetry').hidden=false;}
 function friendName(uid){return otherDisplay||'Kỳ thủ '+String(uid).slice(-4).toUpperCase();}
 function close(){if(unsubscribe){unsubscribe();unsubscribe=null;}otherId='';otherDisplay='';matchId='';matchData=null;selected='';legal=[];$('vqcFriendDuel')?.setAttribute('hidden','');}
 function render(){
@@ -61,6 +62,7 @@ async function open(other){
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời lớp trước khi thách đấu bạn bè.','warning');return;}
  if(typeof Chess!=='function'){if(typeof vqcNotify==='function')vqcNotify('Chưa tải được luật cờ. Hãy tải lại trang.','warning');return;}
  close();otherId=other;matchId=pair(uid,other);
+ $('vqcDuelRetry').hidden=true;$('vqcDuelBoard').replaceChildren();$('vqcDuelTurn').textContent='Đang đồng bộ ván đấu...';
  db.collection('friendPublicProfiles').doc(other).get().then(snap=>{if(otherId===other&&snap.exists&&snap.data().sharedName){otherDisplay=String(snap.data().sharedName).slice(0,100);if(matchData)render();}}).catch(()=>{});
  $('vqcFriendDuel').hidden=false;say('Đang kết nối bàn đấu...');
  try{
@@ -75,20 +77,22 @@ async function open(other){
    tx.set(ref,{members:[uid,other].sort(),friendshipId:matchId,challengeAt:challenge.at,white,black,fen:new Chess().fen(),turn:white,moves:0,status:'playing',lastMove:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
   });
   if(otherId!==other)return;
-  unsubscribe=ref.onSnapshot(snap=>{
+  unsubscribe=ref.onSnapshot({includeMetadataChanges:true},snap=>{
    if(!snap.exists){say('Bàn đấu chưa sẵn sàng.');return;}
+   if(!snap.metadata.fromCache)$('vqcDuelRetry').hidden=true;
    matchData=snap.data();selected='';legal=[];render();
-  },e=>say('Lỗi kết nối bàn đấu: '+String(e.message||e)));
+  },connectionError);
  }catch(e){
   console.warn('Friend duel:',e);
-  say(e.code==='permission-denied'?'Firebase chưa cho phép tạo bàn đấu. Cần triển khai quy tắc Firestore mới.':String(e.message||e));
+  connectionError(e);
  }
 }
 function init(){
  const overlay=document.createElement('div');overlay.id='vqcFriendDuel';overlay.className='vqc-duel-overlay';overlay.hidden=true;
- overlay.innerHTML='<section class="vqc-duel-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcDuelHeading"><div class="vqc-duel-top"><h2 id="vqcDuelHeading">⚔️ Thách đấu bạn bè</h2><button type="button" id="vqcDuelClose">✕ Đóng</button></div><p id="vqcDuelStatus" aria-live="polite">Đang kết nối...</p><p id="vqcDuelTurn"></p><div id="vqcDuelBoard" class="vqc-duel-board" aria-label="Bàn cờ thách đấu"></div><p class="vqc-duel-footnote">Chỉ bạn bè đã đồng ý mới có thể đấu. Mỗi bên đi đúng lượt; phong cấp mặc định thành Hậu. Trò chơi không ảnh hưởng tiến độ khám phá.</p></section>';
+ overlay.innerHTML='<section class="vqc-duel-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcDuelHeading"><div class="vqc-duel-top"><h2 id="vqcDuelHeading">⚔️ Thách đấu bạn bè</h2><button type="button" id="vqcDuelClose">✕ Đóng</button></div><p id="vqcDuelStatus" aria-live="polite">Đang kết nối...</p><p id="vqcDuelTurn"></p><button type="button" id="vqcDuelRetry" hidden>↻ Thử kết nối lại</button><div id="vqcDuelBoard" class="vqc-duel-board" aria-label="Bàn cờ thách đấu"></div><p class="vqc-duel-footnote">Chỉ bạn bè đã đồng ý mới có thể đấu. Mỗi bên đi đúng lượt; phong cấp mặc định thành Hậu. Trò chơi không ảnh hưởng tiến độ khám phá.</p></section>';
  document.body.appendChild(overlay);
  $('vqcDuelClose').addEventListener('click',close);
+ $('vqcDuelRetry').addEventListener('click',()=>{const id=otherId;if(id)open(id);});
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)close();});
  window.addEventListener('vqc:account-change',close);
