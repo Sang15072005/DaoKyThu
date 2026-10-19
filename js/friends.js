@@ -272,6 +272,8 @@
      const pick=build('select','vqc-friend-phrase');
      PHRASES.forEach((phrase,i)=>{const option=build('option','',phrase);option.value=String(i);pick.append(option);});
      chat.append(pick,linkButton('message','💬 Gửi lời nhắn',()=>friendAction(other,'message',PHRASES[Number(pick.value)])));
+     chat.append(linkButton('chat-history','💬 Trò chuyện',()=>window.vqcFriendChatOpen?.(other)));
+
      chat.append(linkButton('challenge','⚔️ Thách đấu',()=>friendAction(other,'challenge','pending')));
      const last=record.data.quickMessage;
      if(last&&PHRASES.includes(last.text))chat.append(build('p','vqc-friend-chatline',(last.from===currentUid?'Em: ':'Bạn: ')+last.text));
