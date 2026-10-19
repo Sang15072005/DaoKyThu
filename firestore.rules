@@ -174,7 +174,10 @@ service cloud.firestore {
     && d.fen=='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   }
   match /friendMatches/{pairId} {
-   allow get: if friendUser() && acceptedDuel(pairId)
+   // Read an existing match as a confirmed friend, even if a new challenge is pending.
+   allow get: if friendUser()
+    && exists(/databases/$(database)/documents/friendships/$(pairId))
+    && get(/databases/$(database)/documents/friendships/$(pairId)).data.status=='accepted'
     && request.auth.uid in get(/databases/$(database)/documents/friendships/$(pairId)).data.members;
    allow list: if false;
    allow create: if friendUser() && acceptedDuel(pairId)
