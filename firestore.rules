@@ -236,6 +236,19 @@ service cloud.firestore {
     && !exists(/databases/$(database)/documents/chatBlocks/$(chatPeer(pairId))/blocked/$(request.auth.uid));
    allow update,delete: if false;
   }
+  // Each participant may hide earlier chat messages only in their own account.
+  match /chatClears/{owner}/pairs/{pairId} {
+   allow get: if friendUser() && request.auth.uid==owner;
+   allow list: if false;
+   allow create,update: if friendUser() && request.auth.uid==owner
+    && request.resource.data.keys().hasOnly(['owner','pairId','clearedAt'])
+    && request.resource.data.owner==owner
+    && request.resource.data.pairId==pairId
+    && exists(/databases/$(database)/documents/friendships/$(pairId))
+    && owner in get(/databases/$(database)/documents/friendships/$(pairId)).data.members
+    && request.resource.data.clearedAt==request.time;
+   allow delete: if false;
+  }
   // Reports can be submitted by chat participants; only admins review via Firebase Console.
   match /chatReports/{reportId} {
    allow create: if friendUser()
