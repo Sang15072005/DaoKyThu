@@ -10,7 +10,7 @@
  const AVATAR_PATHS={king:'./assets/nhanvat%20(2).png',queen:'./assets/nhanvat%20(3).png',knight:'./assets/nhanvat%20(4).png',scholar:'./assets/nhanvat%20(5).png',explorer:'./assets/nhanvat%20(6).png'};
  const MAX_FRIENDS=50,MAX_PENDING=20;
  let currentUid=null,ownCode='',friendDocs=[],unsub=null,busy=false,modalFocus=null,statsTimer=null,profileSignature='';
- let foundFriend=null,lookupVersion=0;
+ let foundFriend=null,lookupVersion=0,showName=false,friendView='cards';
  const backend=()=>typeof db!=='undefined'&&typeof auth!=='undefined'&&auth.currentUser;
  const currentProfile=()=>window.accountProfile;
  const activeStudent=()=>!!(backend()&&currentProfile()?.role==='student'&&currentProfile()?.uid===auth.currentUser.uid);
@@ -100,6 +100,7 @@
   const raw=window.vqcGetFriendStats();
   if(!raw)return null;
   return {
+   sharedName:showName?String(currentProfile()?.name||'').trim().slice(0,100):'',
    avatar:AVATARS.includes(raw.avatar)?raw.avatar:'explorer',
    stars:Math.max(0,Math.min(186,Math.floor(Number(raw.stars)||0))),
    regions:Math.max(0,Math.min(5,Math.floor(Number(raw.regions)||0))),
@@ -171,6 +172,8 @@
    if(!slot)continue;
    const other=record.data.members.find(uid=>uid!==currentUid);
    const data=cache.get(other);
+   const title=document.getElementById('vqcFriendName_'+record.id);
+   if(title)title.textContent=data?.sharedName||nick(other);
    slot.replaceChildren();
    if(!data){slot.textContent='Bạn này chưa chia sẻ thành tích.';continue;}
    const avatar=AVATARS.includes(data.avatar)?data.avatar:'explorer';
@@ -205,6 +208,7 @@
     const heading=build('div','vqc-friend-item__heading');
     heading.append(build('span','vqc-friend-item__symbol',category==='friends'?'👥':'✉️'),
      build('strong','vqc-friend-item__name',nick(other)));
+    heading.querySelector('strong').id='vqcFriendName_'+record.id;
     const subtitle=build('p','vqc-friend-item__subtitle',
       category==='friends'?'Bạn bè đã xác nhận':category==='incoming'?'Muốn kết bạn với em':'Đang chờ bạn xác nhận');
     const actions=build('div','vqc-friend-item__actions');
@@ -250,6 +254,11 @@
   }
   if(user===currentUid)return;
   stopListening();currentUid=user;
+  showName=localStorage.getItem('vqcFriendNameShare_'+user)==='yes';
+  friendView=localStorage.getItem('vqcFriendView_'+user)||'cards';
+  if($('vqcFriendsShareName'))$('vqcFriendsShareName').checked=showName;
+  if($('vqcFriendsView'))$('vqcFriendsView').value=friendView;
+  document.getElementById('vqcFriendsModal')?.classList.toggle('vqc-friends-compact',friendView==='compact');
   note('Đang kết nối bạn bè...');
   let codeError=null;
   try{await ensureFriendCode();}
@@ -432,6 +441,23 @@ async function diagnoseFirebasePermissions(){
   $('vqcFriendsFind')?.addEventListener('click',findFriend);
   $('vqcFriendsCodeInput')?.addEventListener('input',()=>{foundFriend=null;lookupVersion++;if($('vqcFriendsFound'))$('vqcFriendsFound').hidden=true;});
   $('vqcFriendsDiagnose')?.addEventListener('click',diagnoseFirebasePermissions);
+  $('vqcFriendsSettingsToggle')?.addEventListener('click',()=>{
+   const panel=$('vqcFriendsSettings');
+   if(panel)panel.hidden=!panel.hidden;
+  });
+  $('vqcFriendsShareName')?.addEventListener('change',async event=>{
+   if(!activeStudent())return;
+   showName=event.target.checked;
+   localStorage.setItem('vqcFriendNameShare_'+currentUid,showName?'yes':'no');
+   profileSignature='';
+   await publishProfile();
+   note(showName?'Đã bật chia sẻ họ tên với bạn bè.':'Đã tắt chia sẻ họ tên với bạn bè.');
+  });
+  $('vqcFriendsView')?.addEventListener('change',event=>{
+   friendView=event.target.value;
+   localStorage.setItem('vqcFriendView_'+currentUid,friendView);
+   $('vqcFriendsModal')?.classList.toggle('vqc-friends-compact',friendView==='compact');
+  });
   $('vqcFriendsCodeInput')?.addEventListener('keydown',event=>{
    if(event.key==='Enter'){event.preventDefault();sendInvite();}
   });
