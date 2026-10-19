@@ -1,0 +1,112 @@
+/* Board annotation tools: SVG is an absolute child so the 8x8 grid stays intact. */
+:is(#board,#mateBoard,#mate3Board,#pvpBoard,#captureBoard,#freeCaptureBoard,
+    #defenseBoard,#checkOneBoard,#escapeBoard,#pawnGameBoard,#vqcAdventureBoard).vqc-annotation-board{
+ position:relative;
+ isolation:isolate;
+}
+.vqc-annotation-board>.vqc-annotation-overlay{
+ box-sizing:border-box;
+ position:absolute;
+ inset:0;
+ display:block;
+ width:100%;
+ height:100%;
+ z-index:30;
+ overflow:hidden;
+ pointer-events:none!important;
+ user-select:none;
+ -webkit-user-select:none;
+}
+.vqc-annotation-board.vqc-annotation-draw{
+ cursor:crosshair!important;
+ touch-action:none!important;
+}
+.vqc-annotation-board.vqc-annotation-draw>*:not(.vqc-annotation-overlay){
+ cursor:crosshair!important;
+ touch-action:none!important;
+}
+.vqc-annotation-toolbar[hidden]{display:none!important}
+.vqc-annotation-toolbar{
+ position:fixed;
+ right:max(12px,env(safe-area-inset-right));
+ bottom:max(16px,env(safe-area-inset-bottom));
+ z-index:15000;
+ display:flex;
+ align-items:center;
+ gap:7px;
+ padding:7px;
+ max-width:min(94vw,400px);
+ border:2px solid #e7c573;
+ border-radius:18px;
+ background:linear-gradient(150deg,#fffdf5,#f0f7ff);
+ box-shadow:0 7px 0 #e8c68a,0 13px 26px #18456a42;
+ font-family:system-ui,"Segoe UI",sans-serif;
+}
+.vqc-annotation-toolbar button{
+ appearance:none;
+ min-height:40px;
+ min-width:69px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border:2px solid #b5d6e8;
+ border-radius:12px;
+ background:#fff;
+ padding:7px 12px;
+ font:inherit;
+ font-size:14px;
+ line-height:1.1;
+ font-weight:800;
+ color:#2e6286;
+ cursor:pointer;
+ white-space:nowrap;
+ transition:transform .15s,border-color .15s,background .15s;
+}
+.vqc-annotation-toolbar button:hover:not(:disabled){
+ transform:translateY(-2px);
+ border-color:#70c3ff;
+}
+.vqc-annotation-toolbar button:disabled{
+ opacity:.48;
+ cursor:default;
+}
+.vqc-annotation-toolbar button:focus-visible{
+ outline:3px solid #5399ee;
+ outline-offset:2px;
+}
+.vqc-annotation-toolbar button.is-active{
+ background:linear-gradient(165deg,#d8f8de,#a8e6b8);
+ color:#23633e;
+ border-color:#64ba85;
+ box-shadow:inset 0 1px 2px #ffffff;
+}
+.vqc-annotation-hint{
+ display:grid;
+ place-items:center;
+ min-width:24px;
+ height:27px;
+ border-radius:50%;
+ color:#69869b;
+ font-size:16px;
+ font-weight:900;
+ cursor:help;
+}
+@media(max-width:600px){
+ .vqc-annotation-toolbar{
+  right:10px;
+  bottom:max(10px,env(safe-area-inset-bottom));
+  padding:6px;
+  gap:4px;
+  border-radius:14px;
+ }
+ .vqc-annotation-toolbar button{
+  font-size:13px;
+  min-height:38px;
+  padding:6px 9px;
+  min-width:58px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .vqc-annotation-toolbar button{transition:none!important}
+ .vqc-annotation-toolbar button:hover{transform:none!important}
+}

@@ -1348,7 +1348,9 @@ function vqcBroadcastView(view,index=0){
   const stamp=Date.now()+'-'+(++vqcNavSerial)+'-'+(window.accountProfile?.role||role);
   vqcNavSeen=stamp;
   vqcTeacherViewAckSeen=null;
-  roomRef.update({activeView:{view,index,stamp},updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+  // A new task starts with a clean annotation layer on both devices.
+  if(typeof window.vqcAnnotationsClearAll==='function')window.vqcAnnotationsClearAll();
+  roomRef.update({activeView:{view,index,stamp},boardAnnotations:null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
     .catch(e=>{console.error('Không đồng bộ được mục học',e);document.getElementById('status').textContent='⚠️ Chưa đồng bộ được mục học. Kiểm tra kết nối phòng.';});
 }
 function vqcSafeReceiveExercise(label,receiver,payload){
@@ -1564,6 +1566,8 @@ function listenToRoom(){
       selected=null;applyPieceGameUI();renderBoard();
       }
     }
+    // Student sees the teacher's arrows/circles without touching chess pieces.
+    if(typeof window.vqcAnnotationsReceive==='function')window.vqcAnnotationsReceive(data.boardAnnotations||null);
 
   },err=>{
     console.error('Firestore classroom listener error',err);
@@ -1579,7 +1583,7 @@ async function createRoom(){
     lastFrom=lastTo=selected=null;renderBoard();
     const initialPiece=serializePieceGame();
     const initialView=initialPiece?{view:'piece',piece:initialPiece.piece,stamp:Date.now()+'-init'}:{view:'board',index:0,stamp:Date.now()+'-init'};
-    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,studentViewAck:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await roomRef.set({state:[...state],lastFrom:null,lastTo:null,studentOnline:false,studentHeartbeatAt:0,studentHeartbeatServerAt:null,studentLeaveEvent:null,studentJoinEvent:null,studentViewAck:null,boardAnnotations:null,activeView:initialView,pieceGame:initialPiece,rewardDismissed:false,lastActor:"teacher",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     vqcNavSeen=initialView.stamp;listenToRoom();startPresenceTimers();document.getElementById("leaveRoomBtn").style.display="inline-block";document.getElementById("connection").innerHTML='<div class="dot"></div>Đã tạo phòng '+room+' • Chờ học sinh';document.getElementById("status").innerHTML='📨 Gửi mã <b>'+room+'</b> cho học sinh.';addLog("Giáo viên đã tạo phòng "+room);
   }catch(e){console.error(e);vqcAlert("Không tạo được phòng. Kiểm tra Firestore Rules và Internet.");}
 }
