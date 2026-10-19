@@ -9,3 +9,17 @@
 .vqc-chat-dialog label{display:block;margin:8px 0 5px;font-weight:800}
 .vqc-chat-dialog select{width:100%;border:1px solid #b8d3e7;border-radius:10px;padding:10px}
 #vqcFriendChatSend{background:#2c91c7;color:white;border:0;border-radius:10px;padding:11px 17px;font-weight:800;margin-top:10px;width:100%}
+
+.vqc-chat-dialog{width:min(96vw,560px)}
+.vqc-chat-messages{height:min(46vh,370px);min-height:210px}
+.vqc-chat-entry{display:flex;flex-direction:column;align-items:flex-start;gap:2px;max-width:90%}
+.vqc-chat-entry.is-mine{align-self:flex-end;align-items:flex-end}
+.vqc-chat-entry .vqc-chat-bubble{max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap}
+.vqc-chat-report{border:0;background:transparent;color:#68849a;font-size:11px;cursor:pointer;padding:2px 6px}
+.vqc-chat-report:hover{text-decoration:underline}
+.vqc-chat-dialog textarea{box-sizing:border-box;resize:vertical;width:100%;min-height:65px;border:1px solid #b8d3e7;border-radius:12px;padding:12px;font:inherit;color:#254d69;background:#fff}
+.vqc-chat-compose{display:flex;gap:9px;align-items:center;justify-content:flex-end;margin-top:8px}
+#vqcFriendChatSend{width:auto;min-width:112px;margin-top:0}
+#vqcFriendChatSend:disabled{opacity:.5;cursor:not-allowed}
+#vqcFriendChatBlock{border:1px solid #e5b4b4;border-radius:10px;background:#fff5f5;color:#9c3d3d;padding:10px 14px;font-weight:700;cursor:pointer}
+.vqc-chat-safety{line-height:1.5}
