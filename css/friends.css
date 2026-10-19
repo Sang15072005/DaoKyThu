@@ -182,3 +182,14 @@ body > .header #accountBar{margin-left:0;flex-wrap:wrap;gap:5px}
 .vqc-friends-invite__row input{flex-basis:100%}
 .vqc-friends-invite__row button{flex:1}
 #vqcFriendsFind{background:linear-gradient(#7bbfe8,#428bc6);box-shadow:0 3px 0 #3275a5}
+
+.vqc-friends-settings-wrap{margin:12px 0}
+#vqcFriendsSettingsToggle{border:1px solid #b6d8eb;background:#edf8ff;color:#285c84;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
+.vqc-friends-settings[hidden]{display:none!important}
+.vqc-friends-settings{background:#f6fbff;border:1px solid #c6dfee;border-radius:14px;padding:14px;margin-top:8px;display:grid;gap:8px;font-size:14px;color:#28536a}
+.vqc-friends-setting-line{display:flex;align-items:center;gap:9px;font-weight:700}
+.vqc-friends-setting-line input{width:18px;height:18px;flex:none}
+.vqc-friends-settings p{font-size:12px;margin:0 0 6px}
+#vqcFriendsView{padding:9px;border-radius:9px;border:1px solid #aac9dc;background:white}
+.vqc-friends-compact .vqc-friend-public{display:none}
+.vqc-friends-compact .vqc-friend-item{padding:8px 12px}
