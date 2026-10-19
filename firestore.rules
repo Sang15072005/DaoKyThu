@@ -130,7 +130,9 @@ service cloud.firestore {
        get(/databases/$(database)/documents/friendships/$(friendPair(request.auth.uid,uid))).data.status=='accepted'));
    allow list: if false;
    allow create,update: if student() && request.auth.uid==uid
-     && request.resource.data.keys().hasOnly(['avatar','stars','regions','badges','updatedAt'])
+     && request.resource.data.keys().hasOnly(['avatar','stars','regions','badges','sharedName','updatedAt'])
+     && request.resource.data.sharedName is string
+     && request.resource.data.sharedName.size()<=100
      && request.resource.data.avatar in ['king','queen','knight','scholar','explorer']
      && request.resource.data.stars is int
      && request.resource.data.stars>=0 && request.resource.data.stars<=186
