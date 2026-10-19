@@ -2006,3 +2006,97 @@ body.vqc-reward-dialog-open{overflow:hidden}
  .vqc-adventure .vqc-badge-button,.vqc-adventure .vqc-treasure-button{transition:none!important}
  .vqc-adventure .vqc-badge-button:hover,.vqc-adventure .vqc-treasure-button:hover{transform:none!important}
 }
+
+/* ============================================================
+   CRYSTAL CAVE - REGION 4 DEFENSE CHALLENGES (14 ORIGINAL LESSONS)
+   Reuses the Canyon exercise layout, themed in crystal blue/violet.
+   ============================================================ */
+.vqc-adventure .vqc-crystal-screen{
+ position:relative;
+ margin:16px 0 5px;
+ padding:clamp(14px,3vw,30px);
+ border:3px solid #9cd7e4;
+ border-radius:26px;
+ background:linear-gradient(145deg,#ecfaff 0%,#e5e5ff 52%,#e2f6ef 100%);
+ box-shadow:0 13px 32px #315ba02a;
+ color:#385c77;
+}
+.vqc-adventure .vqc-crystal-heading{
+ background:linear-gradient(145deg,#fbffffec,#dff3ffe7);
+ border:2px solid #b1ddef;
+}
+.vqc-adventure .vqc-crystal-heading .vqc-canyon-heading__icon{
+ font-size:52px;
+ filter:drop-shadow(0 5px 4px #5ca4c677);
+}
+.vqc-adventure .vqc-crystal-heading .vqc-canyon-heading__chapter{
+ background:#dcecff;
+ color:#4870ad;
+}
+.vqc-adventure .vqc-crystal-heading h2{
+ color:#447cbd;
+ text-shadow:0 2px #fff;
+}
+.vqc-adventure .vqc-crystal-heading p{color:#557d95}
+.vqc-adventure .vqc-crystal-heading .vqc-canyon-summary>span{
+ background:#f7fdff;
+ border-color:#a6d9e9;
+ color:#396d92;
+}
+.vqc-adventure .vqc-crystal-heading .vqc-canyon-meter{
+ background:#d5ebf9;
+ border-color:#80bcdd;
+}
+.vqc-adventure .vqc-crystal-heading .vqc-canyon-meter span{
+ background:linear-gradient(90deg,#65bcee,#8c88f2,#72d4c5);
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-category{
+ border-color:#c5dff0;
+ background:linear-gradient(160deg,#fcffff,#f2f6ff);
+ box-shadow:0 7px 16px #4d8bc11b;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-category__symbol{
+ border-color:#b5d4f1;
+ background:#e6f5ff;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-category__header h3{
+ color:#3b75a9;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-category__header p{
+ color:#5c8099;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-category__counter{
+ background:#dff1ff;
+ color:#3875a9;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-task{
+ border-color:#bfd5ed;
+ background:linear-gradient(145deg,#fff,#e5f1ff);
+ color:#386a9d;
+ box-shadow:0 4px 0 #acc5e3;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-task:hover{
+ border-color:#72bcf2;
+ box-shadow:0 7px 0 #a1b4e5,0 12px 21px #5c7cb82d;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-task.is-complete{
+ border-color:#9dccb3;
+ background:linear-gradient(145deg,#f8ffe9,#d5f2e0);
+ color:#347950;
+ box-shadow:0 4px 0 #a5d3be;
+}
+.vqc-adventure .vqc-crystal-screen .vqc-canyon-feedback{
+ background:#f2faff;
+ color:#4a709c;
+}
+.vqc-adventure .vqc-level-node--crystal .vqc-level-node__medal{
+ background:linear-gradient(145deg,#ecfaff,#c2d4ff);
+ border-color:#c3eeff;
+ box-shadow:0 5px 12px #5da7ce70;
+}
+.vqc-adventure .vqc-level-node--crystal.is-playing .vqc-level-node__medal::after{
+ border-color:#bdeaff;
+}
+@media(max-width:520px){
+ .vqc-adventure .vqc-crystal-screen{padding:13px 10px}
+}

@@ -157,7 +157,10 @@ function defenseClick(sq){
  defensePosition=next;defenseSelected=null;
  const fb=document.getElementById('defenseFeedback');fb.hidden=false;
  if(accepted){
-  defenseSolved=true;defenseDone.add(defenseIndex);accountSaveProgress('defense_'+defenseIndex,true,1);
+  defenseSolved=true;defenseDone.add(defenseIndex);
+  // Bài tập dùng chung: tiến độ lớp học và tiến độ khám phá được lưu riêng.
+  if(!window.vqcIsAdventureDefenseActive?.())accountSaveProgress('defense_'+defenseIndex,true,1);
+  window.vqcAdventureDefenseCompleted?.(defenseIndex);
   fb.className='defense-feedback good';
   fb.textContent=defenseIndex===4?'✅ Chính xác! Tốt d2-d4 chắn đòn Tượng và Mã f3 bảo vệ Tốt.':defenseIndex===3?'✅ Chính xác! Tốt c5 bảo vệ Tượng b6 và Tượng b6 bảo vệ Tốt c5. Hai quân cùng được yểm trợ.':'✅ Phòng thủ thành công! Em đã bảo vệ hoặc giải nguy cho quân bị tấn công.';
   document.getElementById('defenseInstruction').textContent='Hoàn thành! Chọn bài tiếp theo để luyện tập.';

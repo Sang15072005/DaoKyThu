@@ -15,8 +15,14 @@ const CANYON_GROUPS=[
  {kind:'freecapture',title:'Ăn quân không được bảo vệ',count:8,prefix:'Hình',icon:'🎯',container:'vqcCanyonFreeCaptureTasks'}
 ];
 const CANYON_TOTAL=13;
+const CRYSTAL_GROUPS=[
+ {kind:'defense',title:'Phòng thủ',count:8,offset:0,container:'vqcCrystalDefenseTasks'},
+ {kind:'defense-attack',title:'Phòng thủ quân bị tấn công',count:6,offset:8,container:'vqcCrystalAttackTasks'}
+];
+const CRYSTAL_TOTAL=14;
+let crystalActive=false;
 const REGION_COIN_REWARDS=REGIONS.map((region,index)=>(index+1)*1000);
-const AVAILABLE_REWARD_REGIONS=3; // Vùng 4–7 chưa có bài tập, chưa thể nhận xu.
+const AVAILABLE_REWARD_REGIONS=4; // Vùng 5–7 chưa có bài tập.
 
 let canyonActive=false,canyonCurrentKind=null;
 
@@ -38,7 +44,7 @@ const QUESTIONS=[
  {title:'Thử thách cuối bến cảng',question:'Khi Vua đang bị chiếu, em cần làm gì?',options:['Bỏ qua và đi quân bất kỳ','Thực hiện nước đi hợp lệ để hết bị chiếu','Đưa Vua vào ô đang bị tấn công'],answer:1,explain:'Khi bị chiếu, em phải chọn một nước đi hợp lệ giúp Vua thoát chiếu.',board:'check'}
 ];
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
-let progress={done:[],forestDone:[],canyonDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+let progress={done:[],forestDone:[],canyonDone:[],crystalDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
 let lastAnnouncedRewards=new Set(),coinToastTimer=null,coinWalletReady=false,coinWalletReturnFocus=null;
 
 /* Avatar shop: free characters + permanent unlocks using earned virtual coins. */
@@ -269,6 +275,9 @@ function sanitize(data){
     return Number.isInteger(index)&&index>=0&&index<g.count&&key===g.kind+':'+index;
    })))]
   :[];
+ const crystalDone=Array.isArray(data?.crystalDone)
+  ?[...new Set(data.crystalDone.filter(index=>Number.isInteger(index)&&index>=0&&index<CRYSTAL_TOTAL))].sort((a,b)=>a-b)
+  :[];
  // Rewards are a permanent one-time record: 1,000 / 2,000 / ... / 7,000 Xu.
  // Keep earlier claims even if learners replay/reset a lesson.
  const rewarded=new Set(Array.isArray(data?.rewardedRegions)
@@ -277,6 +286,7 @@ function sanitize(data){
  if(done.length===QUESTIONS.length)rewarded.add(0);
  if(forestDone.length===FOREST_PIECES.length)rewarded.add(1);
  if(canyonDone.length===CANYON_TOTAL)rewarded.add(2);
+ if(crystalDone.length===CRYSTAL_TOTAL)rewarded.add(3);
  const rewardedRegions=[...rewarded].sort((a,b)=>a-b);
  const purchasedAvatars=Array.isArray(data?.purchasedAvatars)
   ?[...new Set(data.purchasedAvatars.filter(id=>PAID_AVATAR_IDS.includes(id)))]
@@ -287,8 +297,8 @@ function sanitize(data){
   return sum+(avatar?.price||0);
  },0);
  const coins=Math.max(0,earnedCoins-spentCoins);
- return {done,forestDone,canyonDone,rewardedRegions,purchasedAvatars,
-  stars:done.length*3+forestDone.length*6+canyonDone.length*3,
+ return {done,forestDone,canyonDone,crystalDone,rewardedRegions,purchasedAvatars,
+  stars:done.length*3+forestDone.length*6+canyonDone.length*3+crystalDone.length*3,
   earnedCoins,spentCoins,coins};
 }
 
@@ -382,6 +392,7 @@ function mergeProgress(...snapshots){
   done:parts.flatMap(data=>Array.isArray(data.done)?data.done:[]),
   forestDone:parts.flatMap(data=>Array.isArray(data.forestDone)?data.forestDone:[]),
   canyonDone:parts.flatMap(data=>Array.isArray(data.canyonDone)?data.canyonDone:[]),
+  crystalDone:parts.flatMap(data=>Array.isArray(data.crystalDone)?data.crystalDone:[]),
   rewardedRegions:parts.flatMap(data=>Array.isArray(data.rewardedRegions)?data.rewardedRegions:[]),
   purchasedAvatars:parts.flatMap(data=>Array.isArray(data.purchasedAvatars)?data.purchasedAvatars:[])
  });
@@ -389,7 +400,7 @@ function mergeProgress(...snapshots){
 function progressPayload(data){
  return {
   studentId:identity(),
-  done:[...data.done],forestDone:[...data.forestDone],canyonDone:[...data.canyonDone],
+  done:[...data.done],forestDone:[...data.forestDone],canyonDone:[...data.canyonDone],crystalDone:[...data.crystalDone],
   rewardedRegions:[...data.rewardedRegions],purchasedAvatars:[...data.purchasedAvatars],
   stars:data.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
  };
@@ -410,7 +421,7 @@ async function loadProgress(){
   if(storageKey()!==accountKey)return;
   if(!snap.exists){
    cloudOk=true;
-   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
+   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.crystalDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
    else setSaveStatus('Tiến độ lưu trên thiết bị.');
    return;
   }
@@ -423,7 +434,8 @@ async function loadProgress(){
      JSON.stringify([...progress.purchasedAvatars].sort())!==JSON.stringify([...remote.purchasedAvatars].sort())||
      progress.done.length!==remote.done.length||
      progress.forestDone.length!==remote.forestDone.length||
-     progress.canyonDone.length!==remote.canyonDone.length){
+     progress.canyonDone.length!==remote.canyonDone.length||
+     progress.crystalDone.length!==remote.crystalDone.length){
    saveProgress();
   }else setSaveStatus('Đã tải tiến độ và nhân vật trong tài khoản.');
  }catch(error){
@@ -497,12 +509,17 @@ function regionStatus(index){
   const done=progress.canyonDone.length;
   return done===CANYON_TOTAL?'✓ Đã chinh phục':'▶ Đang chơi · '+done+'/'+CANYON_TOTAL+' bài';
  }
+ if(index===3){
+  const done=progress.crystalDone.length;
+  return done===CRYSTAL_TOTAL?'✓ Đã chinh phục':'▶ Đang chơi · '+done+'/'+CRYSTAL_TOTAL+' bài';
+ }
  return '🔒 Sắp ra mắt';
 }
 function regionStars(index){
  if(index===0)return progress.done.length*3;
  if(index===1)return progress.forestDone.length*6;
  if(index===2)return progress.canyonDone.length*3;
+ if(index===3)return progress.crystalDone.length*3;
  return 0;
 }
 function moveMapAvatar(index,animate=true){
@@ -529,8 +546,9 @@ function fillMapPopup(index){
   index===0?'⭐ '+regionStars(index)+'/30 sao · '+progress.done.length+'/10 thử thách':
   index===1?'⭐ '+regionStars(index)+'/36 sao · '+progress.forestDone.length+'/6 bài':
   index===2?'⭐ '+regionStars(index)+'/39 sao · '+progress.canyonDone.length+'/13 bài':
+  index===3?'⭐ '+regionStars(index)+'/42 sao · '+progress.crystalDone.length+'/14 bài':
   'Vùng đất chưa mở khóa';
- $('vqcLevelPopupPlay').hidden=index>2;
+ $('vqcLevelPopupPlay').hidden=index>3;
  popup.hidden=false;
  const pos=MAP_STOPS[index];
  const width=popup.offsetWidth||280,height=popup.offsetHeight||210;
@@ -547,7 +565,7 @@ function hideMapPopup(){
  if(popup)popup.hidden=true;
 }
 function selectMapRegion(index){
- if(index>2)return;
+ if(index>3)return;
  selectedMapRegion=index;
  document.querySelectorAll('#vqcAdventureRegions .vqc-level-node').forEach((button,i)=>{
   button.classList.toggle('is-selected',i===index);
@@ -566,6 +584,7 @@ function prepareMapEvents(){
   if(selectedMapRegion===0)openRegion();
   if(selectedMapRegion===1)openForest();
   if(selectedMapRegion===2)openCanyon();
+  if(selectedMapRegion===3)openCrystal();
  });
  map?.addEventListener('click',event=>{
   if(!event.target.closest('.vqc-level-node, .vqc-level-popup'))hideMapPopup();
@@ -606,7 +625,8 @@ function isBadgeUnlocked(index){
  if(index===0)return progress.rewardedRegions.includes(0)||progress.done.length===QUESTIONS.length;
  if(index===1)return progress.rewardedRegions.includes(1)||progress.forestDone.length===FOREST_PIECES.length;
  if(index===2)return progress.rewardedRegions.includes(2)||progress.canyonDone.length===CANYON_TOTAL;
- return false; // Vùng 4 chưa ra mắt.
+ if(index===3)return progress.rewardedRegions.includes(3)||progress.crystalDone.length===CRYSTAL_TOTAL;
+ return false; // Chưa có thêm huy hiệu ở vùng đất tiếp theo.
 }
 let lastBadgeUnlocks=null,rewardCollectionFocus=null,rewardCollectionInitialized=false;
 function rewardItem(tag,cls,label){
@@ -633,7 +653,7 @@ function renderBadges(){
    details.append(
     rewardItem('strong','vqc-badge-item__name',badge.name),
     rewardItem('p','vqc-badge-item__description','Vùng '+(i+1)+' · '+badge.description),
-    rewardItem('span','vqc-badge-item__state',yes?'✓ Đã nhận huy hiệu':i===3?'🔒 Sắp ra mắt':'🔒 Chưa mở khóa')
+    rewardItem('span','vqc-badge-item__state',yes?'✓ Đã nhận huy hiệu':'🔒 Chưa mở khóa')
    );
    article.append(icon,details);container.append(article);
   });
@@ -730,10 +750,11 @@ function render(){
  nodes.replaceChildren();
  REGIONS.forEach((region,index)=>{
   const pos=MAP_STOPS[index];
-  const isLocked=index>2;
+  const isLocked=index>3;
   const isDone=index===0?progress.done.length===QUESTIONS.length:
    index===1?progress.forestDone.length===FOREST_PIECES.length:
-   index===2?progress.canyonDone.length===CANYON_TOTAL:false;
+   index===2?progress.canyonDone.length===CANYON_TOTAL:
+   index===3?progress.crystalDone.length===CRYSTAL_TOTAL:false;
   const button=document.createElement('button');
   button.type='button';
   button.className='vqc-level-node vqc-level-node--'+region[3]+
@@ -767,6 +788,7 @@ function render(){
  if($('vqcForestProgress'))$('vqcForestProgress').textContent=progress.forestDone.length+'/'+FOREST_PIECES.length+' bài hoàn thành';
  renderForestCards();
  renderCanyonCards();
+ renderCrystalCards();
  $('vqcAdventureCount').textContent=progress.done.length+'/'+QUESTIONS.length;
  $('vqcAdventureProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
  if($('vqcAdventureStages')&&!$('vqcAdventurePlay').hidden)renderStages();
@@ -823,6 +845,7 @@ function canyonMessage(message){
  if(element)element.textContent=message;
 }
 function openCanyon(){
+ if(crystalActive)closeCrystal();
  if(typeof roomRef!=='undefined'&&roomRef){
   if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá Ải 3.','warning');
   return;
@@ -889,6 +912,101 @@ window.vqcAdventureCaptureCompleted=function(kind,index){
  }
 };
 
+// Vùng 4 reuses all 14 original classroom defense exercises (8 + Figures 51–56).
+function crystalLabel(index){
+ return index<8?'Bài '+(index+1):'Hình '+(51+index-8);
+}
+function crystalMessage(message){
+ const area=$('vqcCrystalMessage');
+ if(area)area.textContent=message;
+}
+function renderCrystalCards(){
+ if(!$('vqcCrystalScreen'))return;
+ CRYSTAL_GROUPS.forEach(group=>{
+  const container=$(group.container);
+  if(!container)return;
+  container.replaceChildren();
+  let completed=0;
+  for(let step=0;step<group.count;step++){
+   const index=group.offset+step;
+   const done=progress.crystalDone.includes(index);
+   if(done)completed++;
+   const button=document.createElement('button');
+   button.type='button';
+   button.className='vqc-canyon-task'+(done?' is-complete':'');
+   button.innerHTML='<span class="vqc-canyon-task__icon" aria-hidden="true">'+
+    (done?'🏆':'💠')+'</span><strong>'+crystalLabel(index)+'</strong><small>'+
+    (done?'✓ Đã hoàn thành':'▶ Bắt đầu')+'</small>';
+   button.setAttribute('aria-label',group.title+' · '+crystalLabel(index)+(done?' · Đã hoàn thành':' · Chưa hoàn thành'));
+   button.addEventListener('click',()=>openCrystalTask(index));
+   container.appendChild(button);
+  }
+  const counter=$(group.kind==='defense'?'vqcCrystalDefenseCount':'vqcCrystalAttackCount');
+  if(counter)counter.textContent=completed+'/'+group.count;
+ });
+ const total=progress.crystalDone.length;
+ if($('vqcCrystalDoneCount'))$('vqcCrystalDoneCount').textContent=total+'/'+CRYSTAL_TOTAL;
+ if($('vqcCrystalStarCount'))$('vqcCrystalStarCount').textContent=String(total*3);
+ if($('vqcCrystalMeterFill'))$('vqcCrystalMeterFill').style.width=(total/CRYSTAL_TOTAL*100)+'%';
+}
+function openCrystal(){
+ if(typeof roomRef!=='undefined'&&roomRef){
+  if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá Vùng 4.','warning');
+  return;
+ }
+ if(canyonActive)closeCanyon();
+ if(forestActive)closeForest();
+ $('vqcAdventureMap').hidden=true;
+ $('vqcAdventurePlay').hidden=true;
+ if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
+ if($('vqcCanyonScreen'))$('vqcCanyonScreen').hidden=true;
+ $('vqcCrystalScreen').hidden=false;
+ crystalActive=true;
+ crystalMessage('14 bài phòng thủ từ lớp học · 3 sao/bài · Hoàn thành cả vùng để nhận 4.000 xu và huy hiệu.');
+ renderCrystalCards();
+ $('vqcCrystalScreen').scrollIntoView({block:'start',behavior:'smooth'});
+}
+function openCrystalTask(index){
+ if(!crystalActive||!Number.isInteger(index)||index<0||index>=CRYSTAL_TOTAL)return;
+ const overlay=$('defenseOverlay');
+ try{
+  if(!overlay||typeof window.defenseOpen!=='function')throw Error('Bài tập phòng thủ gốc chưa tải xong.');
+  if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
+  window.defenseOpen(index);
+  overlay.classList.add('open');
+  crystalMessage('Đang luyện '+crystalLabel(index)+' · Hãy tìm nước phòng thủ hợp lệ!');
+ }catch(error){
+  console.error('Không thể mở bài phòng thủ Vùng 4:',error);
+  crystalMessage('Không thể mở '+crystalLabel(index)+': '+(error?.message||String(error)));
+  if(typeof vqcNotify==='function')vqcNotify('Chưa mở được bài phòng thủ.','warning');
+ }
+}
+function closeCrystal(){
+ if(!crystalActive)return;
+ crystalActive=false;
+ if($('defenseOverlay')?.classList.contains('open')&&typeof window.defenseClose==='function')
+  window.defenseClose();
+ $('vqcCrystalScreen').hidden=true;
+ $('vqcAdventureMap').hidden=false;
+ render();showAdventureMap();
+}
+window.vqcAdventureCrystalBack=closeCrystal;
+window.vqcIsAdventureDefenseActive=()=>crystalActive;
+window.vqcAdventureDefenseCompleted=function(index){
+ if(!crystalActive||!Number.isInteger(index)||index<0||index>=CRYSTAL_TOTAL)return;
+ if(progress.crystalDone.includes(index)){
+  crystalMessage('Em đã hoàn thành bài này rồi. Hãy luyện tập thêm hoặc chọn bài khác!');
+  return;
+ }
+ progress.crystalDone.push(index);
+ progress=sanitize(progress);
+ saveProgress();
+ crystalMessage('⭐ Chính xác! '+crystalLabel(index)+' hoàn thành · +3 sao! Tiến độ: '+
+  progress.crystalDone.length+'/'+CRYSTAL_TOTAL+' bài.');
+ if(progress.crystalDone.length===CRYSTAL_TOTAL&&typeof vqcNotify==='function')
+  vqcNotify('🏆 Chúc mừng! Em đã chinh phục Hang Động Pha Lê, nhận 4.000 xu và huy hiệu Bậc thầy phòng thủ!','success');
+};
+
 // Reuse the same chess-piece assets as the classroom board.
 // Unicode chess characters inherit system fonts and render inconsistently.
 function boardPieces(type){
@@ -939,6 +1057,7 @@ function renderForestCards(){
  });
 }
 function openForest(){
+ if(crystalActive)closeCrystal();
  if(typeof roomRef!=='undefined'&&roomRef){
   if(typeof vqcNotify==='function')vqcNotify('Hãy rời lớp trước khi chơi Vùng 2.','warning');
   return;
@@ -1015,10 +1134,12 @@ window.vqcAdventureLeaveWorld=function(){
  closeCoinWallet();
  closeAvatarPicker();
  if(canyonActive)closeCanyon();
+ if(crystalActive)closeCrystal();
  if(forestActive)closeForest();
 };
 
 function openRegion(){
+ if(crystalActive)closeCrystal();
  if(canyonActive)closeCanyon();
  if(forestActive)closeForest();
  $('vqcAdventureMap').hidden=true;$('vqcAdventurePlay').hidden=false;
@@ -1061,7 +1182,8 @@ window.vqcAdventureStart=function(){
  $('vqcAdventurePlay').hidden=true;$('vqcAdventureMap').hidden=false;
  if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
  if($('vqcCanyonScreen'))$('vqcCanyonScreen').hidden=true;
- forestActive=false;canyonActive=false;canyonCurrentKind=null;
+ if($('vqcCrystalScreen'))$('vqcCrystalScreen').hidden=true;
+ forestActive=false;canyonActive=false;canyonCurrentKind=null;crystalActive=false;
  selectedMapRegion=1;
  loadProgress();
  showAdventureMap();
