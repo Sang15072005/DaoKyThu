@@ -1,0 +1,38 @@
+/* Board appearance preferences: visual only; no game state or classroom sync changes. */
+:root{--vqc-board-light:#fff0c7;--vqc-board-dark:#79b7e8}
+:root[data-vqc-board-theme="wood"]{--vqc-board-light:#f0d9b5;--vqc-board-dark:#b58863}
+:root[data-vqc-board-theme="forest"]{--vqc-board-light:#eeeed2;--vqc-board-dark:#769656}
+:root[data-vqc-board-theme="ocean"]{--vqc-board-light:#dcecf7;--vqc-board-dark:#6798c0}
+:root[data-vqc-board-theme="candy"]{--vqc-board-light:#f9dceb;--vqc-board-dark:#b99ad5}
+:root[data-vqc-board-theme="night"]{--vqc-board-light:#b7b9bd;--vqc-board-dark:#555b67}
+:root[data-vqc-board-theme="royal"]{--vqc-board-light:#f7e9b5;--vqc-board-dark:#c19a40}
+:root{--board-light:var(--vqc-board-light);--board-dark:var(--vqc-board-dark)}
+:is(.board,.mate-board,.mate3-board,.pvp-board,.capture-board,.freecapture-board,.defense-board,.checkone-board,.escape-board,.pawn-game-board,.vqc-adventure-board) > .light{background-color:var(--vqc-board-light)!important}
+:is(.board,.mate-board,.mate3-board,.pvp-board,.capture-board,.freecapture-board,.defense-board,.checkone-board,.escape-board,.pawn-game-board,.vqc-adventure-board) > .dark{background-color:var(--vqc-board-dark)!important}
+:root[data-vqc-coordinates="off"] :is(.board,.mate-board,.mate3-board) > :is(.square,.mate-square)::before,
+:root[data-vqc-coordinates="off"] :is(.board,.mate-board,.mate3-board) > :is(.square,.mate-square)::after{content:none!important}
+:root[data-vqc-coordinates="off"] .editor-coordinate{display:none!important}
+:root[data-vqc-hints="off"] :is(.board,.mate-board,.mate3-board,.pvp-board,.capture-board,.freecapture-board,.defense-board,.checkone-board,.escape-board,.pawn-game-board) :is(.move-hint,.capture-hint){display:none!important}
+:root[data-vqc-lastmove="off"] :is(.board,.mate-board,.mate3-board,.pvp-board) > .last{box-shadow:none!important}
+:root[data-vqc-piece-style="contrast"] :is(.board,.mate-board,.mate3-board,.pvp-board,.capture-board,.freecapture-board,.defense-board,.checkone-board,.escape-board,.pawn-game-board) :is(.piece,.chess-piece-img){filter:contrast(1.35) drop-shadow(0 1px 1px #2228)}
+:root[data-vqc-piece-style="soft"] :is(.board,.mate-board,.mate3-board,.pvp-board,.capture-board,.freecapture-board,.defense-board,.checkone-board,.escape-board,.pawn-game-board) :is(.piece,.chess-piece-img){filter:drop-shadow(0 3px 2px #172e4b55) saturate(.85)}
+.vqc-appearance-open{white-space:nowrap}
+.vqc-appearance-dialog[hidden]{display:none!important}
+.vqc-appearance-dialog{position:fixed;inset:0;z-index:100100;background:#0f274a9c;display:flex;align-items:center;justify-content:center;padding:16px}
+.vqc-appearance-panel{width:min(95vw,520px);max-height:90vh;overflow:auto;border-radius:22px;background:#fff;color:#26435d;box-shadow:0 20px 65px #001e4860;padding:22px;font-family:inherit}
+.vqc-appearance-panel h2{margin:0 0 6px;font-size:23px}
+.vqc-appearance-panel p{margin:0 0 15px;font-size:13px;color:#667a8f}
+.vqc-appearance-top{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.vqc-appearance-close{border:0;background:#eef4fa;border-radius:10px;font-size:21px;padding:6px 12px;color:#34495e}
+.vqc-appearance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:9px 0 17px}
+.vqc-appearance-choice{background:#f8fbff;border:2px solid #e0eaf3;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#34516b}
+.vqc-appearance-choice[aria-pressed="true"]{border-color:#267ed2;background:#e8f4ff}
+.vqc-appearance-swatch{width:100%;height:43px;border-radius:7px;background:conic-gradient(var(--swatch-light) 25%,var(--swatch-dark) 0 50%,var(--swatch-light) 0 75%,var(--swatch-dark) 0) 0 0/32px 32px}
+.vqc-appearance-panel label.vqc-appearance-label{font-weight:800;display:block;margin:12px 0 7px}
+.vqc-appearance-select{width:100%;padding:10px;border:1px solid #c9d8e6;border-radius:10px;font:inherit}
+.vqc-appearance-check{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px}
+.vqc-appearance-check input{width:17px;height:17px}
+.vqc-appearance-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:15px}
+.vqc-appearance-actions button{padding:10px 16px;border-radius:10px;border:1px solid #b9d2e8;background:#f5faff;color:#26507c;font-weight:700}
+.vqc-appearance-actions button:last-child{background:#287bd1;color:#fff;border-color:#287bd1}
+@media(max-width:480px){.vqc-appearance-panel{padding:15px}.vqc-appearance-grid{gap:6px}.vqc-appearance-choice{font-size:11px;padding:5px}}
