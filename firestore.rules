@@ -251,10 +251,7 @@ service cloud.firestore {
    return friendPair(d.members[0],d.members[1])+'_'+d.game;
   }
   match /arcadeInvites/{id} {
-   allow get: if friendUser()
-    && id.matches('.*_[01]')
-    && exists(/databases/$(database)/documents/arcadeInvites/$(id))
-    && arcadeFriend(resource.data);
+   allow get: if friendUser() && (resource==null || arcadeFriend(resource.data));
    allow list: if false;
    allow create: if arcadeFriend(request.resource.data)
     && request.resource.data.keys().hasOnly(['members','from','game','status','at'])
@@ -301,7 +298,7 @@ service cloud.firestore {
     && get(/databases/$(database)/documents/arcadeInvites/$(id)).data.status=='accepted';
   }
   match /arcadeMatches/{id} {
-   allow get: if friendUser() && arcadeFriend(resource.data);
+   allow get: if friendUser() && (resource==null || arcadeFriend(resource.data));
    allow list: if false;
    allow create: if arcadeAccepted(id) && arcadeFriend(request.resource.data)
     && arcadeStart(request.resource.data,id);
@@ -318,7 +315,7 @@ service cloud.firestore {
        && request.resource.data.pos is map
        && request.resource.data.pos.size()<=16
        && request.resource.data.turn in ['w','b']
-       && request.resource.data.turn!=(resource.data.turn)
+       && (request.resource.data.turn!=resource.data.turn || request.resource.data.ended!='')
        && request.auth.uid==(resource.data.turn=='w'?resource.data.white:resource.data.black)
        && request.resource.data.enPassant is string
        && (request.resource.data.enPassant=='' || request.resource.data.enPassant.matches('[a-h][1-8]'))
