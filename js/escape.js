@@ -159,7 +159,9 @@ function escapeClick(sq){
  if(escapeInCheck(escapePosition)&&escapeSafeMove(from,sq)){
   delete escapePosition[from];escapePosition[sq]=piece;
   escapeSolved=true;escapeDone.add(escapeIndex);
-  accountSaveProgress('escape_'+escapeIndex,true,1);
+  // Keep the adventure map progress independent of the online classroom.
+  if(!window.vqcIsAdventureEscapeActive?.())accountSaveProgress('escape_'+escapeIndex,true,1);
+  window.vqcAdventureEscapeCompleted?.(escapeIndex);
   fb.className='escape-feedback good';
   escapeShowFeedback(fb,'✅ Chính xác! Vua '+(escapeTurn()==='w'?'trắng':'đen')+' đã thoát chiếu.',false);
   document.getElementById('escapeInstruction').textContent='Hoàn thành! Hãy thử bài tiếp theo.';

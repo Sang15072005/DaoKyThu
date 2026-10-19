@@ -20,9 +20,14 @@ const CRYSTAL_GROUPS=[
  {kind:'defense-attack',title:'Phòng thủ quân bị tấn công',count:6,offset:8,container:'vqcCrystalAttackTasks'}
 ];
 const CRYSTAL_TOTAL=14;
-let crystalActive=false;
+const VOLCANO_GROUPS=[
+ {kind:'escape',title:'Thoát chiếu',count:7,offset:0,container:'vqcVolcanoEscapeTasks'},
+ {kind:'advanced',title:'Thoát chiếu nâng cao',count:6,offset:7,container:'vqcVolcanoAdvancedTasks'}
+];
+const VOLCANO_TOTAL=13;
+let crystalActive=false,volcanoActive=false;
 const REGION_COIN_REWARDS=REGIONS.map((region,index)=>(index+1)*1000);
-const AVAILABLE_REWARD_REGIONS=4; // Vùng 5–7 chưa có bài tập.
+const AVAILABLE_REWARD_REGIONS=5; // Vùng 6–7 chưa có bài tập.
 
 let canyonActive=false,canyonCurrentKind=null;
 
@@ -44,7 +49,7 @@ const QUESTIONS=[
  {title:'Thử thách cuối bến cảng',question:'Khi Vua đang bị chiếu, em cần làm gì?',options:['Bỏ qua và đi quân bất kỳ','Thực hiện nước đi hợp lệ để hết bị chiếu','Đưa Vua vào ô đang bị tấn công'],answer:1,explain:'Khi bị chiếu, em phải chọn một nước đi hợp lệ giúp Vua thoát chiếu.',board:'check'}
 ];
 const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
-let progress={done:[],forestDone:[],canyonDone:[],crystalDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
+let progress={done:[],forestDone:[],canyonDone:[],crystalDone:[],volcanoDone:[],rewardedRegions:[],purchasedAvatars:[],stars:0,coins:0},current=0,answerLocked=false,saveTimer=null,cloudOk=false;
 let lastAnnouncedRewards=new Set(),coinToastTimer=null,coinWalletReady=false,coinWalletReturnFocus=null;
 
 /* Avatar shop: free characters + permanent unlocks using earned virtual coins. */
@@ -278,6 +283,9 @@ function sanitize(data){
  const crystalDone=Array.isArray(data?.crystalDone)
   ?[...new Set(data.crystalDone.filter(index=>Number.isInteger(index)&&index>=0&&index<CRYSTAL_TOTAL))].sort((a,b)=>a-b)
   :[];
+ const volcanoDone=Array.isArray(data?.volcanoDone)
+  ?[...new Set(data.volcanoDone.filter(index=>Number.isInteger(index)&&index>=0&&index<VOLCANO_TOTAL))].sort((a,b)=>a-b)
+  :[];
  // Rewards are a permanent one-time record: 1,000 / 2,000 / ... / 7,000 Xu.
  // Keep earlier claims even if learners replay/reset a lesson.
  const rewarded=new Set(Array.isArray(data?.rewardedRegions)
@@ -287,6 +295,7 @@ function sanitize(data){
  if(forestDone.length===FOREST_PIECES.length)rewarded.add(1);
  if(canyonDone.length===CANYON_TOTAL)rewarded.add(2);
  if(crystalDone.length===CRYSTAL_TOTAL)rewarded.add(3);
+ if(volcanoDone.length===VOLCANO_TOTAL)rewarded.add(4);
  const rewardedRegions=[...rewarded].sort((a,b)=>a-b);
  const purchasedAvatars=Array.isArray(data?.purchasedAvatars)
   ?[...new Set(data.purchasedAvatars.filter(id=>PAID_AVATAR_IDS.includes(id)))]
@@ -297,8 +306,8 @@ function sanitize(data){
   return sum+(avatar?.price||0);
  },0);
  const coins=Math.max(0,earnedCoins-spentCoins);
- return {done,forestDone,canyonDone,crystalDone,rewardedRegions,purchasedAvatars,
-  stars:done.length*3+forestDone.length*6+canyonDone.length*3+crystalDone.length*3,
+ return {done,forestDone,canyonDone,crystalDone,volcanoDone,rewardedRegions,purchasedAvatars,
+  stars:done.length*3+forestDone.length*6+canyonDone.length*3+crystalDone.length*3+volcanoDone.length*3,
   earnedCoins,spentCoins,coins};
 }
 
@@ -393,6 +402,7 @@ function mergeProgress(...snapshots){
   forestDone:parts.flatMap(data=>Array.isArray(data.forestDone)?data.forestDone:[]),
   canyonDone:parts.flatMap(data=>Array.isArray(data.canyonDone)?data.canyonDone:[]),
   crystalDone:parts.flatMap(data=>Array.isArray(data.crystalDone)?data.crystalDone:[]),
+  volcanoDone:parts.flatMap(data=>Array.isArray(data.volcanoDone)?data.volcanoDone:[]),
   rewardedRegions:parts.flatMap(data=>Array.isArray(data.rewardedRegions)?data.rewardedRegions:[]),
   purchasedAvatars:parts.flatMap(data=>Array.isArray(data.purchasedAvatars)?data.purchasedAvatars:[])
  });
@@ -400,7 +410,7 @@ function mergeProgress(...snapshots){
 function progressPayload(data){
  return {
   studentId:identity(),
-  done:[...data.done],forestDone:[...data.forestDone],canyonDone:[...data.canyonDone],crystalDone:[...data.crystalDone],
+  done:[...data.done],forestDone:[...data.forestDone],canyonDone:[...data.canyonDone],crystalDone:[...data.crystalDone],volcanoDone:[...data.volcanoDone],
   rewardedRegions:[...data.rewardedRegions],purchasedAvatars:[...data.purchasedAvatars],
   stars:data.stars,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
  };
@@ -421,7 +431,7 @@ async function loadProgress(){
   if(storageKey()!==accountKey)return;
   if(!snap.exists){
    cloudOk=true;
-   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.crystalDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
+   if(progress.done.length||progress.forestDone.length||progress.canyonDone.length||progress.crystalDone.length||progress.volcanoDone.length||progress.rewardedRegions.length||progress.purchasedAvatars.length)saveProgress();
    else setSaveStatus('Tiến độ lưu trên thiết bị.');
    return;
   }
@@ -435,7 +445,8 @@ async function loadProgress(){
      progress.done.length!==remote.done.length||
      progress.forestDone.length!==remote.forestDone.length||
      progress.canyonDone.length!==remote.canyonDone.length||
-     progress.crystalDone.length!==remote.crystalDone.length){
+     progress.crystalDone.length!==remote.crystalDone.length||
+     progress.volcanoDone.length!==remote.volcanoDone.length){
    saveProgress();
   }else setSaveStatus('Đã tải tiến độ và nhân vật trong tài khoản.');
  }catch(error){
@@ -513,6 +524,10 @@ function regionStatus(index){
   const done=progress.crystalDone.length;
   return done===CRYSTAL_TOTAL?'✓ Đã chinh phục':'▶ Đang chơi · '+done+'/'+CRYSTAL_TOTAL+' bài';
  }
+ if(index===4){
+  const done=progress.volcanoDone.length;
+  return done===VOLCANO_TOTAL?'✓ Đã chinh phục':'▶ Đang chơi · '+done+'/'+VOLCANO_TOTAL+' bài';
+ }
  return '🔒 Sắp ra mắt';
 }
 function regionStars(index){
@@ -520,6 +535,7 @@ function regionStars(index){
  if(index===1)return progress.forestDone.length*6;
  if(index===2)return progress.canyonDone.length*3;
  if(index===3)return progress.crystalDone.length*3;
+ if(index===4)return progress.volcanoDone.length*3;
  return 0;
 }
 function moveMapAvatar(index,animate=true){
@@ -547,8 +563,9 @@ function fillMapPopup(index){
   index===1?'⭐ '+regionStars(index)+'/36 sao · '+progress.forestDone.length+'/6 bài':
   index===2?'⭐ '+regionStars(index)+'/39 sao · '+progress.canyonDone.length+'/13 bài':
   index===3?'⭐ '+regionStars(index)+'/42 sao · '+progress.crystalDone.length+'/14 bài':
+  index===4?'⭐ '+regionStars(index)+'/39 sao · '+progress.volcanoDone.length+'/13 bài':
   'Vùng đất chưa mở khóa';
- $('vqcLevelPopupPlay').hidden=index>3;
+ $('vqcLevelPopupPlay').hidden=index>4;
  popup.hidden=false;
  const pos=MAP_STOPS[index];
  const width=popup.offsetWidth||280,height=popup.offsetHeight||210;
@@ -565,7 +582,7 @@ function hideMapPopup(){
  if(popup)popup.hidden=true;
 }
 function selectMapRegion(index){
- if(index>3)return;
+ if(index>4)return;
  selectedMapRegion=index;
  document.querySelectorAll('#vqcAdventureRegions .vqc-level-node').forEach((button,i)=>{
   button.classList.toggle('is-selected',i===index);
@@ -585,6 +602,7 @@ function prepareMapEvents(){
   if(selectedMapRegion===1)openForest();
   if(selectedMapRegion===2)openCanyon();
   if(selectedMapRegion===3)openCrystal();
+  if(selectedMapRegion===4)openVolcano();
  });
  map?.addEventListener('click',event=>{
   if(!event.target.closest('.vqc-level-node, .vqc-level-popup'))hideMapPopup();
@@ -619,13 +637,15 @@ const ADVENTURE_BADGES=[
  {name:'Đầu xuôi đuôi lọt',icon:'⚓',description:'Hoàn thành toàn bộ thử thách Vùng 1.'},
  {name:'Bậc thầy nhặt sao',icon:'⭐',description:'Hoàn thành toàn bộ thử thách nhặt sao Vùng 2.'},
  {name:'Bậc thầy ăn quân',icon:'⚔️',description:'Hoàn thành toàn bộ thử thách ăn quân Vùng 3.'},
- {name:'Bậc thầy phòng thủ',icon:'🛡️',description:'Hoàn thành toàn bộ thử thách phòng thủ Vùng 4.'}
+ {name:'Bậc thầy phòng thủ',icon:'🛡️',description:'Hoàn thành toàn bộ thử thách phòng thủ Vùng 4.'},
+ {name:'Trung quân ái quốc',icon:'👑',description:'Hoàn thành toàn bộ thử thách Thoát chiếu Vùng 5.'}
 ];
 function isBadgeUnlocked(index){
  if(index===0)return progress.rewardedRegions.includes(0)||progress.done.length===QUESTIONS.length;
  if(index===1)return progress.rewardedRegions.includes(1)||progress.forestDone.length===FOREST_PIECES.length;
  if(index===2)return progress.rewardedRegions.includes(2)||progress.canyonDone.length===CANYON_TOTAL;
  if(index===3)return progress.rewardedRegions.includes(3)||progress.crystalDone.length===CRYSTAL_TOTAL;
+ if(index===4)return progress.rewardedRegions.includes(4)||progress.volcanoDone.length===VOLCANO_TOTAL;
  return false; // Chưa có thêm huy hiệu ở vùng đất tiếp theo.
 }
 let lastBadgeUnlocks=null,rewardCollectionFocus=null,rewardCollectionInitialized=false;
@@ -640,7 +660,7 @@ function renderBadges(){
  const count=earned.filter(Boolean).length;
  if($('vqcBadgeOwnedCount'))$('vqcBadgeOwnedCount').textContent=String(count);
  if($('vqcBadgeSummary'))$('vqcBadgeSummary').textContent=
-  'Đã mở khóa '+count+'/4 huy hiệu · Hoàn thành các vùng để sưu tập!';
+  'Đã mở khóa '+count+'/'+ADVENTURE_BADGES.length+' huy hiệu · Hoàn thành các vùng để sưu tập!';
  const container=$('vqcBadgeList');
  if(container){
   container.replaceChildren();
@@ -750,11 +770,12 @@ function render(){
  nodes.replaceChildren();
  REGIONS.forEach((region,index)=>{
   const pos=MAP_STOPS[index];
-  const isLocked=index>3;
+  const isLocked=index>4;
   const isDone=index===0?progress.done.length===QUESTIONS.length:
    index===1?progress.forestDone.length===FOREST_PIECES.length:
    index===2?progress.canyonDone.length===CANYON_TOTAL:
-   index===3?progress.crystalDone.length===CRYSTAL_TOTAL:false;
+   index===3?progress.crystalDone.length===CRYSTAL_TOTAL:
+   index===4?progress.volcanoDone.length===VOLCANO_TOTAL:false;
   const button=document.createElement('button');
   button.type='button';
   button.className='vqc-level-node vqc-level-node--'+region[3]+
@@ -789,6 +810,7 @@ function render(){
  renderForestCards();
  renderCanyonCards();
  renderCrystalCards();
+ renderVolcanoCards();
  $('vqcAdventureCount').textContent=progress.done.length+'/'+QUESTIONS.length;
  $('vqcAdventureProgress').style.width=(progress.done.length/QUESTIONS.length*100)+'%';
  if($('vqcAdventureStages')&&!$('vqcAdventurePlay').hidden)renderStages();
@@ -845,6 +867,7 @@ function canyonMessage(message){
  if(element)element.textContent=message;
 }
 function openCanyon(){
+ if(volcanoActive)closeVolcano();
  if(crystalActive)closeCrystal();
  if(typeof roomRef!=='undefined'&&roomRef){
   if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá Ải 3.','warning');
@@ -950,6 +973,7 @@ function renderCrystalCards(){
  if($('vqcCrystalMeterFill'))$('vqcCrystalMeterFill').style.width=(total/CRYSTAL_TOTAL*100)+'%';
 }
 function openCrystal(){
+ if(volcanoActive)closeVolcano();
  if(typeof roomRef!=='undefined'&&roomRef){
   if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá Vùng 4.','warning');
   return;
@@ -1007,6 +1031,100 @@ window.vqcAdventureDefenseCompleted=function(index){
   vqcNotify('🏆 Chúc mừng! Em đã chinh phục Hang Động Pha Lê, nhận 4.000 xu và huy hiệu Bậc thầy phòng thủ!','success');
 };
 
+// Vùng 5 uses the original 13 Thoát chiếu lessons (7 introductory + Hình 63–68).
+function volcanoLabel(index){return index<7?'Bài '+(index+1):'Hình '+(63+index-7);}
+function volcanoMessage(message){
+ const el=$('vqcVolcanoMessage');
+ if(el)el.textContent=message;
+}
+function renderVolcanoCards(){
+ if(!$('vqcVolcanoScreen'))return;
+ VOLCANO_GROUPS.forEach(group=>{
+  const wrap=$(group.container);
+  if(!wrap)return;
+  wrap.replaceChildren();
+  let count=0;
+  for(let i=0;i<group.count;i++){
+   const index=group.offset+i,completed=progress.volcanoDone.includes(index);
+   if(completed)count++;
+   const button=document.createElement('button');
+   button.type='button';
+   button.className='vqc-canyon-task'+(completed?' is-complete':'');
+   button.innerHTML='<span class="vqc-canyon-task__icon" aria-hidden="true">'+
+    (completed?'🏆':group.offset===0?'👑':'🔥')+'</span><strong>'+volcanoLabel(index)+
+    '</strong><small>'+(completed?'✓ Đã hoàn thành':'▶ Bắt đầu')+'</small>';
+   button.setAttribute('aria-label',group.title+' · '+volcanoLabel(index)+(completed?' · Đã hoàn thành':' · Chưa hoàn thành'));
+   button.addEventListener('click',()=>openVolcanoTask(index));
+   wrap.appendChild(button);
+  }
+  const counter=$(group.offset===0?'vqcVolcanoEscapeCount':'vqcVolcanoAdvancedCount');
+  if(counter)counter.textContent=count+'/'+group.count;
+ });
+ const count=progress.volcanoDone.length;
+ if($('vqcVolcanoDoneCount'))$('vqcVolcanoDoneCount').textContent=count+'/'+VOLCANO_TOTAL;
+ if($('vqcVolcanoStarCount'))$('vqcVolcanoStarCount').textContent=String(count*3);
+ if($('vqcVolcanoMeterFill'))$('vqcVolcanoMeterFill').style.width=(count/VOLCANO_TOTAL*100)+'%';
+}
+function openVolcano(){
+ if(typeof roomRef!=='undefined'&&roomRef){
+  if(typeof vqcNotify==='function')vqcNotify('Hãy rời phòng học trước khi khám phá Vùng 5.','warning');
+  return;
+ }
+ if(crystalActive)closeCrystal();
+ if(canyonActive)closeCanyon();
+ if(forestActive)closeForest();
+ $('vqcAdventureMap').hidden=true;
+ $('vqcAdventurePlay').hidden=true;
+ if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
+ if($('vqcCanyonScreen'))$('vqcCanyonScreen').hidden=true;
+ if($('vqcCrystalScreen'))$('vqcCrystalScreen').hidden=true;
+ $('vqcVolcanoScreen').hidden=false;
+ volcanoActive=true;
+ volcanoMessage('13 bài Thoát chiếu gốc · 3 sao/bài · Chinh phục Vùng 5 để nhận 5.000 xu và huy hiệu Trung quân ái quốc!');
+ renderVolcanoCards();
+ $('vqcVolcanoScreen').scrollIntoView({block:'start',behavior:'smooth'});
+}
+function openVolcanoTask(index){
+ if(!volcanoActive||!Number.isInteger(index)||index<0||index>=VOLCANO_TOTAL)return;
+ const overlay=$('escapeOverlay');
+ try{
+  if(!overlay||typeof window.escapeOpen!=='function')throw Error('Bài tập Thoát chiếu gốc chưa tải xong.');
+  if(overlay.parentElement!==document.body)document.body.appendChild(overlay);
+  window.escapeOpen(index);
+  overlay.classList.add('open');
+  volcanoMessage('Đang luyện '+volcanoLabel(index)+' · Hãy tìm nước giải nguy cho Vua!');
+ }catch(error){
+  console.error('Không mở được bài Thoát chiếu ở Vùng 5:',error);
+  volcanoMessage('Không mở được '+volcanoLabel(index)+': '+(error?.message||String(error)));
+  if(typeof vqcNotify==='function')vqcNotify('Chưa mở được bài Thoát chiếu.','warning');
+ }
+}
+function closeVolcano(){
+ if(!volcanoActive)return;
+ volcanoActive=false;
+ if($('escapeOverlay')?.classList.contains('open')&&typeof window.escapeClose==='function')
+  window.escapeClose();
+ $('vqcVolcanoScreen').hidden=true;
+ $('vqcAdventureMap').hidden=false;
+ render();showAdventureMap();
+}
+window.vqcAdventureVolcanoBack=closeVolcano;
+window.vqcIsAdventureEscapeActive=()=>volcanoActive;
+window.vqcAdventureEscapeCompleted=function(index){
+ if(!volcanoActive||!Number.isInteger(index)||index<0||index>=VOLCANO_TOTAL)return;
+ if(progress.volcanoDone.includes(index)){
+  volcanoMessage('Em đã hoàn thành bài này rồi. Có thể làm lại hoặc chọn bài tiếp theo!');
+  return;
+ }
+ progress.volcanoDone.push(index);
+ progress=sanitize(progress);
+ saveProgress();
+ volcanoMessage('⭐ Chính xác! Hoàn thành '+volcanoLabel(index)+' · +3 sao! Đã vượt qua '+
+  progress.volcanoDone.length+'/'+VOLCANO_TOTAL+' bài.');
+ if(progress.volcanoDone.length===VOLCANO_TOTAL&&typeof vqcNotify==='function')
+  vqcNotify('🏆 Chúc mừng! Em đã chinh phục Núi Lửa Vua Đen, nhận 5.000 xu và huy hiệu Trung quân ái quốc!','success');
+};
+
 // Reuse the same chess-piece assets as the classroom board.
 // Unicode chess characters inherit system fonts and render inconsistently.
 function boardPieces(type){
@@ -1057,6 +1175,7 @@ function renderForestCards(){
  });
 }
 function openForest(){
+ if(volcanoActive)closeVolcano();
  if(crystalActive)closeCrystal();
  if(typeof roomRef!=='undefined'&&roomRef){
   if(typeof vqcNotify==='function')vqcNotify('Hãy rời lớp trước khi chơi Vùng 2.','warning');
@@ -1135,10 +1254,12 @@ window.vqcAdventureLeaveWorld=function(){
  closeAvatarPicker();
  if(canyonActive)closeCanyon();
  if(crystalActive)closeCrystal();
+ if(volcanoActive)closeVolcano();
  if(forestActive)closeForest();
 };
 
 function openRegion(){
+ if(volcanoActive)closeVolcano();
  if(crystalActive)closeCrystal();
  if(canyonActive)closeCanyon();
  if(forestActive)closeForest();
@@ -1183,7 +1304,8 @@ window.vqcAdventureStart=function(){
  if($('vqcForestScreen'))$('vqcForestScreen').hidden=true;
  if($('vqcCanyonScreen'))$('vqcCanyonScreen').hidden=true;
  if($('vqcCrystalScreen'))$('vqcCrystalScreen').hidden=true;
- forestActive=false;canyonActive=false;canyonCurrentKind=null;crystalActive=false;
+ if($('vqcVolcanoScreen'))$('vqcVolcanoScreen').hidden=true;
+ forestActive=false;canyonActive=false;canyonCurrentKind=null;crystalActive=false;volcanoActive=false;
  selectedMapRegion=1;
  loadProgress();
  showAdventureMap();

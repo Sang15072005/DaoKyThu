@@ -30,7 +30,7 @@
 
 
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
-<link rel="stylesheet" href="./css/adventure.css?v=crystal-region4-20261019">
+<link rel="stylesheet" href="./css/adventure.css?v=volcano-region5-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
 
 
@@ -191,7 +191,7 @@
    </div>
   </div>
   <p class="vqc-level-hint">🧭 Chọn trạm đã mở để xem thông tin và di chuyển nhân vật. <span>Vuốt ngang trên điện thoại để xem hết bản đồ.</span></p>
-  <p class="vqc-adventure-legend">⚓ Bến Cảng, 🌳 Rừng Sao, ⛰️ Hẻm Núi và 💎 Hang Pha Lê đã mở • Chinh phục các vùng đất để nhận Xu Kỳ Thủ.</p>
+  <p class="vqc-adventure-legend">⚓ Bến Cảng, 🌳 Rừng Sao, ⛰️ Hẻm Núi, 💎 Hang Pha Lê và 🌋 Núi Lửa Vua Đen đã mở • Chinh phục các vùng đất để nhận Xu Kỳ Thủ.</p>
 
   <!-- Rewards showcase inside the adventure map; no gameplay or progress logic changed. -->
   <section class="chess-rewards" id="chessRewards" aria-labelledby="chessRewardsTitle">
@@ -233,14 +233,14 @@
         <article class="chess-reward-card chess-reward-card--badges" aria-label="Bộ sưu tập huy hiệu thành tích">
           <div class="chess-reward-card__image vqc-badge-art">
             <div class="vqc-badge-art__icons" aria-hidden="true">
-              <span>⚓</span><span>⭐</span><span>⚔️</span><span>🛡️</span>
+              <span>⚓</span><span>⭐</span><span>⚔️</span><span>🛡️</span><span>👑</span>
             </div>
             <span class="vqc-badge-art__eyebrow">BỘ SƯU TẬP THÀNH TÍCH</span>
-            <strong class="vqc-badge-art__headline"><span id="vqcBadgeOwnedCount">0</span>/4 huy hiệu</strong>
+            <strong class="vqc-badge-art__headline"><span id="vqcBadgeOwnedCount">0</span>/5 huy hiệu</strong>
           </div>
           <div class="chess-reward-card__content">
             <h3>🏅 Huy hiệu thành tích</h3>
-            <p>Vượt qua các vùng đất để sưu tập huy hiệu Đầu xuôi đuôi lọt, Bậc thầy nhặt sao, Bậc thầy ăn quân và Bậc thầy phòng thủ.</p>
+            <p>Chinh phục các vùng đất để mở khóa 5 huy hiệu thành tích, trong đó có huy hiệu Trung quân ái quốc ở Vùng 5.</p>
             <button id="vqcBadgeCollectionOpen" class="vqc-badge-button" type="button" aria-haspopup="dialog" aria-controls="vqcBadgeModal">🏅 Xem bộ sưu tập <span aria-hidden="true">→</span></button>
           </div>
         </article>
@@ -346,6 +346,41 @@
   <p class="vqc-canyon-feedback" id="vqcCrystalMessage" role="status">Mỗi bài hoàn thành lần đầu được nhận 3 sao. Chinh phục đủ 14 bài để mở kho báu Vùng 4 và huy hiệu phòng thủ.</p>
   <div class="vqc-adventure-actions"><button class="btn btn-soft" type="button" onclick="vqcAdventureCrystalBack()">← Quay lại bản đồ</button></div>
  </section>
+
+ <section id="vqcVolcanoScreen" class="vqc-volcano-screen" aria-label="Vùng 5 Núi Lửa Vua Đen" hidden>
+  <header class="vqc-canyon-heading vqc-volcano-heading">
+   <span class="vqc-canyon-heading__icon" aria-hidden="true">🌋</span>
+   <span class="vqc-canyon-heading__chapter">VÙNG 5 · BẢO VỆ VỊ VUA</span>
+   <h2>Núi Lửa Vua Đen</h2>
+   <p>Vị Vua đang bị chiếu! Hãy tìm nước đi hợp lệ để thoát chiếu trong những bài tập đã học ở lớp.</p>
+   <div class="vqc-canyon-summary" aria-label="Tiến độ Vùng 5">
+    <span>♔ <strong id="vqcVolcanoDoneCount">0/13</strong> bài đã hoàn thành</span>
+    <span>⭐ <strong id="vqcVolcanoStarCount">0</strong>/39 sao</span>
+    <span>🪙 Thưởng chinh phục: <strong>5.000 xu</strong></span>
+   </div>
+   <div class="vqc-canyon-meter" aria-hidden="true"><span id="vqcVolcanoMeterFill"></span></div>
+  </header>
+  <div class="vqc-canyon-categories">
+   <article class="vqc-canyon-category">
+    <div class="vqc-canyon-category__header">
+     <span class="vqc-canyon-category__symbol" aria-hidden="true">👑</span>
+     <div><h3>Thoát chiếu</h3><p>7 thế cờ gốc: di chuyển Vua, che chắn hoặc loại bỏ quân đang chiếu.</p></div>
+     <span class="vqc-canyon-category__counter" id="vqcVolcanoEscapeCount">0/7</span>
+    </div>
+    <div class="vqc-canyon-tasks" id="vqcVolcanoEscapeTasks" aria-label="7 bài Thoát chiếu"></div>
+   </article>
+   <article class="vqc-canyon-category">
+    <div class="vqc-canyon-category__header">
+     <span class="vqc-canyon-category__symbol" aria-hidden="true">🔥</span>
+     <div><h3>Thử thách thoát chiếu nâng cao</h3><p>6 thế cờ gốc (Hình 63–68), gồm cả lượt Trắng và Đen.</p></div>
+     <span class="vqc-canyon-category__counter" id="vqcVolcanoAdvancedCount">0/6</span>
+    </div>
+    <div class="vqc-canyon-tasks" id="vqcVolcanoAdvancedTasks" aria-label="6 bài Thoát chiếu Hình 63 đến 68"></div>
+   </article>
+  </div>
+  <p id="vqcVolcanoMessage" class="vqc-canyon-feedback" role="status">Mỗi bài hoàn thành lần đầu nhận 3 sao. Hoàn thành 13 bài để nhận 5.000 xu và huy hiệu Trung quân ái quốc!</p>
+  <div class="vqc-adventure-actions"><button class="btn btn-soft" type="button" onclick="vqcAdventureVolcanoBack()">← Quay lại bản đồ</button></div>
+ </section>
  <p id="vqcAdventureSave" role="status"></p>
  <div class="vqc-adventure-actions"><button class="btn btn-soft" onclick="vqcGoHome()">← Trang chủ</button></div>
 </section>
@@ -384,7 +419,7 @@
    <h2 id="vqcBadgeTitle">Bộ sưu tập huy hiệu</h2>
    <p id="vqcBadgeSummary" role="status">Hoàn thành từng vùng đất để thu thập huy hiệu.</p>
   </div>
-  <div id="vqcBadgeList" class="vqc-badge-list" aria-label="Bốn huy hiệu chinh phục"></div>
+  <div id="vqcBadgeList" class="vqc-badge-list" aria-label="Năm huy hiệu chinh phục"></div>
   <p class="vqc-reward-modal__note">Huy hiệu được cấp tự động theo tiến độ học tập, không cần sử dụng Xu Kỳ Thủ.</p>
   <button id="vqcBadgeDone" class="vqc-reward-modal__done" type="button">Tiếp tục hành trình</button>
  </div>
@@ -1119,7 +1154,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 
 <div class="escape-overlay" id="escapeOverlay" role="dialog" aria-modal="true" aria-label="Bài tập thoát chiếu"><div class="escape-dialog"><div class="mate-top"><strong>🛡️ Thoát chiếu — 13 bài</strong><button class="btn btn-soft" onclick="escapeClose()">✕ Đóng</button></div><div class="escape-layout"><div class="escape-board" id="escapeBoard"></div><div class="escape-side"><h2>🛡️ Thoát chiếu</h2><p id="escapeInstruction">Hãy bảo vệ Vua trắng!</p><div id="escapeFeedback" class="escape-feedback" hidden></div><div id="escapeStars" class="escape-stars"></div><div class="escape-controls"><button onclick="escapeOpen(escapeIndex-1)">← Bài trước</button><button onclick="escapeOpen(escapeIndex+1)">Bài tiếp →</button><button onclick="escapeReset()">↻ Thử lại</button></div></div></div></div></div>
-<script src="./js/escape.js?v=challenge-delegated-20261017"></script>
+<script src="./js/escape.js?v=volcano-region5-20261019"></script>
 
 <script src="./js/check-effects.js"></script>
 
@@ -1139,7 +1174,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
-<script src="./js/adventure.js?v=crystal-region4-20261019"></script>
+<script src="./js/adventure.js?v=volcano-region5-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */

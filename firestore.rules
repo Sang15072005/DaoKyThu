@@ -29,7 +29,7 @@ service cloud.firestore {
   match /adventureProgress/{uid} {
    allow read: if active() && request.auth.uid==uid;
    allow create,update: if student() && request.auth.uid==uid
-     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','crystalDone','rewardedRegions','purchasedAvatars','stars','updatedAt'])
+     && request.resource.data.keys().hasOnly(['studentId','done','forestDone','canyonDone','crystalDone','volcanoDone','rewardedRegions','purchasedAvatars','stars','updatedAt'])
      && request.resource.data.studentId==uid
      && request.resource.data.done is list
      && request.resource.data.done.size()<=10
@@ -39,10 +39,12 @@ service cloud.firestore {
      && request.resource.data.canyonDone.size()<=13
      && request.resource.data.crystalDone is list
      && request.resource.data.crystalDone.size()<=14
+     && request.resource.data.volcanoDone is list
+     && request.resource.data.volcanoDone.size()<=13
      && request.resource.data.rewardedRegions is list
      && request.resource.data.rewardedRegions.size()<=7
-     // The launched areas are 1–4. Other regions cannot award coins yet.
-     && request.resource.data.rewardedRegions.hasOnly([0,1,2,3])
+     // The launched areas are 1–5. Other regions cannot award coins yet.
+     && request.resource.data.rewardedRegions.hasOnly([0,1,2,3,4])
      && request.resource.data.purchasedAvatars is list
      && request.resource.data.purchasedAvatars.size()<=3
      && request.resource.data.purchasedAvatars.hasOnly(['knight','queen','king'])
@@ -56,10 +58,11 @@ service cloud.firestore {
        <= ((0 in request.resource.data.rewardedRegions ? 1000 : 0)
          + (1 in request.resource.data.rewardedRegions ? 2000 : 0)
          + (2 in request.resource.data.rewardedRegions ? 3000 : 0)
-         + (3 in request.resource.data.rewardedRegions ? 4000 : 0))
+         + (3 in request.resource.data.rewardedRegions ? 4000 : 0)
+         + (4 in request.resource.data.rewardedRegions ? 5000 : 0))
      && request.resource.data.stars is int
      && request.resource.data.stars>=0
-     && request.resource.data.stars<=147;
+     && request.resource.data.stars<=186;
    allow delete: if false;
   }
   // Existing live classroom: restrict authenticated access. For production,

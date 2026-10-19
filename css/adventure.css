@@ -2100,3 +2100,93 @@ body.vqc-reward-dialog-open{overflow:hidden}
 @media(max-width:520px){
  .vqc-adventure .vqc-crystal-screen{padding:13px 10px}
 }
+
+/* ============================================================
+   VOLCANO REGION 5 - ESCAPE FROM CHECK
+   Original 13 Thoát chiếu exercises, reused without changing moves.
+   ============================================================ */
+.vqc-adventure .vqc-volcano-screen{
+ position:relative;
+ margin:16px 0 5px;
+ padding:clamp(14px,3vw,30px);
+ border:3px solid #f4a171;
+ border-radius:26px;
+ background:linear-gradient(145deg,#fff7e8,#ffe6d6 55%,#fbe8d5);
+ box-shadow:0 13px 32px #a143232a;
+ color:#784b35;
+}
+.vqc-adventure .vqc-volcano-heading{
+ background:linear-gradient(145deg,#fffef4,#ffe0c8);
+ border:2px solid #f2bd8b;
+}
+.vqc-adventure .vqc-volcano-heading .vqc-canyon-heading__icon{
+ font-size:52px;
+ filter:drop-shadow(0 5px 3px #ae5c246e);
+}
+.vqc-adventure .vqc-volcano-heading .vqc-canyon-heading__chapter{
+ background:#ffe1ba;
+ color:#9a4b28;
+}
+.vqc-adventure .vqc-volcano-heading h2{
+ color:#aa4a28;
+ text-shadow:0 2px #fff;
+}
+.vqc-adventure .vqc-volcano-heading p{color:#875b46}
+.vqc-adventure .vqc-volcano-heading .vqc-canyon-summary>span{
+ background:#fff8ee;
+ border-color:#efbd93;
+ color:#92532c;
+}
+.vqc-adventure .vqc-volcano-heading .vqc-canyon-meter{
+ background:#f8d6b8;
+ border-color:#d88964;
+}
+.vqc-adventure .vqc-volcano-heading .vqc-canyon-meter span{
+ background:linear-gradient(90deg,#ebad46,#ed7046,#d4473e);
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-category{
+ border-color:#f1c39d;
+ background:linear-gradient(145deg,#fffefa,#fff0e8);
+ box-shadow:0 7px 16px #9c53301b;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-category__symbol{
+ border-color:#e8ac79;
+ background:#ffebd5;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-category__header h3{color:#a65334}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-category__header p{color:#87634e}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-category__counter{
+ background:#ffe3ca;
+ color:#a4592c;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-task{
+ border-color:#ecc5a9;
+ background:linear-gradient(145deg,#fff,#ffe6d3);
+ color:#914c2e;
+ box-shadow:0 4px 0 #e1b999;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-task:hover{
+ border-color:#ed9c67;
+ box-shadow:0 7px 0 #d49b79,0 12px 21px #a9673d33;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-task.is-complete{
+ border-color:#a4d4a0;
+ background:linear-gradient(145deg,#f7ffe8,#e2f8d7);
+ color:#46804b;
+ box-shadow:0 4px 0 #a7d3a4;
+}
+.vqc-adventure .vqc-volcano-screen .vqc-canyon-feedback{
+ background:#fff6e8;
+ color:#975631;
+}
+.vqc-adventure .vqc-level-node--volcano .vqc-level-node__medal{
+ background:linear-gradient(140deg,#fff2cc,#ffb785);
+ border-color:#ffdec0;
+ box-shadow:0 5px 13px #d65d3c77;
+}
+.vqc-adventure .vqc-level-node--volcano.is-playing .vqc-level-node__medal::after{
+ border-color:#ffd0b1;
+}
+@media(max-width:520px){
+ .vqc-adventure .vqc-volcano-screen{padding:13px 10px}
+}
