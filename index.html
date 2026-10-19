@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="./css/styles.css?v=header-at-top-20261017">
 <link rel="stylesheet" href="./css/adventure.css?v=volcano-region5-20261019">
 <link rel="stylesheet" href="./css/annotations.css?v=board-draw-20261019">
-<link rel="stylesheet" href="./css/friends.css?v=friends-20261019">
+<link rel="stylesheet" href="./css/friends.css?v=friends-permission-diagnostics-20261019">
 
 
 
@@ -1111,6 +1111,10 @@
    <div id="vqcFriendsOutgoingList" class="vqc-friends-list"></div>
   </div>
   <p id="vqcFriendsStatus" role="status" aria-live="polite" class="vqc-friends-status">Chỉ những người được em đồng ý mới vào danh sách bạn bè.</p>
+  <div class="vqc-friends-debug">
+   <button id="vqcFriendsDiagnose" type="button" class="vqc-friends-debug__button">🔍 Kiểm tra quyền Firebase</button>
+   <ol id="vqcFriendsDiagnostics" class="vqc-friends-debug__results" role="status" aria-live="polite" aria-label="Kết quả kiểm tra quyền kết bạn" hidden></ol>
+  </div>
   <p class="vqc-friends-safety">🛡️ Không hiển thị tên thật, số điện thoại hoặc địa chỉ. Có thể hủy kết bạn, từ chối hay chặn lời mời. Nếu có điều khiến em khó chịu, hãy báo cho giáo viên hoặc người lớn tin cậy.</p>
   <button id="vqcFriendsDone" class="vqc-friends-done" type="button">Quay lại Đảo Kỳ Thủ</button>
  </div>
@@ -1218,7 +1222,7 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <script id="pawn-games-script" src="./js/pawn-games.js?v=challenge-delegated-20261017"></script>
 <script src="./js/learning-modes.js?v=harbor-1"></script>
 <script src="./js/adventure.js?v=friends-20261019"></script>
-<script src="./js/friends.js?v=friends-20261019"></script>
+<script src="./js/friends.js?v=friends-permission-diagnostics-20261019"></script>
 <script src="./js/annotations.js?v=board-draw-20261019"></script>
 <script>
 /* Challenge launcher: direct delegated UI, robust error reporting. */

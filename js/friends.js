@@ -44,7 +44,7 @@
  }
  function errorText(error){
   console.warn('[Bạn bè Kỳ Thủ]',error);
-  if(error?.code==='permission-denied')return 'Firebase chưa cho phép kết bạn. Cần triển khai firestore.rules mới.';
+  if(error?.code==='permission-denied')return 'Firebase từ chối quyền truy cập (permission-denied). Hãy nhấn Kiểm tra quyền Firebase để biết bước nào bị chặn.';
   if(error?.code==='unavailable')return 'Mất kết nối Firebase. Hãy thử lại khi có Internet.';
   if(error?.code==='failed-precondition')return 'Dữ liệu Firebase chưa sẵn sàng. Vui lòng thử lại.';
   return String(error?.message||'Có lỗi, vui lòng thử lại.');
@@ -53,7 +53,9 @@
   if(!activeStudent())return;
   const user=currentUid;
   const settings=db.collection('friendSettings').doc(user);
-  const existing=await settings.get();
+  let existing;
+  try{existing=await settings.get();}
+  catch(error){console.warn('[Bạn bè Kỳ Thủ] friendSettings.get bị từ chối',error);throw error;}
   if(currentUid!==user)return;
   if(existing.exists){
    ownCode=String(existing.data().code||'');
@@ -78,6 +80,7 @@
     return;
    }catch(error){
     if(error?.message==='CODE_COLLISION')continue;
+    console.warn('[Bạn bè Kỳ Thủ] friendSettings.create + friendDirectory.create thất bại',error);
     throw error;
    }
   }
@@ -246,8 +249,9 @@
   if(user===currentUid)return;
   stopListening();currentUid=user;
   note('Đang kết nối bạn bè...');
+  let codeError=null;
   try{await ensureFriendCode();}
-  catch(error){note(errorText(error),true);}
+  catch(error){codeError=error;note('Không thể đọc/tạo mã Kỳ Thủ: '+errorText(error),true);}
   if(currentUid!==user)return;
   unsub=db.collection('friendships')
    .where('members','array-contains',user).limit(120)
@@ -257,8 +261,9 @@
       .filter(record=>Array.isArray(record.data.members)&&record.data.members.includes(user)&&
        ['pending','accepted'].includes(record.data.status));
      render();
-     note('Bạn bè đã được cập nhật.');
-   },error=>note(errorText(error),true));
+     if(codeError)note('Danh sách đọc được, nhưng mã Kỳ Thủ bị từ chối: '+errorText(codeError),true);
+     else note('Bạn bè đã được cập nhật.');
+   },error=>note('Không đọc được danh sách friendships: '+errorText(error),true));
   window.vqcFriendsScheduleStatsSync();
  }
  async function sendInvite(){
@@ -294,6 +299,76 @@
    $('vqcFriendsCodeInput').value='';
   },'Đã gửi lời mời. Bạn kia cần đồng ý trước khi kết bạn.');
  }
+// Step-by-step permission check against live Firebase; no passwords or UIDs are displayed.
+async function diagnoseFirebasePermissions(){
+ const trigger=$('vqcFriendsDiagnose'),list=$('vqcFriendsDiagnostics');
+ if(!trigger||!list)return;
+ trigger.disabled=true;
+ list.hidden=false;
+ list.replaceChildren();
+ const add=(label,ok,detail='')=>{
+  const item=document.createElement('li');
+  item.className=ok?'is-ok':'is-failed';
+  item.textContent=(ok?'✓ ':'✗ ')+label+(detail?' — '+detail:'');
+  list.appendChild(item);
+ };
+ try{
+  if(!backend()||!currentProfile()){
+   add('Đăng nhập',false,'Cần đăng nhập bằng tài khoản học sinh.');
+   return;
+  }
+  const uid=auth.currentUser.uid;
+  if(currentProfile().uid!==uid||currentProfile().role!=='student'){
+   add('Tài khoản học sinh',false,'Hồ sơ đăng nhập không khớp với tài khoản học sinh.');
+   return;
+  }
+  add('Đăng nhập Firebase Authentication',true);
+  try{
+   const user=await db.collection('users').doc(uid).get();
+   if(!user.exists||user.data()?.active!==true||user.data()?.role!=='student'){
+    add('Quyền tài khoản học sinh',false,
+     'Firestore users cần có active=true và role=student. Hãy nhờ giáo viên kiểm tra hồ sơ tài khoản.');
+    return;
+   }
+   add('Tài khoản có active=true, role=student',true);
+  }catch(error){
+   add('Quyền đọc hồ sơ users',false,errorText(error));
+   return;
+  }
+  try{
+   await db.collection('friendSettings').doc(uid).get();
+   add('Quyền đọc mã trong friendSettings',true);
+  }catch(error){
+   add('Quyền đọc friendSettings',false,errorText(error));
+   return;
+  }
+  try{
+   await ensureFriendCode();
+   add('Quyền tạo/đọc mã Kỳ Thủ',true);
+  }catch(error){
+   add('Quyền tạo mã trong friendSettings + friendDirectory',false,errorText(error));
+   return;
+  }
+  try{
+   await db.collection('friendships').where('members','array-contains',uid).limit(120).get();
+   add('Quyền truy vấn danh sách friendships',true);
+  }catch(error){
+   add('Quyền truy vấn friendships',false,errorText(error));
+   return;
+  }
+  try{
+   await db.collection('friendPublicProfiles').doc(uid).get();
+   add('Quyền đọc thành tích của chính mình',true);
+  }catch(error){
+   add('Quyền đọc friendPublicProfiles',false,errorText(error));
+   return;
+  }
+  add('Hoàn tất',true,'Các quyền đọc chính đã hoạt động. Bạn có thể gửi lời mời và thử lại.');
+  stopListening();
+  await connectProfile();
+ }finally{trigger.disabled=false;}
+}
+
  function closeModal(){
   const modal=$('vqcFriendsModal');
   if(!modal||modal.hidden)return;
@@ -329,6 +404,7 @@
    }else note('Mã của em: '+text);
   });
   $('vqcFriendsSend')?.addEventListener('click',sendInvite);
+  $('vqcFriendsDiagnose')?.addEventListener('click',diagnoseFirebasePermissions);
   $('vqcFriendsCodeInput')?.addEventListener('keydown',event=>{
    if(event.key==='Enter'){event.preventDefault();sendInvite();}
   });

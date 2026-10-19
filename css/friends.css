@@ -156,3 +156,22 @@ body > .header #accountBar{margin-left:0;flex-wrap:wrap;gap:5px}
  body > .header #vqcFriendsOpen{font-size:12px;padding:7px}
  body > .header #accountBar button{font-size:12px;padding:7px}
 }
+
+/* Non-sensitive Firebase permission diagnostic for students and teachers. */
+.vqc-friends-debug{display:flex;flex-direction:column;align-items:center;gap:9px;margin:12px 0 16px}
+.vqc-friends-debug__button{
+ min-height:38px;padding:8px 17px;border:2px solid #94cde2;border-radius:12px;
+ background:#f0faff;color:#32749c;font:800 13px "Segoe UI",Arial,sans-serif;
+ cursor:pointer;
+}
+.vqc-friends-debug__button:hover{background:#def3ff}
+.vqc-friends-debug__button:disabled{opacity:.6;cursor:wait}
+.vqc-friends-debug__results[hidden]{display:none!important}
+.vqc-friends-debug__results{
+ box-sizing:border-box;align-self:stretch;margin:0;padding:10px 14px 10px 30px;
+ border:2px solid #cfdfed;border-radius:12px;background:#fffdf6;
+ color:#486778;font-size:12px;line-height:1.65;text-align:left;
+}
+.vqc-friends-debug__results li{margin:4px 0;overflow-wrap:anywhere}
+.vqc-friends-debug__results li.is-ok{color:#327a50}
+.vqc-friends-debug__results li.is-failed{color:#b24736;font-weight:800}
