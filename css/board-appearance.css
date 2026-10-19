@@ -1,5 +1,6 @@
 /* Board appearance preferences: visual only; no game state or classroom sync changes. */
 :root{--vqc-board-light:#fff0c7;--vqc-board-dark:#79b7e8}
+:root[data-vqc-board-theme="original"]{--vqc-board-light:#fff0c7;--vqc-board-dark:#79b7e8}
 :root[data-vqc-board-theme="wood"]{--vqc-board-light:#f0d9b5;--vqc-board-dark:#b58863}
 :root[data-vqc-board-theme="forest"]{--vqc-board-light:#eeeed2;--vqc-board-dark:#769656}
 :root[data-vqc-board-theme="ocean"]{--vqc-board-light:#dcecf7;--vqc-board-dark:#6798c0}
