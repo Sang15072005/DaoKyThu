@@ -3,6 +3,7 @@
 'use strict';
 const KEY='vqc-board-appearance-v1';
 const THEMES=[
+ ['original','Nguyên bản','#fff0c7','#79b7e8'],
  ['wood','Gỗ cổ điển','#f0d9b5','#b58863'],
  ['forest','Rừng xanh','#eeeed2','#769656'],
  ['ocean','Đại dương','#dcecf7','#6798c0'],
@@ -10,7 +11,7 @@ const THEMES=[
  ['night','Bóng đêm','#b7b9bd','#555b67'],
  ['royal','Hoàng gia','#f7e9b5','#c19a40']
 ];
-const defaults={theme:'ocean',piece:'classic',coordinates:true,hints:true,lastmove:true};
+const defaults={theme:'original',piece:'classic',coordinates:true,hints:true,lastmove:true};
 let prefs={...defaults};
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');if(saved&&typeof saved==='object')prefs={...defaults,...saved};}catch(e){}
 if(!THEMES.some(t=>t[0]===prefs.theme))prefs.theme=defaults.theme;
