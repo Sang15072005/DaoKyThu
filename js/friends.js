@@ -13,7 +13,7 @@
  let foundFriend=null,lookupVersion=0,showName=false,friendView='cards';
  const backend=()=>typeof db!=='undefined'&&typeof auth!=='undefined'&&auth.currentUser;
  const currentProfile=()=>window.accountProfile;
- const activeStudent=()=>!!(backend()&&currentProfile()?.role==='student'&&currentProfile()?.uid===auth.currentUser.uid);
+ const activeStudent=()=>!!(backend()&&['student','teacher'].includes(currentProfile()?.role)&&currentProfile()?.uid===auth.currentUser.uid);
  const nick=uid=>'Kỳ thủ '+String(uid||'').slice(-4).toUpperCase();
  const timeStamp=()=>firebase.firestore.FieldValue.serverTimestamp();
  const ownPair=(a,b)=>[a,b].sort().join('_');
@@ -96,15 +96,15 @@
   if($('vqcFriendsUnread'))$('vqcFriendsUnread').hidden=true;
  }
  function ownProfile(){
-  if(!window.vqcGetFriendStats)return null;
-  const raw=window.vqcGetFriendStats();
-  if(!raw)return null;
+  const raw=typeof window.vqcGetFriendStats==='function'?window.vqcGetFriendStats():null;
+  if(!raw&&currentProfile()?.role!=='teacher')return null;
+  const data=raw||{avatar:'scholar',stars:0,regions:0,badges:0};
   return {
    sharedName:showName?String(currentProfile()?.name||'').trim().slice(0,100):'',
-   avatar:AVATARS.includes(raw.avatar)?raw.avatar:'explorer',
-   stars:Math.max(0,Math.min(186,Math.floor(Number(raw.stars)||0))),
-   regions:Math.max(0,Math.min(5,Math.floor(Number(raw.regions)||0))),
-   badges:Math.max(0,Math.min(5,Math.floor(Number(raw.badges)||0)))
+   avatar:AVATARS.includes(data.avatar)?data.avatar:'explorer',
+   stars:Math.max(0,Math.min(186,Math.floor(Number(data.stars)||0))),
+   regions:Math.max(0,Math.min(5,Math.floor(Number(data.regions)||0))),
+   badges:Math.max(0,Math.min(5,Math.floor(Number(data.badges)||0)))
   };
  }
  async function publishProfile(){
@@ -257,7 +257,7 @@
  }
  async function connectProfile(){
   const profile=currentProfile(),user=profile?.uid;
-  if(!user||profile.role!=='student'||!backend()){
+  if(!user||!['student','teacher'].includes(profile.role)||!backend()){
    stopListening();
    return;
   }
@@ -292,7 +292,7 @@
   const version=++lookupVersion;
   foundFriend=null;
   if(result)result.hidden=true;
-  if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh.',true);
+  if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh hoặc giáo viên.',true);
   if(!/^KT[A-HJ-NP-Z2-9]{10}$/.test(value))return note('Mã Kỳ Thủ chưa đúng định dạng.',true);
   if(value===ownCode)return note('Đây là mã của em.',true);
   try{
@@ -306,7 +306,7 @@
   }catch(error){note(errorText(error),true);}
  }
  async function sendInvite(){
-  if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh.',true);
+  if(!activeStudent())return note('Cần đăng nhập bằng tài khoản học sinh hoặc giáo viên.',true);
   const value=$('vqcFriendsCodeInput').value.trim().toUpperCase().replace(/[ -]/g,'');
   if(!/^KT[A-HJ-NP-Z2-9]{10}$/.test(value))return note('Mã không hợp lệ. Hãy nhập đủ 12 ký tự của mã Kỳ Thủ.',true);
   if(value===ownCode)return note('Em không thể tự kết bạn với mình.',true);
@@ -357,23 +357,23 @@ async function diagnoseFirebasePermissions(){
  };
  try{
   if(!backend()||!currentProfile()){
-   add('Đăng nhập',false,'Cần đăng nhập bằng tài khoản học sinh.');
+   add('Đăng nhập',false,'Cần đăng nhập bằng tài khoản học sinh hoặc giáo viên.');
    return;
   }
   const uid=auth.currentUser.uid;
-  if(currentProfile().uid!==uid||currentProfile().role!=='student'){
+  if(currentProfile().uid!==uid||!['student','teacher'].includes(currentProfile().role)){
    add('Tài khoản học sinh',false,'Hồ sơ đăng nhập không khớp với tài khoản học sinh.');
    return;
   }
   add('Đăng nhập Firebase Authentication',true);
   try{
    const user=await db.collection('users').doc(uid).get();
-   if(!user.exists||user.data()?.active!==true||user.data()?.role!=='student'){
+   if(!user.exists||user.data()?.active!==true||!['student','teacher'].includes(user.data()?.role)){
     add('Quyền tài khoản học sinh',false,
      'Firestore users cần có active=true và role=student. Hãy nhờ giáo viên kiểm tra hồ sơ tài khoản.');
     return;
    }
-   add('Tài khoản có active=true, role=student',true);
+   add('Tài khoản đang hoạt động, quyền '+user.data().role,true);
   }catch(error){
    add('Quyền đọc hồ sơ users',false,errorText(error));
    return;
@@ -422,8 +422,8 @@ async function diagnoseFirebasePermissions(){
  }
  async function openModal(){
   if(!currentProfile()){showAccountPanel();return;}
-  if(currentProfile().role!=='student'){
-   if(typeof vqcNotify==='function')vqcNotify('Tính năng kết bạn dành cho tài khoản học sinh.','warning');
+  if(!['student','teacher'].includes(currentProfile().role)){
+   if(typeof vqcNotify==='function')vqcNotify('Tính năng kết bạn dành cho học sinh và giáo viên.','warning');
    return;
   }
   modalFocus=document.activeElement;
