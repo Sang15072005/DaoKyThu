@@ -591,7 +591,97 @@ function showAdventureMap(){
   }
  });
 }
+
+/* Huy hiệu thành tích: được tính từ tiến độ thật, không mua bằng xu. */
+const ADVENTURE_BADGES=[
+ {name:'Đầu xuôi đuôi lọt',icon:'⚓',description:'Hoàn thành toàn bộ thử thách Vùng 1.'},
+ {name:'Bậc thầy nhặt sao',icon:'⭐',description:'Hoàn thành toàn bộ thử thách nhặt sao Vùng 2.'},
+ {name:'Bậc thầy ăn quân',icon:'⚔️',description:'Hoàn thành toàn bộ thử thách ăn quân Vùng 3.'},
+ {name:'Bậc thầy phòng thủ',icon:'🛡️',description:'Hoàn thành toàn bộ thử thách phòng thủ Vùng 4.'}
+];
+function isBadgeUnlocked(index){
+ if(index===0)return progress.done.length===QUESTIONS.length;
+ if(index===1)return progress.forestDone.length===FOREST_PIECES.length;
+ if(index===2)return progress.canyonDone.length===CANYON_TOTAL;
+ // Vùng 4 chưa có tiến độ hoàn thành trong hệ thống phiêu lưu hiện tại.
+ return false;
+}
+let lastBadgeUnlocks=null;
+function renderBadges(){
+ const list=document.getElementById('vqcBadgeList');
+ const unlocked=ADVENTURE_BADGES.map((_,i)=>isBadgeUnlocked(i));
+ const count=unlocked.filter(Boolean).length;
+ const summary=document.getElementById('vqcBadgeSummary');
+ if(summary)summary.textContent='Đã mở khóa '+count+'/4 huy hiệu · Hoàn thành từng vùng để nhận thưởng!';
+ if(list){
+  list.replaceChildren();
+  ADVENTURE_BADGES.forEach((badge,i)=>{
+   const earned=unlocked[i];
+   const item=document.createElement('article');
+   item.className='vqc-badge-item'+(earned?' is-earned':'');
+   const symbol=document.createElement('span');
+   symbol.className='vqc-badge-symbol';symbol.textContent=earned?badge.icon:'🔒';
+   const info=document.createElement('div');
+   const title=document.createElement('strong');title.textContent=badge.name;
+   const detail=document.createElement('p');detail.textContent='Vùng '+(i+1)+' · '+badge.description;
+   const state=document.createElement('small');state.textContent=earned?'✓ Đã nhận huy hiệu':'Chưa mở khóa';
+   info.append(title,detail,state);item.append(symbol,info);list.append(item);
+  });
+ }
+ if(lastBadgeUnlocks){
+  const gained=unlocked.map((yes,i)=>yes&&!lastBadgeUnlocks[i]?i:-1).filter(i=>i>=0);
+  if(gained.length){
+   const toast=document.getElementById('vqcBadgeToast');
+   if(toast){
+    toast.textContent='🏅 Chúc mừng! Em nhận được huy hiệu '+ADVENTURE_BADGES[gained[0]].name+'!';
+    toast.hidden=false;
+    clearTimeout(window.vqcBadgeToastTimer);
+    window.vqcBadgeToastTimer=setTimeout(()=>toast.hidden=true,5500);
+   }
+  }
+ }
+ lastBadgeUnlocks=unlocked;
+}
+function initBadges(){
+ const card=document.querySelector('.chess-reward-card__content h3');
+ const target=[...document.querySelectorAll('.chess-reward-card')].find(el=>el.textContent.includes('Huy hiệu thành tích'));
+ if(!target)return;
+ target.style.cursor='pointer';
+ target.setAttribute('role','button');target.setAttribute('tabindex','0');
+ target.setAttribute('aria-label','Mở bộ sưu tập huy hiệu thành tích');
+ const modal=document.createElement('div');
+ modal.id='vqcBadgeModal';modal.className='vqc-badge-modal';modal.hidden=true;
+ modal.innerHTML='<div class="vqc-badge-panel" role="dialog" aria-modal="true" aria-labelledby="vqcBadgeTitle"><button class="vqc-badge-close" type="button" aria-label="Đóng">✕</button><h2 id="vqcBadgeTitle">🏅 Bộ sưu tập huy hiệu</h2><p id="vqcBadgeSummary"></p><div id="vqcBadgeList" class="vqc-badge-list"></div></div>';
+ document.body.append(modal);
+ const style=document.createElement('style');
+ style.textContent=`
+.vqc-badge-modal[hidden],#vqcBadgeToast[hidden]{display:none!important}
+.vqc-badge-modal{position:fixed;inset:0;z-index:20000;background:#111827a8;display:grid;place-items:center;padding:18px}
+.vqc-badge-panel{position:relative;width:min(560px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:22px;padding:24px;box-shadow:0 18px 55px #0004;color:#27304b}
+.vqc-badge-panel h2{margin:0 36px 8px 0;color:#6842a4}.vqc-badge-panel>p{margin:0 0 18px;color:#64748b}
+.vqc-badge-close{position:absolute;right:16px;top:15px;border:0;background:#f1f5f9;border-radius:50%;width:36px;height:36px;cursor:pointer}
+.vqc-badge-list{display:grid;gap:12px}.vqc-badge-item{display:flex;align-items:center;gap:15px;padding:15px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;opacity:.68}
+.vqc-badge-item.is-earned{opacity:1;background:#f5efff;border-color:#c4b5fd}
+.vqc-badge-symbol{display:grid;place-items:center;flex:0 0 60px;height:60px;font-size:32px;border-radius:50%;background:#e2e8f0}
+.is-earned .vqc-badge-symbol{background:#fef3c7;box-shadow:0 0 0 3px #fde68a}
+.vqc-badge-item strong{display:block;font-size:17px}.vqc-badge-item p{margin:5px 0;color:#64748b;font-size:13px}.vqc-badge-item small{color:#7c3aed;font-weight:700}
+#vqcBadgeToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:21000;background:#4c1d95;color:white;border-radius:14px;padding:14px 20px;box-shadow:0 10px 30px #0004;text-align:center;max-width:90vw}
+`;
+ document.head.append(style);
+ const toast=document.createElement('div');toast.id='vqcBadgeToast';toast.setAttribute('role','status');toast.hidden=true;document.body.append(toast);
+ let previousFocus=null;
+ const close=()=>{modal.hidden=true;if(previousFocus?.isConnected)previousFocus.focus();};
+ const open=()=>{previousFocus=document.activeElement;renderBadges();modal.hidden=false;modal.querySelector('button').focus();};
+ target.addEventListener('click',open);
+ target.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+ modal.querySelector('button').addEventListener('click',close);
+ modal.addEventListener('click',e=>{if(e.target===modal)close();});
+ modal.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Tab'){e.preventDefault();modal.querySelector('button').focus();}});
+ renderBadges();
+}
+
 function render(){
+ renderBadges();
  const nodes=$('vqcAdventureRegions');if(!nodes)return;
  prepareMapEvents();
  nodes.replaceChildren();
@@ -938,5 +1028,5 @@ window.vqcAdventureReset=function(){
  if(!confirm('Em có muốn chơi lại từ màn đầu? Tiến độ cũ sẽ được đặt lại.'))return;
  progress=sanitize({rewardedRegions:progress.rewardedRegions,purchasedAvatars:progress.purchasedAvatars});saveProgress();closeRegion();
 };
-window.addEventListener('DOMContentLoaded',()=>{initCoinWallet();initAvatarPicker();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
+window.addEventListener('DOMContentLoaded',()=>{initCoinWallet();initAvatarPicker();initBadges();if($('vqcAdventureRegions')){render();$('vqcAdventurePlay').hidden=true;}});
 })();
