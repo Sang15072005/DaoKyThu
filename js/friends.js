@@ -108,16 +108,25 @@
   };
  }
  async function publishProfile(){
-  if(!activeStudent())return;
+  if(!activeStudent())return false;
   const stats=ownProfile();
-  if(!stats)return;
+  if(!stats){note('Chưa lấy được hồ sơ thành tích để lưu tên. Hãy tải lại trang.',true);return false;}
   const signature=JSON.stringify(stats);
-  if(signature===profileSignature)return;
+  if(signature===profileSignature)return true;
   const who=currentUid;
   try{
    await db.collection('friendPublicProfiles').doc(who).set({...stats,updatedAt:timeStamp()});
+   const verify=await db.collection('friendPublicProfiles').doc(who).get({source:'server'});
+   if(!verify.exists||verify.data().sharedName!==stats.sharedName)throw Error('Firebase chưa lưu được trường sharedName.');
    if(currentUid===who)profileSignature=signature;
-  }catch(error){console.warn('Chưa cập nhật được thành tích cho bạn bè',error);}
+   return true;
+  }catch(error){
+   console.warn('Không lưu được tên trong friendPublicProfiles',error);
+   note(error?.code==='permission-denied'?
+    'Firebase chưa cho phép lưu họ tên (permission-denied). Cần Publish firestore.rules mới trên Firebase Console.':
+    'Lưu họ tên thất bại: '+errorText(error),true);
+   return false;
+  }
  }
  window.vqcFriendsScheduleStatsSync=()=>{
   if(!activeStudent())return;
@@ -423,7 +432,7 @@ async function diagnoseFirebasePermissions(){
   setTab('friends');
   $('vqcFriendsClose')?.focus();
   if(!currentUid)connectProfile();
-  else{render();loadFriendProfiles();}
+  else{render();loadFriendProfiles();if(showName)publishProfile();}
  }
  function initialize(){
   $('vqcFriendsOpen')?.addEventListener('click',openModal);
@@ -450,8 +459,9 @@ async function diagnoseFirebasePermissions(){
    showName=event.target.checked;
    localStorage.setItem('vqcFriendNameShare_'+currentUid,showName?'yes':'no');
    profileSignature='';
-   await publishProfile();
-   note(showName?'Đã bật chia sẻ họ tên với bạn bè.':'Đã tắt chia sẻ họ tên với bạn bè.');
+   const saved=await publishProfile();
+   if(saved)note(showName?'Đã lưu họ tên trên Firebase. Bạn bè có thể tải lại để xem.':'Đã ngừng chia sẻ họ tên trên Firebase.');
+   else note('Chưa lưu được cài đặt trên Firebase. Kiểm tra Firestore Rules đã Publish hay chưa.',true);
   });
   $('vqcFriendsView')?.addEventListener('change',event=>{
    friendView=event.target.value;
