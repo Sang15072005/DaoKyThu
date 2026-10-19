@@ -3,12 +3,12 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const pair=(a,b)=>[a,b].sort().join('_');
-let unsubscribe=null,otherId='',matchId='',matchData=null,working=false,selected='',legal=[];
+let unsubscribe=null,otherId='',otherDisplay='',matchId='',matchData=null,working=false,selected='',legal=[];
 function profile(){return window.accountProfile;}
 function myId(){return typeof auth!=='undefined'&&auth.currentUser?.uid;}
 function say(s){const el=$('vqcDuelStatus');if(el)el.textContent=s;}
-function friendName(uid){return 'Kỳ thủ '+String(uid).slice(-4).toUpperCase();}
-function close(){if(unsubscribe){unsubscribe();unsubscribe=null;}otherId='';matchId='';matchData=null;selected='';legal=[];$('vqcFriendDuel')?.setAttribute('hidden','');}
+function friendName(uid){return otherDisplay||'Kỳ thủ '+String(uid).slice(-4).toUpperCase();}
+function close(){if(unsubscribe){unsubscribe();unsubscribe=null;}otherId='';otherDisplay='';matchId='';matchData=null;selected='';legal=[];$('vqcFriendDuel')?.setAttribute('hidden','');}
 function render(){
  const board=$('vqcDuelBoard');if(!board||!matchData)return;
  const chess=new Chess(matchData.fen);
@@ -61,6 +61,7 @@ async function open(other){
  if(typeof roomRef!=='undefined'&&roomRef){if(typeof vqcNotify==='function')vqcNotify('Hãy rời lớp trước khi thách đấu bạn bè.','warning');return;}
  if(typeof Chess!=='function'){if(typeof vqcNotify==='function')vqcNotify('Chưa tải được luật cờ. Hãy tải lại trang.','warning');return;}
  close();otherId=other;matchId=pair(uid,other);
+ db.collection('friendPublicProfiles').doc(other).get().then(snap=>{if(otherId===other&&snap.exists&&snap.data().sharedName){otherDisplay=String(snap.data().sharedName).slice(0,100);if(matchData)render();}}).catch(()=>{});
  $('vqcFriendDuel').hidden=false;say('Đang kết nối bàn đấu...');
  try{
   const friendship=await db.collection('friendships').doc(matchId).get();
