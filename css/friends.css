@@ -175,3 +175,10 @@ body > .header #accountBar{margin-left:0;flex-wrap:wrap;gap:5px}
 .vqc-friends-debug__results li{margin:4px 0;overflow-wrap:anywhere}
 .vqc-friends-debug__results li.is-ok{color:#327a50}
 .vqc-friends-debug__results li.is-failed{color:#b24736;font-weight:800}
+
+.vqc-friends-found[hidden]{display:none!important}
+.vqc-friends-found{margin-top:10px;padding:11px;border:2px solid #addbc5;border-radius:13px;background:#f0fff4;color:#2b7355;font-size:14px}
+.vqc-friends-invite__row{flex-wrap:wrap}
+.vqc-friends-invite__row input{flex-basis:100%}
+.vqc-friends-invite__row button{flex:1}
+#vqcFriendsFind{background:linear-gradient(#7bbfe8,#428bc6);box-shadow:0 3px 0 #3275a5}
