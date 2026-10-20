@@ -183,6 +183,15 @@ async function acceptFromInbox(item,accept){
 function onIncoming(id,peer,game,snap){
  if(!inboxUid)return;
  const d=snap.data();
+ if(d?.status==='accepted'&&d.from===inboxUid&&awaitingAcceptance.has(id)){
+  awaitingAcceptance.delete(id);
+  if(bridge()?.isOnline()&&!confirm('Bạn đang trong một ván khác. Chuyển sang ván vừa được nhận lời?'))return;
+  enterMatch(peer,game).catch(e=>{
+   const message='⚠️ Không mở được bàn đấu: '+alertError(e);
+   status(message);const feedback=$('vqcInviteFeedback');if(feedback)feedback.textContent=message;
+   if($('vqcInvitePanel'))$('vqcInvitePanel').hidden=false;
+  });
+ }
  if(d?.status==='pending'&&d.from===peer&&d.game===game&&Array.isArray(d.members)&&d.members.includes(inboxUid)){
   incoming.set(id,{id,peer,game,data:d});
   const fingerprint=id+':'+(d.at?.toMillis?.()||d.at?.seconds||'pending');
@@ -268,6 +277,6 @@ function init(){
  window.addEventListener('vqc:account-change',()=>{hideLobby();leave();});
  initInbox();
 }
-window.vqcArcadeOnline={lobby,submit,leave};
+window.vqcArcadeOnline={lobby,submit,leave,latestState:()=>matchSnapshot};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
