@@ -270,8 +270,7 @@ service cloud.firestore {
        && request.resource.data.keys().hasOnly(['members','from','game','status','at','respondedAt'])
        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['from','status','at','respondedAt'])
        && request.resource.data.status=='pending'
-       && request.resource.data.at==request.time
-       && request.resource.data.get('respondedAt',null)==resource.data.get('respondedAt',null))
+       && request.resource.data.at==request.time)
       ||
       (resource.data.status=='pending'
        && request.auth.uid!=resource.data.from
