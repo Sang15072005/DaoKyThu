@@ -8,6 +8,8 @@ const stamp=()=>firebase.firestore.FieldValue.serverTimestamp();
 const bridge=()=>window.vqcArcadeOnlineBridge;
 const label=i=>i===0?'♟️ Trò chơi Tốt':'♞ Mã chống Tốt';
 let lobbyUnsub=null,inviteUnsubs=[],matchUnsub=null,matchRef=null,matchSnapshot=null,friendList=[],kind=0,other='',token=0,pending=false;
+let inboxUnsub=null,inboxDocs=new Map(),incoming=new Map(),seen=new Set(),inboxUid='',inboxGeneration=0;
+const friendNames=new Map();
 const key=(u,v,k)=>pair(u,v)+'_'+k;
 function status(msg){if($('vqcOnlineStatus'))$('vqcOnlineStatus').textContent=msg;}
 function initial(k){
@@ -40,9 +42,9 @@ async function sendInvite(otherId){
   status('Đã gửi lời mời '+label(kind)+'. Chờ bạn đồng ý.');
  }catch(e){status('⚠️ '+alertError(e));}finally{pending=false;}
 }
-async function respond(otherId,accept){
+async function respond(otherId,accept,gameKind=kind){
  if(pending)return;pending=true;
- const mine=uid(),id=key(mine,otherId,kind);
+ const mine=uid(),id=key(mine,otherId,gameKind);
  try{
   const ref=db.collection('arcadeInvites').doc(id);
   await db.runTransaction(async tx=>{
@@ -51,7 +53,7 @@ async function respond(otherId,accept){
    tx.update(ref,{status:accept?'accepted':'declined',respondedAt:stamp()});
   });
   status(accept?'Đã nhận lời. Đang vào bàn đấu…':'Đã từ chối lời mời.');
-  if(accept)await enterMatch(otherId,kind);
+  if(accept)await enterMatch(otherId,gameKind);
  }catch(e){status('⚠️ '+alertError(e));}finally{pending=false;}
 }
 async function enterMatch(otherId,k){
@@ -134,6 +136,115 @@ function lobby(k){
  },e=>status('⚠️ '+alertError(e)));
 }
 function stopInviteListeners(){inviteUnsubs.forEach(fn=>fn());inviteUnsubs=[];}
+
+// Keep the invitation inbox available on every page, not just inside a game.
+function updateInbox(){
+ const bell=$('vqcInviteBell'),badge=$('vqcInviteCount'),list=$('vqcInviteList');
+ if(!bell||!badge||!list)return;
+ const items=[...incoming.values()].sort((a,b)=>(b.data.at?.toMillis?.()||0)-(a.data.at?.toMillis?.()||0));
+ bell.hidden=!inboxUid;badge.textContent=String(items.length);badge.hidden=!items.length;
+ bell.setAttribute('aria-label','Lời mời thi đấu: '+items.length+' lời mời');
+ list.replaceChildren();
+ if(!items.length){const p=document.createElement('p');p.textContent='Chưa có lời mời mới.';list.appendChild(p);}
+ for(const item of items){
+  const card=document.createElement('div');card.className='vqc-invite-item';
+  const text=document.createElement('p');
+  text.textContent=(friendNames.get(item.peer)||'Kỳ thủ '+item.peer.slice(-4).toUpperCase())+' mời bạn chơi '+label(item.game)+'.';
+  const buttons=document.createElement('div');buttons.className='vqc-invite-actions';
+  buttons.append(makeButton('✓ Nhận lời',()=>acceptFromInbox(item,true),'accept'),makeButton('Từ chối',()=>acceptFromInbox(item,false)));
+  card.append(text,buttons);list.appendChild(card);
+ }
+}
+async function acceptFromInbox(item,accept){
+ if(!inboxUid||!incoming.has(item.id))return;
+ if(accept&&typeof roomRef!=='undefined'&&roomRef){
+  status('Hãy rời lớp học trước khi vào bàn đấu.');
+  if(typeof vqcNotify==='function')vqcNotify('Hãy rời lớp học trước khi nhận lời thách đấu.','warning');
+  return;
+ }
+ if(accept&&bridge()?.isOnline()&&!confirm('Bạn đang ở một bàn đấu khác. Chuyển sang ván được mời?'))return;
+ const notice=$('vqcInviteToast');
+ if(notice)notice.hidden=true;
+ const feedback=$('vqcInviteFeedback');feedback.textContent='Đang '+(accept?'nhận':'từ chối')+' lời mời…';
+ try{
+  await respond(item.peer,accept,item.game);
+  feedback.textContent=accept?'Đã nhận lời. Đang mở bàn đấu.':'Đã từ chối lời mời.';
+  if(accept)$('vqcInvitePanel').hidden=true;
+ }catch(e){feedback.textContent='⚠️ '+alertError(e);}
+}
+function onIncoming(id,peer,game,snap){
+ if(!inboxUid)return;
+ const d=snap.data();
+ if(d?.status==='pending'&&d.from===peer&&d.game===game&&Array.isArray(d.members)&&d.members.includes(inboxUid)){
+  incoming.set(id,{id,peer,game,data:d});
+  const fingerprint=id+':'+(d.at?.toMillis?.()||d.at?.seconds||'pending');
+  if(!seen.has(fingerprint)){
+   seen.add(fingerprint);
+   const toast=$('vqcInviteToast');if(toast){
+    $('vqcInviteToastText').textContent=(friendNames.get(peer)||'Một người bạn')+' mời bạn chơi '+label(game)+'.';
+    toast.hidden=false;
+    $('vqcInviteToastAccept').onclick=()=>acceptFromInbox({id,peer,game},true);
+    $('vqcInviteToastDecline').onclick=()=>acceptFromInbox({id,peer,game},false);
+   }
+  }
+ }else incoming.delete(id);
+ updateInbox();
+}
+function stopInbox(){
+ inboxGeneration++;
+ if(inboxUnsub){inboxUnsub();inboxUnsub=null;}
+ for(const unsub of inboxDocs.values())unsub();
+ inboxDocs.clear();incoming.clear();friendNames.clear();seen.clear();inboxUid='';
+ if($('vqcInvitePanel'))$('vqcInvitePanel').hidden=true;
+ if($('vqcInviteToast'))$('vqcInviteToast').hidden=true;
+ updateInbox();
+}
+function startInbox(user){
+ if(!user||inboxUid===user)return;
+ stopInbox();inboxUid=user;updateInbox();
+ const generation=++inboxGeneration;
+ inboxUnsub=db.collection('friendships').where('members','array-contains',user).limit(120).onSnapshot(snapshot=>{
+  if(generation!==inboxGeneration)return;
+  const desired=new Map();
+  snapshot.docs.forEach(doc=>{
+   const d=doc.data();if(d.status!=='accepted'||!Array.isArray(d.members))return;
+   const peer=d.members.find(id=>id!==user);if(!peer)return;
+   for(const game of [0,1])desired.set(key(user,peer,game),{peer,game});
+   if(!friendNames.has(peer)){
+    friendNames.set(peer,'Kỳ thủ '+peer.slice(-4).toUpperCase());
+    db.collection('friendPublicProfiles').doc(peer).get().then(p=>{
+     if(generation!==inboxGeneration)return;
+     if(p.exists&&p.data()?.sharedName){friendNames.set(peer,String(p.data().sharedName).slice(0,100));updateInbox();}
+    }).catch(()=>{});
+   }
+  });
+  for(const [id,unsubscribe] of inboxDocs){
+   if(desired.has(id))continue;
+   unsubscribe();inboxDocs.delete(id);incoming.delete(id);
+  }
+  for(const [id,{peer,game}] of desired){
+   if(inboxDocs.has(id))continue;
+   const unsubscribe=db.collection('arcadeInvites').doc(id).onSnapshot(s=>{
+    if(generation===inboxGeneration)onIncoming(id,peer,game,s);
+   },e=>{
+    if(generation===inboxGeneration)console.warn('Không thể nhận thông báo lời mời:',e);
+   });
+   inboxDocs.set(id,unsubscribe);
+  }
+  updateInbox();
+ },e=>console.warn('Không thể theo dõi bạn bè để nhận lời mời:',e));
+}
+function initInbox(){
+ const wrap=document.createElement('div');wrap.id='vqcInviteRoot';
+ wrap.innerHTML='<button type="button" id="vqcInviteBell" class="vqc-invite-bell" hidden aria-label="Lời mời thi đấu">🔔 <span id="vqcInviteCount" hidden>0</span></button><section id="vqcInvitePanel" class="vqc-invite-panel" hidden aria-label="Thông báo lời mời"><div class="vqc-invite-header"><strong>🔔 Lời mời thi đấu</strong><button type="button" id="vqcInviteClose">✕</button></div><div id="vqcInviteList"></div><p id="vqcInviteFeedback" aria-live="polite"></p></section><section id="vqcInviteToast" class="vqc-invite-toast" role="status" hidden><p id="vqcInviteToastText"></p><div class="vqc-invite-actions"><button type="button" id="vqcInviteToastAccept" class="accept">✓ Nhận lời</button><button type="button" id="vqcInviteToastDecline">Từ chối</button><button type="button" id="vqcInviteToastLater">Để sau</button></div></section>';
+ document.body.appendChild(wrap);
+ $('vqcInviteBell').addEventListener('click',()=>{$('vqcInvitePanel').hidden=!$('vqcInvitePanel').hidden;$('vqcInviteToast').hidden=true;});
+ $('vqcInviteClose').addEventListener('click',()=>{$('vqcInvitePanel').hidden=true;});
+ $('vqcInviteToastLater').addEventListener('click',()=>{$('vqcInviteToast').hidden=true;});
+ if(typeof auth!=='undefined'&&auth.onAuthStateChanged)auth.onAuthStateChanged(user=>user?startInbox(user.uid):stopInbox());
+ window.addEventListener('vqc:account-change',()=>{const user=uid();if(user)startInbox(user);else stopInbox();});
+}
+
 function init(){
  const el=document.createElement('div');el.id='vqcOnlineLobby';el.className='vqc-online-overlay';el.hidden=true;
  el.innerHTML='<section class="vqc-online-dialog" role="dialog" aria-modal="true" aria-labelledby="vqcOnlineTitle"><div class="vqc-arcade-head"><h2 id="vqcOnlineTitle">🌐 Đấu trực tuyến</h2><button type="button" id="vqcOnlineClose">✕ Đóng</button></div><p>Hai bạn cần kết bạn và đăng nhập trên thiết bị riêng. Người gửi lời mời cầm Trắng; người nhận cầm Đen.</p><p id="vqcOnlineStatus" aria-live="polite"></p><div id="vqcOnlineFriends"></div><small>Bạn có thể đóng cửa sổ rồi quay lại để tiếp tục ván đấu.</small></section>';
@@ -142,6 +253,7 @@ function init(){
  el.addEventListener('click',e=>{if(e.target===el)hideLobby();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el.hidden)hideLobby();});
  window.addEventListener('vqc:account-change',()=>{hideLobby();leave();});
+ initInbox();
 }
 window.vqcArcadeOnline={lobby,submit,leave};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
