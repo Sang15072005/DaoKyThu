@@ -9,7 +9,7 @@ const bridge=()=>window.vqcArcadeOnlineBridge;
 const label=i=>i===0?'♟️ Trò chơi Tốt':'♞ Mã chống Tốt';
 let lobbyUnsub=null,inviteUnsubs=[],matchUnsub=null,matchRef=null,matchSnapshot=null,friendList=[],kind=0,other='',token=0,pending=false;
 let inboxUnsub=null,inboxDocs=new Map(),incoming=new Map(),seen=new Set(),inboxUid='',inboxGeneration=0;
-const friendNames=new Map();
+const friendNames=new Map(),awaitingAcceptance=new Set();
 const key=(u,v,k)=>pair(u,v)+'_'+k;
 function status(msg){if($('vqcOnlineStatus'))$('vqcOnlineStatus').textContent=msg;}
 function initial(k){
@@ -40,6 +40,7 @@ async function sendInvite(otherId){
   const payload={members:[mine,otherId].sort(),from:mine,game:kind,status:'pending',at:stamp()};
   if(old.exists&&old.data()?.status==='pending'&&old.data()?.from!==mine)throw Error('Bạn đã có lời mời từ người này. Hãy nhận lời hoặc từ chối trước.');
   if(old.exists)await ref.update(payload);else await ref.set(payload);
+  awaitingAcceptance.add(id);
   status('Đã gửi lời mời '+label(kind)+'. Chờ bạn đồng ý.');
  }catch(e){status('⚠️ '+alertError(e));}finally{pending=false;}
 }
@@ -113,6 +114,11 @@ function renderFriends(){
     info.textContent='⏳ Đang chờ bạn nhận lời';
    }else if(inv?.status==='accepted'){
     info.textContent='♟️ Lời mời đã được chấp nhận';
+    const inviteId=key(uid(),peer,kind);
+    if(awaitingAcceptance.has(inviteId)){
+     awaitingAcceptance.delete(inviteId);
+     enterMatch(peer,kind).catch(e=>status('⚠️ '+alertError(e)));
+    }
     actions.append(makeButton('Vào bàn đấu',()=>enterMatch(peer,kind).catch(e=>status('⚠️ '+alertError(e))),'accept'),makeButton('Thách đấu lại',()=>sendInvite(peer)));
    }else{
     info.textContent='Sẵn sàng thi đấu';
@@ -198,7 +204,7 @@ function onIncoming(id,peer,game,snap){
  updateInbox();
 }
 function stopInbox(){
- inboxGeneration++;
+ awaitingAcceptance.clear();inboxGeneration++;
  if(inboxUnsub){inboxUnsub();inboxUnsub=null;}
  for(const unsub of inboxDocs.values())unsub();
  inboxDocs.clear();incoming.clear();friendNames.clear();seen.clear();inboxUid='';
