@@ -108,7 +108,7 @@ function renderFriends(){
    const inv=s.data();actions.replaceChildren();
    if(inv?.status==='pending'&&inv.from!==uid()){
     info.textContent='⚔️ Bạn đang được mời chơi '+label(kind);
-    actions.append(makeButton('✓ Nhận lời',()=>respond(peer,true),'accept'),makeButton('Từ chối',()=>respond(peer,false)));
+    actions.append(makeButton('✓ Nhận lời',()=>respond(peer,true).catch(e=>status('⚠️ '+alertError(e))),'accept'),makeButton('Từ chối',()=>respond(peer,false).catch(e=>status('⚠️ '+alertError(e)))));
    }else if(inv?.status==='pending'){
     info.textContent='⏳ Đang chờ bạn nhận lời';
    }else if(inv?.status==='accepted'){
