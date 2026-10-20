@@ -99,14 +99,14 @@ async function send(){
  if(sending||!user||!other||blocked||peerBlocked||!text)return;
  if(text.length>500){status('Tin nhắn tối đa 500 ký tự.');return;}
  if(Date.now()-lastSent<2000){status('Hãy chờ 2 giây giữa các tin nhắn.');return;}
- sending=true;setComposer();
+ sending=true;setComposer();let sendError='';
  try{
   const id=pair(user,other),f=await db.collection('friendships').doc(id).get();
   if(f.data()?.status!=='accepted')throw Error('Không còn là bạn bè.');
   await db.collection('friendChats').doc(id).collection('messages').add({from:user,text,at:firebase.firestore.FieldValue.serverTimestamp()});
   lastSent=Date.now();if(friend===other)input.value='';
- }catch(e){status('⚠️ Không gửi được: '+(e.code==='permission-denied'?'Quy tắc Firestore chưa cập nhật, hoặc người nhận đã chặn bạn.':e.message));}
- finally{sending=false;setComposer();}
+ }catch(e){sendError='⚠️ Không gửi được: '+(e.code==='permission-denied'?'Quy tắc Firestore chưa cập nhật, hoặc người nhận đã chặn bạn.':e.message);}
+ finally{sending=false;setComposer();if(sendError)status(sendError);}
 }
 async function toggleBlock(){
  const user=uid(),other=friend;if(!user||!other)return;
