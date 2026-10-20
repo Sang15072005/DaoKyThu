@@ -54,7 +54,7 @@ async function respond(otherId,accept,gameKind=kind){
   });
   status(accept?'Đã nhận lời. Đang vào bàn đấu…':'Đã từ chối lời mời.');
   if(accept)await enterMatch(otherId,gameKind);
- }catch(e){status('⚠️ '+alertError(e));}finally{pending=false;}
+ }catch(e){status('⚠️ '+alertError(e));throw e;}finally{pending=false;}
 }
 async function enterMatch(otherId,k){
  const mine=uid();if(!mine||!otherId)return;
@@ -170,7 +170,7 @@ async function acceptFromInbox(item,accept){
   await respond(item.peer,accept,item.game);
   feedback.textContent=accept?'Đã nhận lời. Đang mở bàn đấu.':'Đã từ chối lời mời.';
   if(accept)$('vqcInvitePanel').hidden=true;
- }catch(e){feedback.textContent='⚠️ '+alertError(e);}
+ }catch(e){feedback.textContent='⚠️ '+alertError(e);$('vqcInvitePanel').hidden=false;}
 }
 function onIncoming(id,peer,game,snap){
  if(!inboxUid)return;
