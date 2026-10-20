@@ -63,7 +63,7 @@ function move(from,to,promotion){
   if(!allMoves(turn).length)ended='🏁 Ván kết thúc: '+(turn==='w'?'Trắng':'Đen')+' không còn nước đi hợp lệ.';
  }
  if(mode==='online'){
-  onlineBusy=true;render();window.vqcArcadeOnline?.submit(previousState,state(),from,to).catch(e=>{applyOnline(previousState);$('vqcArcadeStatus').textContent='⚠️ '+(e.message||e);});
+  onlineBusy=true;render();window.vqcArcadeOnline?.submit(previousState,state(),from,to).catch(e=>{const latest=window.vqcArcadeOnline?.latestState?.();applyOnline(latest||previousState);$('vqcArcadeStatus').textContent='⚠️ '+(e.message||e);});
  }else{render();queueBot();}return true;
 }
 function promote(piece){
