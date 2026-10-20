@@ -38,6 +38,7 @@ async function sendInvite(otherId){
   const ref=db.collection('arcadeInvites').doc(id);
   const old=await ref.get();
   const payload={members:[mine,otherId].sort(),from:mine,game:kind,status:'pending',at:stamp()};
+  if(old.exists&&old.data()?.status==='pending'&&old.data()?.from!==mine)throw Error('Bạn đã có lời mời từ người này. Hãy nhận lời hoặc từ chối trước.');
   if(old.exists)await ref.update(payload);else await ref.set(payload);
   status('Đã gửi lời mời '+label(kind)+'. Chờ bạn đồng ý.');
  }catch(e){status('⚠️ '+alertError(e));}finally{pending=false;}
@@ -184,11 +185,16 @@ function onIncoming(id,peer,game,snap){
    const toast=$('vqcInviteToast');if(toast){
     $('vqcInviteToastText').textContent=(friendNames.get(peer)||'Một người bạn')+' mời bạn chơi '+label(game)+'.';
     toast.hidden=false;
+    $('vqcInviteToastAccept').dataset.inviteId=id;
     $('vqcInviteToastAccept').onclick=()=>acceptFromInbox({id,peer,game},true);
     $('vqcInviteToastDecline').onclick=()=>acceptFromInbox({id,peer,game},false);
    }
   }
- }else incoming.delete(id);
+ }else{
+  incoming.delete(id);
+  const toast=$('vqcInviteToast');
+  if(toast&&!toast.hidden&&$('vqcInviteToastAccept')?.dataset.inviteId===id)toast.hidden=true;
+ }
  updateInbox();
 }
 function stopInbox(){
