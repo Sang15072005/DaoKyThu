@@ -266,6 +266,7 @@ service cloud.firestore {
     && id==arcadeInviteId(resource.data)
     && (
       (request.auth.uid==request.resource.data.from
+       && (resource.data.status!='pending' || resource.data.from==request.auth.uid)
        && request.resource.data.keys().hasOnly(['members','from','game','status','at','respondedAt'])
        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['from','status','at','respondedAt'])
        && request.resource.data.status=='pending'
