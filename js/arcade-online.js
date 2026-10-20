@@ -69,12 +69,13 @@ async function enterMatch(otherId,k){
  });
  hideLobby();leave();other=otherId;matchRef=ref;
  const myToken=token;
+ let firstSnapshot=true;
  matchUnsub=ref.onSnapshot(snap=>{
   if(myToken!==token)return;
   if(!snap.exists){bridge()?.showError('Đang chờ bàn đấu được tạo.');return;}
   const d=snap.data();matchSnapshot=d;
   const color=d.white===uid()?'w':'b';
-  if(!bridge()?.isOnline())bridge()?.openMatch(k,color,d);
+  if(firstSnapshot||!bridge()?.isOnline()){firstSnapshot=false;bridge()?.openMatch(k,color,d);}
   else bridge()?.applyOnline(d);
  },e=>bridge()?.showError('⚠️ '+alertError(e)));
 }
