@@ -1,3 +1,21 @@
+# CẬP NHẬT: PHƯƠNG ÁN FIREBASE SPARK (23/10/2026)
+
+**Đây là phương án đang được sử dụng.** Mục hướng dẫn Cloud Functions phía dưới chỉ là phương án cũ, không áp dụng cho Spark.
+
+- Đã cấu hình UID quản trị viên trong Firestore Rules và giao diện quản trị.
+- Không cần Firebase Cloud Functions, không cần Blaze và không cần cấu hình functions/.env.
+- Firestore Rules bảo vệ quyền cấp, thu hồi và ghi audit.
+- Đăng nhập bằng đúng tài khoản có UID quản trị, mở 👑 Gói thành viên, tìm người dùng bằng UID hoặc mã tài khoản, chọn thời hạn, cấp hoặc thu hồi.
+- Các chức năng trả phí nâng cao chưa xây dựng vẫn chưa tự động mở khóa.
+- **Cần Publish Firestore Rules mới lên Firebase** (commit GitHub không tự cập nhật rules). Trên Firebase Console -> Firestore Database -> Rules, sao chép toàn bộ firestore.rules trong GitHub rồi Publish, hoặc chạy:
+
+    firebase deploy --only firestore:rules --project hoccovua-1f26d
+
+- Kiểm tra bằng hai tài khoản: chủ sở hữu cấp thành công; tài khoản khác không thể ghi membershipEntitlements hoặc membershipAudit.
+- Không chia sẻ UID quản trị viên như một loại mật khẩu; bảo vệ tài khoản Firebase bằng mật khẩu mạnh và xác thực nhiều yếu tố khi có thể.
+
+---
+
 # Đảo Kỳ Thủ — Dùng thử thành viên 7 ngày
 
 ## Đã triển khai
