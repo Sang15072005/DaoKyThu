@@ -67,11 +67,16 @@ function init(){
  select.addEventListener('change',()=>{prefs.piece=select.value;save();});
  panel.appendChild(select);
  const toggles=[];
- [['coordinates','Hiển thị tọa độ bàn cờ'],['hints','Hiển thị chấm gợi ý nước đi'],['lastmove','Đánh dấu nước đi vừa thực hiện']].forEach(([key,title])=>{
+ [['coordinates','Hiển thị tọa độ bàn cờ'],['hints','Hiển thị chấm gợi ý nước đi'],['lastmove','Làm nổi nước đi cuối cùng']].forEach(([key,title])=>{
   const line=el('label',{class:'vqc-appearance-check'});
   const input=el('input',{type:'checkbox'});input.checked=prefs[key];
   input.addEventListener('change',()=>{prefs[key]=input.checked;save();});
-  line.append(input,el('span',{},title));panel.appendChild(line);toggles.push([key,input]);
+  if(key==='lastmove'){
+   const description=el('span',{class:'vqc-appearance-check__copy'});
+   description.append(el('strong',{},title),el('small',{},'Xem nước đi gần nhất: làm nổi bật ô xuất phát và ô đích trên bàn cờ ở mọi chế độ.'));
+   line.append(input,description);
+  }else line.append(input,el('span',{},title));
+  panel.appendChild(line);toggles.push([key,input]);
  });
  const actions=el('div',{class:'vqc-appearance-actions'});
  const reset=el('button',{type:'button'},'Mặc định');
