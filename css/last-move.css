@@ -1,67 +1,37 @@
-/* Unified last move overlay. The underlying square theme and piece images remain intact. */
+/* One last-move highlight system for classroom, puzzles, computer play and PvP.
+   Markers are coordinates, not move legality or progress data. */
 :root{
- --vqc-last-move-from:rgba(255,218,75,.37);
- --vqc-last-move-to:rgba(244,195,49,.55);
+ --vqc-last-move-from:rgba(255,218,75,.38);
+ --vqc-last-move-to:rgba(244,195,49,.56);
 }
 :root[data-vqc-board-theme="night"]{
  --vqc-last-move-from:rgba(255,208,71,.48);
- --vqc-last-move-to:rgba(255,188,46,.62);
+ --vqc-last-move-to:rgba(255,188,46,.64);
 }
-:is(.board,.mate-board,.mate3-board,.pvp-board,
- .capture-board,.freecapture-board,.defense-board,.checkone-board,
- .escape-board,.pawn-game-board,.vqc-lonemate-board,
- .vqc-arcade-board,.vqc-duel-board,.vqc-adventure-board)
- > .vqc-last-from{
+/* Generic selectors also cover newly added 8x8 chess boards. */
+:root:not([data-vqc-lastmove="off"]) .vqc-last-from{
  background-image:linear-gradient(var(--vqc-last-move-from),var(--vqc-last-move-from))!important;
- background-repeat:no-repeat!important;
  background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
 }
-:is(.board,.mate-board,.mate3-board,.pvp-board,
- .capture-board,.freecapture-board,.defense-board,.checkone-board,
- .escape-board,.pawn-game-board,.vqc-lonemate-board,
- .vqc-arcade-board,.vqc-duel-board,.vqc-adventure-board)
- > .vqc-last-to{
+:root:not([data-vqc-lastmove="off"]) .vqc-last-to{
  background-image:linear-gradient(var(--vqc-last-move-to),var(--vqc-last-move-to))!important;
- background-repeat:no-repeat!important;
  background-size:100% 100%!important;
+ background-repeat:no-repeat!important;
 }
-/* Off controls *all* practice modes, online matches and the main board. */
-:root[data-vqc-lastmove="off"] .vqc-last-from,
-:root[data-vqc-lastmove="off"] .vqc-last-to{
+:root[data-vqc-lastmove="off"] :is(.vqc-last-from,.vqc-last-to){
  background-image:none!important;
 }
-:root[data-vqc-lastmove="off"] .board > .last{
- box-shadow:none!important;
+/* The old green move outline should not compete with the new filled squares. */
+.board > .square.last:not(.selected){box-shadow:none!important;}
+/* Selecting a piece continues to show the existing yellow selection outline. */
+.board > .square.last.selected{
+ box-shadow:inset 0 0 0 6px rgba(255,196,0,.95)!important;
 }
 .vqc-appearance-check .vqc-appearance-check__copy{
- display:flex;
- flex:1;
- flex-direction:column;
- gap:3px;
- min-width:0;
+ display:flex;flex:1;flex-direction:column;gap:3px;min-width:0;
 }
-.vqc-appearance-check .vqc-appearance-check__copy strong{
- font-size:14px;line-height:1.3;
-}
+.vqc-appearance-check .vqc-appearance-check__copy strong{font-size:14px;line-height:1.3;}
 .vqc-appearance-check .vqc-appearance-check__copy small{
- font-size:12px;line-height:1.4;
- font-weight:400;color:#64748b;
-}
-
-/* Replace the older green outline with the same two-square highlight in all modes.
-   Preserve the selection outline so pupils can still see which piece is selected. */
-:root[data-vqc-lastmove="on"] .board > .last:not(.selected){
- box-shadow:none!important;
-}
-:root[data-vqc-lastmove="off"] .board > .last:not(.selected){
- box-shadow:none!important;
-}
-:root[data-vqc-lastmove="off"] .vqc-last-from,
-:root[data-vqc-lastmove="off"] .vqc-last-to{
- background-image:none!important;
-}
-
-/* A selected square should keep its selection ring, even if it was just played. */
-.board > .square.selected.last{
- box-shadow:inset 0 0 0 6px rgba(255,196,0,.95)!important;
+ font-size:12px;line-height:1.4;font-weight:400;color:#64748b;
 }
