@@ -21,7 +21,9 @@ service cloud.firestore {
      && request.resource.data.keys().hasOnly(['plan','startedAt','endsAt','cancelled','cancelledAt'])
      && request.resource.data.plan == (teacher() ? 'teacher_pro' : 'premium')
      && request.resource.data.startedAt == request.time
-     && request.resource.data.endsAt == request.time + duration.value(7,'d')
+     && request.resource.data.endsAt is timestamp
+     && request.resource.data.endsAt >= request.time + duration.value(7,'d') - duration.value(5,'m')
+     && request.resource.data.endsAt <= request.time + duration.value(7,'d') + duration.value(5,'m')
      && request.resource.data.cancelled == false
      && request.resource.data.cancelledAt == null;
    allow update: if active() && request.auth.uid==uid
