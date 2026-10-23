@@ -1,1 +1,27 @@
 .vqc-membership-overlay[hidden]{display:none!important}.vqc-membership-overlay{position:fixed;inset:0;z-index:999999;background:rgba(4,12,30,.78);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}.vqc-membership-modal{box-sizing:border-box;width:min(520px,100%);max-height:92dvh;overflow:auto;background:linear-gradient(150deg,#f9fcff,#e8f2ff);border:2px solid #88afea;border-radius:22px;padding:20px;color:#192b45;box-shadow:0 20px 70px #0007}.vqc-membership-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.vqc-membership-head h2{font-size:clamp(19px,5vw,26px);margin:0}.vqc-membership-card{background:#fff;border:1px solid #c8ddf9;border-radius:16px;padding:16px;display:grid;gap:10px}.vqc-membership-card>strong{font-size:24px;color:#17488e}.vqc-membership-card>span{font-size:14px;color:#51637a}.vqc-membership-card ul{padding-left:22px;margin:4px 0}.vqc-membership-card p{margin:3px 0}.vqc-membership-card button{min-height:42px}.vqc-membership-sub{line-height:1.5}.vqc-membership-small{font-size:12px;line-height:1.55;color:#566e89}@media(max-width:420px){.vqc-membership-modal{padding:14px;border-radius:16px}}
+/* Mobile membership dialog: fit the visual viewport, safe areas, and touch targets. */
+.vqc-membership-modal,.vqc-membership-modal *{box-sizing:border-box}
+.vqc-membership-modal{overscroll-behavior:contain}
+.vqc-membership-head{position:sticky;top:0;z-index:2;background:#f4f9ff;padding:6px 0 12px}
+.vqc-membership-head button{flex:0 0 auto;min-width:44px;min-height:44px}
+#vqcMembershipAdmin{margin-top:16px}
+#vqcMembershipAdmin[hidden]{display:none!important}
+#vqcMembershipAdmin input,#vqcMembershipAdmin select{max-width:100%;min-height:44px;font-size:16px;padding:9px;border:1px solid #aec6e6;border-radius:10px;background:white;color:#192b45}
+#vqcMembershipAdmin button{min-height:44px;margin:4px}
+.vqc-admin-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.vqc-admin-row input{flex:1 1 180px;min-width:0}
+@media(max-width:600px){
+ .vqc-membership-overlay{padding:0!important;align-items:flex-end!important;justify-content:center!important;overflow:hidden!important}
+ .vqc-membership-modal{width:100%;max-width:none;height:auto;min-height:0;max-height:100dvh;border-radius:20px 20px 0 0;border:0;border-top:2px solid #88afea;padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+ .vqc-membership-head{margin:-2px 0 8px;padding:8px 0 12px}
+ .vqc-membership-head h2{font-size:clamp(19px,5.5vw,24px);line-height:1.25;overflow-wrap:anywhere}
+ .vqc-membership-card{padding:15px 13px;border-radius:15px;gap:8px}
+ .vqc-membership-card>strong{font-size:21px}
+ .vqc-membership-card ul{padding-left:20px}
+ .vqc-membership-card button{width:100%;min-height:48px;font-size:16px}
+ .vqc-membership-sub{margin:6px 0 14px}
+ #vqcMembershipAdmin{overflow-wrap:anywhere}
+ #vqcMembershipAdmin input,#vqcMembershipAdmin select,#vqcMembershipAdmin button{width:100%;margin:3px 0}
+ .vqc-admin-row{display:grid;grid-template-columns:1fr}
+}
+@media(max-width:360px){.vqc-membership-modal{padding-left:11px;padding-right:11px}.vqc-membership-head h2{font-size:18px}}
