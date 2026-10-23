@@ -68,19 +68,19 @@ function defenseNewTaskAccepted(before,after,from,to){
 function defenseTaskRange(){return defenseIndex<DEFENSE_TASKS.length?[0,DEFENSE_TASKS.length]:[DEFENSE_TASKS.length,DEFENSE_ALL_TASKS.length];}
 function defenseOpenNew(i=0){defenseOpen(DEFENSE_TASKS.length+i);}
 
-let defenseIndex=0,defensePosition={},defenseSelected=null,defenseSolved=false,defenseThreats=false;
+let defenseIndex=0,defensePosition={},defenseSelected=null,defenseSolved=false,defenseThreats=false,defenseLastMove=null;
 const defenseDone=new Set();let vqcDefenseLastReceived='';
 function defenseOpen(i){defenseIndex=((i%DEFENSE_ALL_TASKS.length)+DEFENSE_ALL_TASKS.length)%DEFENSE_ALL_TASKS.length;vqcCloseOtherViews('defense');defenseReset();document.getElementById('defenseOverlay').classList.add('open');document.getElementById('vqcHomeHero')?.setAttribute('hidden','');vqcBroadcastView('defense',defenseIndex);vqcPublishDefense();}
 function defenseClose(){document.getElementById('defenseOverlay').classList.remove('open');vqcBroadcastView('board');}
-function defenseReset(){defensePosition={...defenseCurrentTask().pieces};defenseSelected=null;defenseSolved=false;defenseThreats=false;document.getElementById('defenseInstruction').textContent=defenseCurrentTask().tip;document.getElementById('defenseFeedback').hidden=true;defenseRender();vqcPublishDefense();}
+function defenseReset(){defenseLastMove=null;defensePosition={...defenseCurrentTask().pieces};defenseSelected=null;defenseSolved=false;defenseThreats=false;document.getElementById('defenseInstruction').textContent=defenseCurrentTask().tip;document.getElementById('defenseFeedback').hidden=true;defenseRender();vqcPublishDefense();}
 function defenseShowThreats(){defenseThreats=!defenseThreats;defenseRender();}
 function defenseRender(){
- const board=document.getElementById('defenseBoard');board.innerHTML='';
+ const board=document.getElementById('defenseBoard');window.vqcLastMove?.mark('defenseBoard',defenseLastMove?.from||null,defenseLastMove?.to||null);board.innerHTML='';
  const black=defenseCurrentSide()==='b';
  const ranks=black?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];
  const files=black?'hgfedcba':'abcdefgh';
  for(const r of ranks)for(const f of files){
-  const sq=f+r,p=defensePosition[sq],cell=document.createElement('div');
+  const sq=f+r,p=defensePosition[sq],cell=document.createElement('div');cell.dataset.square=sq;
   cell.className='defense-cell '+(('abcdefgh'.indexOf(f)+r)%2?'dark':'light')+(defenseSelected===sq?' selected':'');
   if(p)cell.innerHTML=pieceSvgMarkup(p);
   if(defenseSelected&&defensePosition[defenseSelected]&&vqcExerciseLegalMove(defensePosition[defenseSelected],defenseSelected,sq,defensePosition)&&(!p||defenseIsEnemy(p)))cell.insertAdjacentHTML('beforeend',p?'<span class="capture-take-ring"></span>':'<span class="capture-move-dot"></span>');
@@ -154,7 +154,7 @@ function defenseClick(sq){
  // nếu quân ít điểm hơn của đối phương có thể ăn ngay, kể cả khi có yểm trợ.
  const unsafeMove=defenseIndex>=DEFENSE_TASKS.length&&defenseUnsafeTrade(sq,next);
  const accepted=!unsafeMove&&(defenseIndex<DEFENSE_TASKS.length?defenseIsSuccessful(before,next,from,sq):defenseNewTaskAccepted(before,next,from,sq));
- defensePosition=next;defenseSelected=null;
+ defensePosition=next;defenseSelected=null;defenseLastMove={from,to:sq};
  const fb=document.getElementById('defenseFeedback');fb.hidden=false;
  if(accepted){
   defenseSolved=true;defenseDone.add(defenseIndex);
@@ -174,5 +174,5 @@ function defenseClick(sq){
  }
  defenseRender();vqcPublishDefense();
 }
-function vqcPublishDefense(){if(typeof vqcExerciseWrite!=='function'||!roomRef||vqcApplyingExercise||vqcNavApplying)return;vqcExerciseWrite('defenseExercise',{index:defenseIndex,position:{...defensePosition},solved:defenseSolved,done:[...defenseDone],instruction:document.getElementById('defenseInstruction').textContent,feedback:document.getElementById('defenseFeedback').innerHTML,feedbackClass:document.getElementById('defenseFeedback').className,feedbackHidden:document.getElementById('defenseFeedback').hidden});}
-function vqcReceiveDefense(d){if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=DEFENSE_ALL_TASKS.length)return;const key=JSON.stringify(d);if(key===vqcDefenseLastReceived)return;vqcDefenseLastReceived=key;vqcApplyingExercise=true;try{defenseIndex=d.index;defensePosition={...d.position};defenseSelected=null;defenseSolved=!!d.solved;defenseDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x))defenseDone.add(x)});document.getElementById('defenseInstruction').textContent=d.instruction||DEFENSE_ALL_TASKS[d.index].tip;const fb=document.getElementById('defenseFeedback');fb.innerHTML=d.feedback||'';fb.className=d.feedbackClass||'defense-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('defenseOverlay').classList.contains('open'))defenseRender();}finally{vqcApplyingExercise=false;}}
+function vqcPublishDefense(){if(typeof vqcExerciseWrite!=='function'||!roomRef||vqcApplyingExercise||vqcNavApplying)return;vqcExerciseWrite('defenseExercise',{index:defenseIndex,position:{...defensePosition},solved:defenseSolved,lastMove:defenseLastMove,done:[...defenseDone],instruction:document.getElementById('defenseInstruction').textContent,feedback:document.getElementById('defenseFeedback').innerHTML,feedbackClass:document.getElementById('defenseFeedback').className,feedbackHidden:document.getElementById('defenseFeedback').hidden});}
+function vqcReceiveDefense(d){if(!d||d.clientId===vqcExerciseClientId||!d.position||!Number.isInteger(d.index)||d.index<0||d.index>=DEFENSE_ALL_TASKS.length)return;const key=JSON.stringify(d);if(key===vqcDefenseLastReceived)return;vqcDefenseLastReceived=key;vqcApplyingExercise=true;try{defenseIndex=d.index;defensePosition={...d.position};defenseLastMove=d.lastMove||null;defenseSelected=null;defenseSolved=!!d.solved;defenseDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x))defenseDone.add(x)});document.getElementById('defenseInstruction').textContent=d.instruction||DEFENSE_ALL_TASKS[d.index].tip;const fb=document.getElementById('defenseFeedback');fb.innerHTML=d.feedback||'';fb.className=d.feedbackClass||'defense-feedback';fb.hidden=!!d.feedbackHidden;if(document.getElementById('defenseOverlay').classList.contains('open'))defenseRender();}finally{vqcApplyingExercise=false;}}
