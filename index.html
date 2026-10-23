@@ -144,7 +144,7 @@
 
 
 
-<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" type="button" onclick="window.vqcOpenMembershipSafe()">👑 Gói thành viên</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
+<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" type="button" id="vqcMembershipLaunch" onclick="window.vqcOpenMembershipSafe()">👑 Gói thành viên</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
 
 
 
@@ -1310,11 +1310,19 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 </script>
 <script>
 /* Independent fallback: membership modal must open even if the optional membership module fails. */
+// Capture click before any global handler can swallow the membership button.
+document.addEventListener('click',function(ev){
+ const btn=ev.target.closest&&ev.target.closest('#vqcMembershipLaunch');
+ if(!btn)return;
+ ev.preventDefault();ev.stopImmediatePropagation();
+ window.vqcOpenMembershipSafe();
+},true);
 window.vqcOpenMembershipSafe=function(){
  const account=document.getElementById('accountOverlay');
  if(account&&window.accountProfile)account.classList.add('hidden');
  const dialog=document.getElementById('vqcMembershipDialog');
  if(!dialog){alert('Không tìm thấy giao diện Gói thành viên.');return;}
+ if(dialog.parentElement!==document.body)document.body.appendChild(dialog);
  dialog.hidden=false;
  dialog.style.display='flex';
  dialog.style.position='fixed';
@@ -1337,7 +1345,7 @@ window.vqcCloseMembershipSafe=function(){
  <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembershipSafe()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div><section id="vqcMembershipAdmin" hidden></section></div>
 </div>
 <link rel="stylesheet" href="./css/membership.css?v=20261023-4">
-<script src="./js/membership.js?v=20261023-6"></script>
+<script src="./js/membership.js?v=20261023-7"></script>
 <script src="./js/board-appearance.js?v=20261020-2"></script>
 </body>
 
