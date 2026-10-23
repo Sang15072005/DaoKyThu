@@ -220,3 +220,69 @@
  body.vqc-mobile-logged-in.vqc-mode-class > .header .room-box button{font-size:12px!important}
  .vqc-mobile-steps button{font-size:11px}
 }
+
+
+/* Phone-only: keep invitation bell and drawing controls off the bottom dock. */
+@media (max-width:760px) {
+  /* Invitations remain accessible via Thêm -> Lời mời thi đấu.
+     Unread invitations display a small badge on Thêm. */
+  body.vqc-mobile-logged-in #vqcInviteBell {
+    display:none!important;
+  }
+  body.vqc-mobile-logged-in:has(#vqcInviteCount:not([hidden]))
+     > .vqc-mobile-nav [data-vqc-mobile="more"]::after {
+    content:"";
+    position:absolute;
+    width:9px;height:9px;top:5px;right:17%;
+    background:#e54858;border:2px solid #fff;border-radius:50%;
+  }
+  body.vqc-mobile-logged-in .vqc-invite-panel {
+    bottom:calc(81px + env(safe-area-inset-bottom,0px))!important;
+    max-height:min(65dvh,520px)!important;
+    right:9px!important;
+    left:9px!important;
+    width:auto!important;
+  }
+
+  /* Collapse the annotation toolbar to one compact pencil when not needed. */
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar {
+    position:fixed!important;
+    bottom:calc(83px + env(safe-area-inset-bottom,0px))!important;
+    right:10px!important;left:auto!important;
+    z-index:7050!important;
+    width:auto!important;max-width:calc(100vw - 20px)!important;
+    padding:5px!important;gap:5px!important;
+    border-radius:14px!important;
+    box-shadow:0 4px 15px rgba(30,70,105,.26)!important;
+  }
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar button {
+    padding:7px 8px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+    font-size:12px!important;
+  }
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar
+      [data-vqc-annotation-toggle] {
+    display:flex!important;
+    min-width:42px!important;
+    font-size:20px!important;
+    background:#eaf5ff!important;
+  }
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar:not(.vqc-mobile-annotation-expanded)
+      [data-action="draw"],
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar:not(.vqc-mobile-annotation-expanded)
+      [data-action="clear"],
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar .vqc-annotation-hint {
+    display:none!important;
+  }
+  body.vqc-mobile-logged-in #vqcAnnotationToolbar:has([data-action="draw"].is-active)
+      [data-vqc-annotation-toggle] {
+    background:#d8f7e2!important;
+    border-color:#67bb85!important;
+  }
+  /* Lower-priority floating notifications should stay above the dock too. */
+  body.vqc-mobile-logged-in .vqc-coin-toast,
+  body.vqc-mobile-logged-in .vqc-reward-toast {
+    bottom:calc(85px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
