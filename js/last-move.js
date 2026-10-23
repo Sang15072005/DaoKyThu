@@ -30,7 +30,7 @@
  }
  function piece(cell){
   if(cell.dataset?.vqcPiece!==undefined)return String(cell.dataset.vqcPiece||'');
-  const img=cell.querySelector('img.chess-piece-img,img:not(.vqc-annotation-overlay img)');
+  const img=cell.querySelector('img');
   if(img)return 'img:'+String(img.getAttribute('src')||img.getAttribute('alt')||'');
   const holder=cell.querySelector('.piece,.vqc-adventure-piece,.vqc-lonemate-piece');
   if(holder)return 'piece:'+holder.innerHTML;
