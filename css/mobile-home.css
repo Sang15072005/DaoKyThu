@@ -1,3 +1,6 @@
+/* The extra drawing-tools toggle is never shown on desktop. */
+#vqcAnnotationToolbar [data-vqc-annotation-toggle]{display:none!important}
+
 /* Mobile-only layout for Dao Ky Thu.
    Desktop layout and existing chess logic are deliberately untouched. */
 .vqc-mobile-nav,.vqc-mobile-sheet,#vqcMobileLessonsShortcut{display:none}
