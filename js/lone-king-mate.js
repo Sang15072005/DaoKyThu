@@ -4,18 +4,18 @@
 (function(){
  'use strict';
  const LEVELS=[
-  {name:'2 Xe',pieces:'Vua + 2 Xe',fen:'8/4k3/8/8/8/8/8/R3K2R w - - 0 1',
-   advice:'Phối hợp hai Xe thu hẹp từng hàng. Đừng để Vua đen bắt Xe.'},
-  {name:'Hậu và Xe',pieces:'Vua + Hậu + Xe',fen:'8/7k/8/8/8/8/8/R2QK3 w - - 0 1',
-   advice:'Dùng Hậu và Xe khóa đường thoát, nhưng nhớ chừa một ô cho Vua đen trước nước chiếu hết.'},
-  {name:'1 Xe',pieces:'Vua + Xe',fen:'8/7k/8/8/4K3/8/8/R7 w - - 0 1',
-   advice:'Dùng Xe cắt đường đi của Vua đen. Đưa Vua trắng đến hỗ trợ, dồn Vua đen sát biên.'},
-  {name:'1 Hậu',pieces:'Vua + Hậu',fen:'7k/8/8/8/4K3/8/8/3Q4 w - - 0 1',
-   advice:'Hậu kiểm soát nhiều ô. Khi dồn Vua đen vào góc, tránh Pat: Vua đen phải còn nước đi nếu chưa bị chiếu.'},
-  {name:'2 Tượng',pieces:'Vua + 2 Tượng khác màu',fen:'7k/8/8/8/3K4/8/8/2B2B2 w - - 0 1',
-   advice:'Hai Tượng phải ở hai màu ô khác nhau. Vua trắng phối hợp để dồn Vua đen vào góc.'},
-  {name:'Tượng và Mã',pieces:'Vua + Tượng + Mã',fen:'7k/8/8/8/4K3/8/8/2B3N1 w - - 0 1',
-   advice:'Đây là thế chiếu hết khó: phối hợp Vua, Tượng và Mã, ép Vua đen tới góc cùng màu với Tượng.'}
+  {name:'2 Xe',pieces:'Vua + 2 Xe',fen:'8/8/8/4k3/8/8/8/R3K2R w - - 0 1',
+   advice:'Bước đầu, dùng một Xe cắt hàng hoặc cột; Xe còn lại phối hợp thu hẹp vùng di chuyển của Vua đen từng bước. Đừng để Vua đen bắt Xe.'},
+  {name:'Hậu và Xe',pieces:'Vua + Hậu + Xe',fen:'8/8/8/4k3/8/8/8/R2QK3 w - - 0 1',
+   advice:'Dùng Xe chia bàn cờ rồi phối hợp Hậu để thu hẹp vùng an toàn của Vua đen. Trước nước cuối, kiểm tra Pat và bảo vệ các quân.'},
+  {name:'1 Xe',pieces:'Vua + Xe',fen:'8/8/8/3k4/8/8/8/R3K3 w - - 0 1',
+   advice:'Dùng Xe cắt ngang hoặc dọc để hạn chế Vua đen từ trung tâm. Tiến Vua trắng đến gần, ép Vua đen ra mép bàn rồi chiếu hết.'},
+  {name:'1 Hậu',pieces:'Vua + Hậu',fen:'8/8/8/4k3/8/8/8/3QK3 w - - 0 1',
+   advice:'Hậu từng bước thu nhỏ hình chữ nhật an toàn của Vua đen. Đưa Vua trắng đến hỗ trợ; đặc biệt tránh Pat khi Vua đen bị dồn gần góc.'},
+  {name:'2 Tượng',pieces:'Vua + 2 Tượng khác màu',fen:'8/8/8/3k4/8/8/8/2B1KB2 w - - 0 1',
+   advice:'Hai Tượng khác màu phối hợp khống chế đường chéo. Đưa Vua trắng tiến lên, thu hẹp khoảng trống và dồn Vua đen vào góc.'},
+  {name:'Tượng và Mã',pieces:'Vua + Tượng + Mã',fen:'8/8/8/4k3/8/8/8/2B1K1N1 w - - 0 1',
+   advice:'Dạng khó nhất: dùng Vua, Tượng và Mã phối hợp khống chế ô, từ từ đuổi Vua đen ra biên rồi chuyển tới góc cùng màu với Tượng.'}
  ];
  const GLYPHS={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘'},b:{k:'♚'}};
  const SQUARES='abcdefgh';
@@ -35,6 +35,23 @@
  function roleName(){return typeof role!=='undefined'?role:window.accountProfile?.role;}
  function coordDistance(a,b){return Math.max(Math.abs(a.charCodeAt(0)-b.charCodeAt(0)),Math.abs(+a[1]- +b[1]));}
  function edgeDistance(s){const f=s.charCodeAt(0)-97,r=+s[1]-1;return Math.min(f,7-f,r,7-r);}
+ function blackKingSquare(){
+  if(!game)return null;
+  for(let rank=1;rank<=8;rank++)for(const file of SQUARES){
+   const sq=file+rank,p=game.get(sq);
+   if(p?.color==='b'&&p.type==='k')return sq;
+  }
+  return null;
+ }
+ function lessonStage(){
+  const sq=blackKingSquare();
+  if(!sq)return '';
+  const distance=edgeDistance(sq);
+  if(distance>=3)return 'Bước 1/4 · Vua đen ở trung tâm: bắt đầu khống chế các đường đi.';
+  if(distance===2)return 'Bước 2/4 · Vua đen rời trung tâm: tiếp tục thu hẹp vùng di chuyển.';
+  if(distance===1)return 'Bước 3/4 · Vua đen gần mép: phối hợp quân trắng để ép sát biên.';
+  return 'Bước 4/4 · Vua đen ở mép: tìm cách chiếu hết, chú ý tránh hòa Pat.';
+ }
  function display(){
   if(!game)return;
   const title=$('vqcLoneMateTitle'),sub=$('vqcLoneMateSubtitle'),board=$('vqcLoneMateBoard'),msg=$('vqcLoneMateMessage');
@@ -42,6 +59,7 @@
   title.textContent='♚ Chiếu hết Vua đơn độc — '+LEVELS[mode].name;
   sub.textContent='Dạng '+(mode+1)+'/6 · '+LEVELS[mode].pieces+' đối đầu Vua đen · Trắng đi trước';
   $('vqcLoneMateAdvice').textContent=LEVELS[mode].advice;
+  const stage=$('vqcLoneMateStage');if(stage)stage.textContent=lessonStage();
   const state=status();
   msg.textContent=feedback||state.message;
   msg.classList.toggle('vqc-lonemate-success',!!state.won);
@@ -225,6 +243,9 @@
    if(chess.turn()!=='w'||chess.in_check()||chess.in_stalemate()||chess.in_checkmate())throw Error('Bài tập không hợp lệ: '+level.name);
    const white=chess.board().flat().filter(p=>p&&p.color==='w'),black=chess.board().flat().filter(p=>p&&p.color==='b');
    if(black.length!==1||black[0].type!=='k'||white.filter(p=>p.type==='k').length!==1)throw Error('Bài tập không có Vua đơn độc: '+level.name);
+   const bks=SQUARES.flatMap(file=>[4,5].map(rank=>file+rank)).find(sq=>chess.get(sq)?.color==='b'&&chess.get(sq)?.type==='k');
+   if(!['d4','e4','d5','e5'].includes(bks))throw Error('Vua đen không bắt đầu ở trung tâm: '+level.name);
+   if(chess.in_draw())throw Error('Bài tập đang hòa ngay từ đầu: '+level.name);
    if(level.name==='2 Tượng'&&white.filter(p=>p.type==='b').length!==2)throw Error('Thiếu Tượng');
   }
   // One legal Pat and one legal checkmate regression case.
