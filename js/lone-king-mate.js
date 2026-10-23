@@ -133,7 +133,7 @@
   feedback='';display();publish();
  }
  function reset(publishState=true){
-  game=initial();selected=null;hint=null;feedback='';display();
+  game=initial();selected=null;hint=null;feedback='';syncedSignature='';display();
   if(publishState)publish();
  }
  function open(i=0,remote=false){
