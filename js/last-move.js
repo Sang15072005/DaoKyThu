@@ -165,6 +165,6 @@
   });
   observer.observe(document.body,{childList:true,subtree:true});
  }
- window.vqcLastMove={mark,clear,fromChess,fromUci,refresh:id=>{const board=document.getElementById(id);if(board)queue(board);}};
+ window.vqcLastMove={mark,clear,fromChess:lastFromChess,fromUci,refresh:id=>{const board=document.getElementById(id);if(board)queue(board);}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
