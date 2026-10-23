@@ -19,7 +19,7 @@
   const end=trial?.endsAt?.toMillis?.()||0;
   const remaining=Math.max(0,end-now);
   const ongoing=!!trial&&remaining>0;
-  const status=!trial?'Chưa sử dụng lần dùng thử':ongoing?'Đang dùng thử':'Đã kết thúc dùng thử';
+  const status=!trial?'Chưa sử dụng lần dùng thử':ongoing?(trial.cancelled?'Đã hủy · còn hiệu lực':'Đang dùng thử'):'Đã kết thúc dùng thử';
   const until=trial?.endsAt?.toDate?.().toLocaleString('vi-VN')||'';
   root.innerHTML='<p class="vqc-membership-sub">Cơ bản luôn miễn phí · Học Vùng 1–5, chơi cờ và tham gia lớp học vẫn hoạt động.</p>'+
   '<div class="vqc-membership-card"><strong>👑 '+cfg.label+'</strong><span>'+cfg.price+' (mức giá dự kiến, chưa thu phí)</span>'+
