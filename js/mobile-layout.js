@@ -169,7 +169,7 @@
         b.type = 'button'; b.textContent = option.label;
         b.addEventListener('click', () => {
           // Resolve the source button again: exercises can rerender their controls.
-          const real = Array.from(dialog.querySelectorAll('button:not(.vqc-mobile-steps button)'))
+          const real = Array.from(dialog.querySelectorAll('button'))
             .find(node => !node.closest('.vqc-mobile-steps') && option.pattern.test(node.textContent));
           if (real && !real.disabled) real.click();
         });
