@@ -110,13 +110,15 @@ function clickSquare(square){
 }
 function render(){
  if(!open)return;
+ const latestSquares=String(last).match(/[a-h][1-8]/g)||[];
+ window.vqcLastMove?.mark('vqcArcadeBoard',latestSquares[0]||null,latestSquares[1]||null);
  const board=$('vqcArcadeBoard');if(!board)return;
  const orientation=(mode==='computer'||mode==='online')&&human==='b'?!flipped:flipped;
  const f=orientation?'hgfedcba':'abcdefgh',r=orientation?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];
  const hints=selected?possible(selected):[];
  board.replaceChildren();
  for(let y=0;y<8;y++)for(let x=0;x<8;x++){
-  const square=f[x]+r[y],cell=document.createElement('button');cell.type='button';
+  const square=f[x]+r[y],cell=document.createElement('button');cell.type='button';cell.dataset.square=square;
   cell.className='vqc-arcade-cell '+((x+y)%2?'dark':'light')+(selected===square?' selected':'')+(hints.includes(square)?' hint':'');
   cell.setAttribute('aria-label',square+(pos[square]?' '+(letters[pos[square]]||'quân cờ'):''));
   if(pos[square])cell.innerHTML=typeof pieceSvgMarkup==='function'?pieceSvgMarkup(pos[square]):pos[square];
