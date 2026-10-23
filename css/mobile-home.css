@@ -1,6 +1,6 @@
 /* Mobile-only layout for Dao Ky Thu.
    Desktop layout and existing chess logic are deliberately untouched. */
-.vqc-mobile-nav,.vqc-mobile-sheet{display:none}
+.vqc-mobile-nav,.vqc-mobile-sheet,#vqcMobileLessonsShortcut{display:none}
 .vqc-mobile-sheet[hidden]{display:none!important}
 
 @media (max-width:760px){
