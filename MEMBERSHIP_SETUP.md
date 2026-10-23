@@ -31,3 +31,29 @@ Kiểm thử bằng Firebase Emulator hoặc Rules Playground trước khi áp d
 - Ngày còn lại chỉ để hiển thị; các quyền bảo vệ trong tương lai phải dùng thời gian máy chủ.
 - Mỗi UID có một lượt thử theo vai trò đang đăng nhập; hai lượt riêng cho cùng UID yêu cầu schema khác.
 - Không có thanh toán, gia hạn tự động hoặc trừ tiền.
+
+## Quản trị viên cấp Premium / Giáo viên Pro
+
+Đã thêm Firebase Callable Functions (functions/index.js):
+- membershipAdminCheck: xác nhận UID quản trị viên
+- membershipAdminLookup: tìm đúng UID hoặc mã tài khoản (code)
+- membershipAdminGrant: cấp mới/gia hạn 7 ngày, 30 ngày, 365 ngày hoặc không thời hạn
+- membershipAdminRevoke: thu hồi
+- Mọi thay đổi được ghi trong membershipAudit, người dùng không được tự ghi collection này hoặc membershipEntitlements.
+
+**QUAN TRỌNG: Không có quản trị viên mặc định.** Cần thiết lập UID Firebase Authentication của tài khoản chủ sở hữu trong biến môi trường MEMBERSHIP_ADMIN_UIDS tại thư mục functions/.env (KHÔNG COMMIT file này), ví dụ:
+
+    MEMBERSHIP_ADMIN_UIDS=YOUR_FIREBASE_AUTH_UID
+
+Đây là UID lấy từ Firebase Console > Authentication > Users, không phải mã học sinh. Có thể khai báo nhiều UID, phân cách dấu phẩy. Không cấp quyền bằng tên hiển thị hoặc email không xác minh.
+
+Để cài đặt và triển khai Functions (cần dự án Firebase đủ điều kiện hỗ trợ Cloud Functions, có thể phải bật billing):
+
+    cd functions
+    npm install
+    cd ..
+    firebase deploy --only functions,firestore:rules --project hoccovua-1f26d
+
+Tài khoản quản trị viên đăng nhập trên website sẽ thấy phần **Quản trị gói thành viên** trong mục **👑 Gói thành viên** sau khi Functions đã triển khai và UID nằm trong allowlist.
+
+**Giới hạn hiện tại:** Quyền cấp đã lưu an toàn trên Firestore và hiển thị cho người nhận; các chức năng Pro/Premium tương lai vẫn cần tích hợp kiểm tra entitlement ở phía server/rules trước khi mở khóa. Việc cấp quyền không thay đổi vai trò học sinh/giáo viên, không thu tiền, không tạo giao dịch thanh toán.
