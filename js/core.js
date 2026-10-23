@@ -2051,7 +2051,7 @@ const MATE_BOOK = [
 ];
 function mateBookMove(move){return !!(move&&MATE_BOOK[mateIndex]&&move.from+move.to===MATE_BOOK[mateIndex].first);}
 function mateChangeVariation(){/* Không dùng biến phụ. */}
-let mateChess=null,mateIndex=0,mateSelected=null,mateWhiteMoves=0,mateBusy=false,mateDone=false;
+let mateChess=null,mateIndex=0,mateSelected=null,mateWhiteMoves=0,mateBusy=false,mateDone=false,mateSyncedLastMove=null;
 function mateMessage(t){document.getElementById('mateMessage').textContent=t;}
 function mateCoords(i){return 'abcdefgh'[i%8]+(8-Math.floor(i/8));}
 function openMateExercises(i){
@@ -2065,14 +2065,15 @@ function closeMateExercises(){document.getElementById('mateOverlay').classList.r
 function matePrev(){openMateExercises(mateIndex-1);}
 function mateNext(){openMateExercises(mateIndex+1);}
 function mateReset(){
- const p=MATE_EXERCISES[mateIndex];mateChess=new Chess(p.fen);mateSelected=null;mateWhiteMoves=0;mateBusy=false;mateDone=false;
+ const p=MATE_EXERCISES[mateIndex];mateChess=new Chess(p.fen);mateSyncedLastMove=null;mateSelected=null;mateWhiteMoves=0;mateBusy=false;mateDone=false;
  document.getElementById('mateTitle').textContent='♔ Chiếu hết trong 2 nước — Bài '+(mateIndex+1)+'/10 (Hình '+p.num+')';
  
  mateMessage('Trắng đi trước. Hãy tìm nước đầu tiên của biến chính.');renderMateBoard();
 }
 function renderMateBoard(){
   if(!mateChess)return;
-  window.vqcLastMove?.fromChess('mateBoard',mateChess);
+  if(mateChess.history().length)window.vqcLastMove?.fromChess('mateBoard',mateChess);
+  else window.vqcLastMove?.mark('mateBoard',mateSyncedLastMove?.from||null,mateSyncedLastMove?.to||null);
   const el=document.getElementById('mateBoard');el.innerHTML='';
   const hints=mateSelected?mateChess.moves({square:mateSelected,verbose:true}).map(x=>x.to):[];
   for(let i=0;i<64;i++){
@@ -2115,13 +2116,13 @@ function mateHint(){
 }
 async function syncMateExercise(){
   if(!roomRef||!mateChess)return;
-  try{await roomRef.update({mateExercise:{index:mateIndex,fen:mateChess.fen(),whiteMoves:mateWhiteMoves,done:mateDone,actor:role},updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.warn('Chưa đồng bộ bài tập',e);}
+  try{await roomRef.update({mateExercise:{index:mateIndex,fen:mateChess.fen(),whiteMoves:mateWhiteMoves,done:mateDone,actor:role,lastMove:(()=>{const h=mateChess.history({verbose:true});return h.length?{from:h[h.length-1].from,to:h[h.length-1].to}:mateSyncedLastMove;})()},updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.warn('Chưa đồng bộ bài tập',e);}
 }
 function receiveMateExercise(data){
   if(!data||typeof Chess==='undefined')return;
   if(!Number.isInteger(data.index)||data.index<0||data.index>=10||typeof data.fen!=='string')return;
   if(!mateChess||mateIndex!==data.index||mateChess.fen()!==data.fen){
-    mateIndex=data.index;mateChess=new Chess(data.fen);mateWhiteMoves=data.whiteMoves||0;mateDone=!!data.done;mateSelected=null;
+    mateIndex=data.index;mateChess=new Chess(data.fen);mateSyncedLastMove=data.lastMove||null;mateWhiteMoves=data.whiteMoves||0;mateDone=!!data.done;mateSelected=null;
     document.getElementById('mateOverlay').classList.add('open');
     document.getElementById('mateTitle').textContent='♔ Chiếu hết trong 2 nước — Hình '+MATE_EXERCISES[mateIndex].num;
     renderMateBoard();mateMessage(mateDone?'Đã hoàn thành hoặc kết thúc lượt.':'Bàn cờ đang được đồng bộ từ thiết bị còn lại.');
