@@ -20,7 +20,7 @@
  const GLYPHS={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘'},b:{k:'♚'}};
  const SQUARES='abcdefgh';
  const $=id=>document.getElementById(id);
- let mode=0,game=null,selected=null,hint=null,isOpen=false,feedback='',syncedSignature='';
+ let mode=0,game=null,selected=null,hint=null,isOpen=false,feedback='',syncedSignature='',validationError=null;
  const initial=()=>new Chess(LEVELS[mode].fen);
  function status(){
   if(!game)return {done:true,message:''};
@@ -83,13 +83,12 @@
  }
  function evaluateBlackMove(move){
   game.move(move);
-  const whiteKing=game.board().flat().find(p=>p&&p.type==='k'&&p.color==='w');
   const whiteKingSquare=(()=>{
    for(let i=0;i<8;i++)for(let j=0;j<8;j++){
     const sq=SQUARES[j]+(8-i),p=game.get(sq);if(p&&p.color==='w'&&p.type==='k')return sq;
    }return 'e4';
   })();
-  const b=game.get(move.to),legalWhite=game.moves({verbose:true});
+  const legalWhite=game.moves({verbose:true});
   let mating=0,checks=0;
   for(const response of legalWhite){
    game.move(response);
@@ -113,7 +112,7 @@
   const ordered=moves.map(m=>({m,score:evaluateBlackMove(m)}))
    .sort((a,b)=>b.score-a.score||a.m.to.localeCompare(b.m.to));
   const chosen=ordered[0]?.m;
-  if(chosen)game.move({from:chosen.from,to:chosen.to,promotion:chosen.promotion||'q'});
+  if(chosen)game.move({from:chosen.from,to:chosen.to});
  }
  function clickSquare(square){
   if(!isOpen||!game||status().done)return;
@@ -127,7 +126,7 @@
   const options=game.moves({square:selected,verbose:true});
   const move=options.find(m=>m.to===square);
   if(!move){selected=null;feedback='Ô này không phải nước đi hợp lệ. Hãy chọn một quân trắng khác.';display();return;}
-  const result=game.move({from:move.from,to:move.to,promotion:move.promotion||'q'});
+  const result=game.move({from:move.from,to:move.to});
   selected=null;hint=null;
   if(!result){feedback='Nước đi không hợp lệ theo luật cờ vua.';display();return;}
   if(!status().done)defend();
@@ -139,6 +138,7 @@
  }
  function open(i=0,remote=false){
   if(typeof Chess!=='function'){alert('Chưa tải được chess.js. Hãy kiểm tra kết nối Internet và tải lại trang.');return;}
+  if(validationError){alert('Bài tập chưa vượt qua kiểm tra luật cờ: '+validationError);return;}
   const index=Number(i);
   if(!Number.isInteger(index)||index<0||index>=LEVELS.length)return;
   if(!remote&&inClass()&&roleName()==='student'){
@@ -160,20 +160,20 @@
  }
  function publish(){
   if(!isOpen||!inClass()||!game||typeof roomRef==='undefined')return;
-  const moves=game.history({verbose:true}).map(m=>({from:m.from,to:m.to,promotion:m.promotion||null}));
+  const moves=game.history({verbose:true}).map(m=>({from:m.from,to:m.to}));
   const state={mode,moves,stamp:Date.now()+'-'+Math.random().toString(36).slice(2,7)};
-  syncedSignature=mode+':'+moves.map(m=>m.from+m.to+(m.promotion||'')).join(',');
+  syncedSignature=mode+':'+moves.map(m=>m.from+m.to).join(',');
   roomRef.update({loneKingMateExercise:state})
    .catch(e=>console.warn('Không đồng bộ bài chiếu hết Vua đơn độc:',e));
  }
  function receive(data){
   if(!data||!isOpen||!game||data.mode!==mode||!Array.isArray(data.moves)||data.moves.length>220)return;
-  const signature=mode+':'+data.moves.map(m=>String(m.from)+String(m.to)+String(m.promotion||'')).join(',');
+  const signature=mode+':'+data.moves.map(m=>String(m.from)+String(m.to)).join(',');
   if(syncedSignature===signature)return;
   const replay=initial();
   for(const m of data.moves){
    if(!m||!(/^[a-h][1-8]$/.test(m.from))||!(/^[a-h][1-8]$/.test(m.to)))return;
-   if(!replay.move({from:m.from,to:m.to,promotion:m.promotion||'q'}))return;
+   if(!replay.move({from:m.from,to:m.to}))return;
   }
   game=replay;selected=null;hint=null;feedback='';syncedSignature=signature;display();
  }
@@ -227,9 +227,14 @@
    if(black.length!==1||black[0].type!=='k'||white.filter(p=>p.type==='k').length!==1)throw Error('Bài tập không có Vua đơn độc: '+level.name);
    if(level.name==='2 Tượng'&&white.filter(p=>p.type==='b').length!==2)throw Error('Thiếu Tượng');
   }
+  // One legal Pat and one legal checkmate regression case.
+  const pat=new Chess('k7/2Q5/2K5/8/8/8/8/8 w - - 0 1');
+  if(!pat.move({from:'c7',to:'b6'})||!pat.in_stalemate()||pat.in_checkmate())throw Error('Kiểm tra hòa Pat không đạt');
+  const mate=new Chess('k7/8/1QK5/8/8/8/8/8 w - - 0 1');
+  if(!mate.move({from:'b6',to:'b7'})||!mate.in_checkmate()||mate.in_stalemate())throw Error('Kiểm tra chiếu hết không đạt');
  }
  function init(){
-  if(typeof Chess==='function'){try{validateLessons();}catch(e){console.error('Bài chiếu hết Vua đơn độc:',e);}}
+  if(typeof Chess==='function'){try{validateLessons();}catch(e){validationError=e.message;console.error('Bài chiếu hết Vua đơn độc:',e);}}
   $('vqcLoneMateClose')?.addEventListener('click',close);
   $('vqcLoneMatePrev')?.addEventListener('click',()=>open((mode+LEVELS.length-1)%LEVELS.length));
   $('vqcLoneMateNext')?.addEventListener('click',()=>open((mode+1)%LEVELS.length));
