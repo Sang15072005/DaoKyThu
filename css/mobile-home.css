@@ -56,3 +56,24 @@
  .vqc-entry{width:calc(100% - 12px)!important;padding:12px 9px 17px!important}
  .vqc-entry-card{padding:13px!important}
 }
+
+/* Mobile revision 3: compact signed-in header, persistent dock. */
+@media(max-width:760px){
+ body.vqc-mobile-logged-in .header{min-height:60px!important;max-height:none!important;padding:8px 14px!important;display:flex!important;flex-wrap:nowrap!important;justify-content:space-between!important;gap:8px!important}
+ body.vqc-mobile-logged-in .header .logo{display:flex!important;flex:1 1 auto!important;min-width:0!important}
+ body.vqc-mobile-logged-in .header .logo-text{display:flex!important;flex-direction:column!important;min-width:0!important}
+ body.vqc-mobile-logged-in .header .logo-text strong{display:block!important;font-size:17px!important;white-space:nowrap!important}
+ body.vqc-mobile-logged-in .header .logo-text span{display:block!important;font-size:10px!important;white-space:nowrap!important}
+ body.vqc-mobile-logged-in .header #accountBar{display:none!important}
+ body.vqc-mobile-logged-in .header #vqcBackHome{display:none!important}
+ body.vqc-mobile-logged-in .header>.btn:not(#vqcBackHome){display:none!important}
+ body.vqc-mobile-logged-in .vqc-mobile-nav{display:grid!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;visibility:visible!important;opacity:1!important;transform:none!important;z-index:2147482000!important}
+ body.vqc-mobile-logged-in .vqc-entry-head{margin-bottom:12px!important}
+ body.vqc-mobile-logged-in .vqc-entry-head .vqc-entry-symbol{width:54px!important;height:54px!important;font-size:35px!important}
+ body.vqc-mobile-logged-in .vqc-entry-head h1{font-size:clamp(25px,7vw,32px)!important}
+ body.vqc-mobile-logged-in .vqc-entry-card{padding:14px!important;gap:8px!important}
+ body.vqc-mobile-logged-in .vqc-entry-card p{font-size:13px!important}
+ body.vqc-mobile-logged-in .vqc-entry-card .btn{min-height:46px!important}
+ body.vqc-mobile-logged-in .vqc-entry-emoji{font-size:30px!important}
+ body.vqc-mobile-logged-in .vqc-entry-card h2{font-size:21px!important}
+}
