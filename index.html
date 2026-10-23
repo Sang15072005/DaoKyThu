@@ -45,7 +45,7 @@
 <link rel="stylesheet" href="./css/arcade-games.css?v=arcade-20261020-2">
 <link rel="stylesheet" href="./css/friend-challenges.css?v=challenges-20261020-2">
 <link rel="stylesheet" href="./css/arcade-online.css?v=arcade-recheck-20261020-4">
-<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-1">
+<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-2">
 </head>
 
 
@@ -1351,6 +1351,11 @@ window.vqcCloseMembershipSafe=function(){
 </nav>
 <script>
 (function(){
+ function syncMobileLogin(){
+  document.body.classList.toggle('vqc-mobile-logged-in',!!window.accountProfile?.uid);
+ }
+ window.addEventListener('vqc:account-change',syncMobileLogin);
+ syncMobileLogin();
  const actions={
   home:()=>{if(typeof window.vqcGoHome==='function')window.vqcGoHome();else document.getElementById('vqcModeHome')?.scrollIntoView({behavior:'smooth'});},
   class:()=>{if(typeof window.vqcEnterClass==='function')window.vqcEnterClass();},
