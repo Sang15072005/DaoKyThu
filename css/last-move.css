@@ -47,3 +47,16 @@
  font-size:12px;line-height:1.4;
  font-weight:400;color:#64748b;
 }
+
+/* Replace the older green outline with the same two-square highlight in all modes.
+   Preserve the selection outline so pupils can still see which piece is selected. */
+:root[data-vqc-lastmove="on"] .board > .last:not(.selected){
+ box-shadow:none!important;
+}
+:root[data-vqc-lastmove="off"] .board > .last:not(.selected){
+ box-shadow:none!important;
+}
+:root[data-vqc-lastmove="off"] .vqc-last-from,
+:root[data-vqc-lastmove="off"] .vqc-last-to{
+ background-image:none!important;
+}
