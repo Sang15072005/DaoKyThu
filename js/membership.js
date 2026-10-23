@@ -84,57 +84,67 @@
  };
  window.vqcCloseMembership=function(){const dialog=el('vqcMembershipDialog');if(dialog)dialog.hidden=true;};
 
- let adminVerified=false,adminTarget=null;
- const call=(name,payload)=>firebase.app().functions('asia-southeast1').httpsCallable(name)(payload);
- function adminMsg(message){const n=el('vqcAdminMessage');if(n)n.textContent=message;}
+ // Spark-only admin: Firestore rules are the actual authorization boundary.
+ const ADMIN_UID='DIZfL0tmr5eT7I7gOGF3h75EGkH3';
+ let adminTarget=null;
+ const adminMsg=m=>{const n=el('vqcAdminMessage');if(n)n.textContent=m;};
  function adminPanel(){
   const root=el('vqcMembershipAdmin');if(!root)return;
-  root.hidden=!adminVerified;
-  if(!adminVerified)return;
-  root.innerHTML='<h3>🛡️ Quản trị gói thành viên</h3>'+
-   '<label for="vqcAdminLookup">UID hoặc mã tài khoản</label><div class="vqc-admin-row"><input id="vqcAdminLookup" maxlength="128" placeholder="UID / mã tài khoản"><button type="button" class="btn btn-soft" id="vqcAdminSearch">Tìm</button></div>'+
+  const allowed=window.accountProfile?.uid===ADMIN_UID;
+  root.hidden=!allowed;
+  if(!allowed)return;
+  root.innerHTML='<h3>🛡️ Quản trị gói thành viên · Spark</h3><p>Tìm bằng UID hoặc mã tài khoản. Chỉ chủ sở hữu được ghi quyền.</p>'+
+   '<div class="vqc-admin-row"><input id="vqcAdminLookup" placeholder="UID hoặc mã tài khoản" maxlength="128"><button class="btn btn-soft" id="vqcAdminSearch">Tìm</button></div>'+
    '<div id="vqcAdminFound"></div><p id="vqcAdminMessage" role="status"></p>';
-  el('vqcAdminSearch').addEventListener('click',async()=>{
+  el('vqcAdminSearch').onclick=async()=>{
    const q=el('vqcAdminLookup').value.trim();if(!q)return;
-   adminTarget=null;adminMsg('Đang tìm...');
+   adminTarget=null;adminMsg('Đang tìm tài khoản...');
    try{
-    const response=await call('membershipAdminLookup',{query:q});
-    const u=response.data;adminTarget=u;
-    const name=document.createElement('strong');name.textContent=(u.name||u.code||u.uid)+' · '+(u.role==='teacher'?'Giáo viên':'Học sinh');
-    const box=el('vqcAdminFound');box.replaceChildren(name);
-    const details=document.createElement('p');details.textContent='UID: '+u.uid+' | Gói hiện tại: '+(u.entitlement?.plan||'Chưa cấp')+(u.entitlement?.revoked?' (đã thu hồi)':'');box.append(details);
-    const select=document.createElement('select');select.id='vqcAdminPlan';
-    for(const [value,label] of [['premium','Premium'],['teacher_pro','Giáo viên Pro']]){const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt);}
-    select.value=u.role==='teacher'?'teacher_pro':'premium';box.append(select);
-    const duration=document.createElement('select');duration.id='vqcAdminDays';
-    for(const [value,label] of [['7','7 ngày'],['30','30 ngày'],['365','1 năm'],['unlimited','Không thời hạn']]){const opt=document.createElement('option');opt.value=value;opt.textContent=label;duration.append(opt);}
-    box.append(duration);
-    const grant=document.createElement('button');grant.type='button';grant.className='btn btn-blue';grant.textContent='Cấp / gia hạn';box.append(grant);
-    grant.addEventListener('click',async()=>{
-     if(!adminTarget||!confirm('Xác nhận cấp quyền cho '+(adminTarget.name||adminTarget.uid)+'?'))return;
-     grant.disabled=true;try{await call('membershipAdminGrant',{uid:adminTarget.uid,plan:select.value,days:duration.value==='unlimited'?null:Number(duration.value)});adminMsg('Đã cấp quyền.');}
-     catch(e){adminMsg('Lỗi cấp quyền: '+e.message);}finally{grant.disabled=false;}
-    });
-    const revoke=document.createElement('button');revoke.type='button';revoke.className='btn btn-soft';revoke.textContent='Thu hồi quyền';box.append(revoke);
-    revoke.addEventListener('click',async()=>{
-     if(!adminTarget||!confirm('Thu hồi gói của '+(adminTarget.name||adminTarget.uid)+'?'))return;
-     revoke.disabled=true;try{await call('membershipAdminRevoke',{uid:adminTarget.uid});adminMsg('Đã thu hồi quyền.');}
-     catch(e){adminMsg('Lỗi thu hồi: '+e.message);}finally{revoke.disabled=false;}
-    });
-    adminMsg('');
-   }catch(e){adminMsg('Không tìm thấy tài khoản hoặc không đủ quyền: '+e.message);}
-  });
+    let snap=await db.collection('users').doc(q).get();
+    if(!snap.exists){
+     // No public user-directory search: owner can search by exact code.
+     const results=await db.collection('users').where('code','==',q).limit(2).get();
+     if(results.size!==1)throw Error('Không tìm thấy một tài khoản duy nhất.');
+     snap=results.docs[0];
+    }
+    const u=snap.data();
+    if(u.active!==true||!['student','teacher'].includes(u.role))throw Error('Tài khoản không hoạt động.');
+    adminTarget={uid:snap.id,...u};
+    const box=el('vqcAdminFound');box.replaceChildren();
+    const info=document.createElement('p');info.textContent=(u.name||u.code||snap.id)+' · '+(u.role==='teacher'?'Giáo viên':'Học sinh')+' · UID: '+snap.id;box.append(info);
+    const dur=document.createElement('select');dur.id='vqcAdminDays';
+    [['7','7 ngày'],['30','30 ngày'],['365','1 năm'],['unlimited','Không thời hạn']].forEach(([v,label])=>{const o=document.createElement('option');o.value=v;o.textContent=label;dur.append(o);});box.append(dur);
+    const grant=document.createElement('button');grant.className='btn btn-blue';grant.textContent='Cấp / gia hạn';grant.onclick=async()=>{
+     if(!confirm('Cấp '+(u.role==='teacher'?'Giáo viên Pro':'Premium')+' cho '+(u.name||snap.id)+'?'))return;
+     const days=dur.value==='unlimited'?null:Number(dur.value);
+     const now=firebase.firestore.Timestamp.now(),expiresAt=days===null?null:firebase.firestore.Timestamp.fromMillis(now.toMillis()+days*86400000);
+     const ref=db.collection('membershipEntitlements').doc(snap.id);
+     grant.disabled=true;
+     try{
+      const batch=db.batch();
+      batch.set(ref,{plan:u.role==='teacher'?'teacher_pro':'premium',expiresAt,revoked:false,grantedAt:now,grantedBy:ADMIN_UID,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      batch.set(db.collection('membershipAudit').doc(),{uid:snap.id,action:'grant',plan:u.role==='teacher'?'teacher_pro':'premium',actor:ADMIN_UID,days,at:firebase.firestore.FieldValue.serverTimestamp()});
+      await batch.commit();adminMsg('Đã cấp gói thành công.');
+     }catch(e){adminMsg('Không thể cấp: '+e.message);}finally{grant.disabled=false;}
+    };box.append(grant);
+    const revoke=document.createElement('button');revoke.className='btn btn-soft';revoke.textContent='Thu hồi';revoke.onclick=async()=>{
+     if(!confirm('Thu hồi quyền của '+(u.name||snap.id)+'?'))return;
+     revoke.disabled=true;
+     try{
+      const ref=db.collection('membershipEntitlements').doc(snap.id),prev=await ref.get();
+      if(!prev.exists)throw Error('Tài khoản chưa được cấp quyền.');
+      const batch=db.batch();
+      batch.update(ref,{revoked:true,revokedBy:ADMIN_UID,revokedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      batch.set(db.collection('membershipAudit').doc(),{uid:snap.id,action:'revoke',plan:prev.data().plan,actor:ADMIN_UID,days:null,at:firebase.firestore.FieldValue.serverTimestamp()});
+      await batch.commit();adminMsg('Đã thu hồi quyền.');
+     }catch(e){adminMsg('Không thể thu hồi: '+e.message);}finally{revoke.disabled=false;}
+    };box.append(revoke);adminMsg('');
+   }catch(e){adminMsg('Không tìm thấy hoặc không đủ quyền: '+e.message);}
+  };
  }
- async function adminCheck(){
-  adminVerified=false;adminPanel();
-  if(!window.accountProfile?.uid)return;
-  try{const r=await call('membershipAdminCheck',{});adminVerified=r.data?.admin===true;}
-  catch(e){adminVerified=false;}
-  adminPanel();
- }
- window.vqcMembershipAdminRefresh=adminCheck;
- window.addEventListener('vqc:account-change',()=>{init();adminCheck();});
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{init();adminCheck();});
- else {init();adminCheck();}
+ window.vqcMembershipAdminRefresh=adminPanel;
+ window.addEventListener('vqc:account-change',()=>{init();adminPanel();});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{init();adminPanel();});
+ else {init();adminPanel();}
  setInterval(()=>{if(!el('vqcMembershipDialog')?.hidden)render();},60000);
 })();
