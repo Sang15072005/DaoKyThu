@@ -6,6 +6,8 @@
  const DAY=86400000;
  let trial=null;
  let unsub=null;
+ let entitlementUnsub=null;
+ let entitlement=null;
  let loading=false;
  let serverOffset=0;
  let accountUid=null;
@@ -19,12 +21,14 @@
   const end=trial?.endsAt?.toMillis?.()||0;
   const remaining=Math.max(0,end-now);
   const ongoing=!!trial&&remaining>0;
-  const status=!trial?'Chưa sử dụng lần dùng thử':ongoing?(trial.cancelled?'Đã hủy · còn hiệu lực':'Đang dùng thử'):'Đã kết thúc dùng thử';
+  const entEnd=entitlement?.expiresAt?.toMillis?.()||0;
+  const granted=!!entitlement&&!entitlement.revoked&&(!entEnd||entEnd>now);
+  const status=granted?'Được quản trị viên cấp '+(entitlement.plan==='teacher_pro'?'Giáo viên Pro':'Premium'):!trial?'Chưa sử dụng lần dùng thử':ongoing?(trial.cancelled?'Đã hủy · còn hiệu lực':'Đang dùng thử'):'Đã kết thúc dùng thử';
   const until=trial?.endsAt?.toDate?.().toLocaleString('vi-VN')||'';
   root.innerHTML='<p class="vqc-membership-sub">Cơ bản luôn miễn phí · Học Vùng 1–5, chơi cờ và tham gia lớp học vẫn hoạt động.</p>'+
   '<div class="vqc-membership-card"><strong>👑 '+cfg.label+'</strong><span>'+cfg.price+' (mức giá dự kiến, chưa thu phí)</span>'+
   '<ul>'+cfg.items.map(x=>'<li>'+x+'</li>').join('')+'</ul><p><strong>'+status+'</strong></p>'+
-  (ongoing?'<p>Thời gian còn lại: <strong>'+Math.ceil(remaining/DAY)+' ngày</strong> · Hết hạn '+until+'</p>'+
+  (granted?'<p>Quyền do quản trị viên cấp · '+(entEnd?'Hết hạn '+entitlement.expiresAt.toDate().toLocaleString('vi-VN'):'Không thời hạn')+'</p>':ongoing?'<p>Thời gian còn lại: <strong>'+Math.ceil(remaining/DAY)+' ngày</strong> · Hết hạn '+until+'</p>'+
      '<p>Không yêu cầu thẻ. Không tự trừ tiền. '+(trial.cancelled?'Đã ghi nhận hủy dùng thử.':'Có thể hủy bất cứ lúc nào.')+'</p>'+
      (!trial.cancelled?'<button class="btn btn-soft" id="vqcMembershipCancel" type="button">Hủy dùng thử</button>':''):
     !trial?'<p>Trải nghiệm miễn phí 7 ngày, không cần thẻ và không tự động gia hạn.</p><button class="btn btn-blue" type="button" id="vqcMembershipStart">Bắt đầu dùng thử 7 ngày</button>':
@@ -63,8 +67,10 @@
   const uid=window.accountProfile?.uid||null;
   if(uid===accountUid)return;
   if(unsub){unsub();unsub=null;}
-  accountUid=uid;trial=null;
+  if(entitlementUnsub){entitlementUnsub();entitlementUnsub=null;}
+  accountUid=uid;trial=null;entitlement=null;
   if(uid){
+   entitlementUnsub=db.collection('membershipEntitlements').doc(uid).onSnapshot(s=>{if(accountUid!==uid)return;entitlement=s.exists?s.data():null;render();},e=>console.warn('Membership entitlement:',e));
    unsub=db.collection('membershipTrials').doc(uid).onSnapshot(s=>{
     if(accountUid!==uid)return;trial=s.exists?s.data():null;render();
    },e=>{console.warn('Membership status:',e);render();});
