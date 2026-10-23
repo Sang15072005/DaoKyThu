@@ -1,0 +1,51 @@
+/* Unified last move overlay. The underlying square theme and piece images remain intact. */
+:root{
+ --vqc-last-move-from:rgba(255,218,75,.37);
+ --vqc-last-move-to:rgba(244,195,49,.55);
+}
+:root[data-vqc-board-theme="night"]{
+ --vqc-last-move-from:rgba(255,208,71,.48);
+ --vqc-last-move-to:rgba(255,188,46,.62);
+}
+:is(.board,.mate-board,.mate3-board,.pvp-board,
+ .capture-board,.freecapture-board,.defense-board,.checkone-board,
+ .escape-board,.pawn-game-board,.vqc-lonemate-board,
+ .vqc-arcade-board,.vqc-duel-board,.vqc-adventure-board)
+ > .vqc-last-from{
+ background-image:linear-gradient(var(--vqc-last-move-from),var(--vqc-last-move-from))!important;
+ background-repeat:no-repeat!important;
+ background-size:100% 100%!important;
+}
+:is(.board,.mate-board,.mate3-board,.pvp-board,
+ .capture-board,.freecapture-board,.defense-board,.checkone-board,
+ .escape-board,.pawn-game-board,.vqc-lonemate-board,
+ .vqc-arcade-board,.vqc-duel-board,.vqc-adventure-board)
+ > .vqc-last-to{
+ background-image:linear-gradient(var(--vqc-last-move-to),var(--vqc-last-move-to))!important;
+ background-repeat:no-repeat!important;
+ background-size:100% 100%!important;
+ box-shadow:inset 0 0 0 2px rgba(179,118,3,.35)!important;
+}
+/* Off controls *all* practice modes, online matches and the main board. */
+:root[data-vqc-lastmove="off"] .vqc-last-from,
+:root[data-vqc-lastmove="off"] .vqc-last-to{
+ background-image:none!important;
+ box-shadow:none!important;
+}
+:root[data-vqc-lastmove="off"] .board > .last{
+ box-shadow:none!important;
+}
+.vqc-appearance-check .vqc-appearance-check__copy{
+ display:flex;
+ flex:1;
+ flex-direction:column;
+ gap:3px;
+ min-width:0;
+}
+.vqc-appearance-check .vqc-appearance-check__copy strong{
+ font-size:14px;line-height:1.3;
+}
+.vqc-appearance-check .vqc-appearance-check__copy small{
+ font-size:12px;line-height:1.4;
+ font-weight:400;color:#64748b;
+}
