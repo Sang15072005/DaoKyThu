@@ -186,6 +186,23 @@
       else dialog.prepend(bar);
     });
   }
+  function prepareMobileAnnotationToolbar() {
+    const toolbar = el('vqcAnnotationToolbar');
+    if (!toolbar || toolbar.querySelector('[data-vqc-annotation-toggle]')) return;
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.dataset.vqcAnnotationToggle = '1';
+    toggle.textContent = '✏️';
+    toggle.title = 'Mở hoặc thu gọn công cụ Vẽ / Xóa';
+    toggle.setAttribute('aria-label', 'Mở hoặc thu gọn công cụ vẽ');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.addEventListener('click', event => {
+      event.stopPropagation();
+      const expanded = toolbar.classList.toggle('vqc-mobile-annotation-expanded');
+      toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    toolbar.prepend(toggle);
+  }
   function wire() {
     const nav = document.querySelector('.vqc-mobile-nav');
     if (nav && nav.parentElement !== document.body) document.body.appendChild(nav);
@@ -210,6 +227,7 @@
     classes.observe(document.body, { attributes: true, attributeFilter: ['class'] });
     installClassShortcut();
     exerciseNavigation();
+    prepareMobileAnnotationToolbar();
     syncNav();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
