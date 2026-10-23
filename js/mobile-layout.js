@@ -117,6 +117,12 @@
     makeAction(content, 'Vào lớp học', toClass, '🏫');
     makeAction(content, 'Khám phá các đảo', toWorld, '🏰');
     makeAction(content, 'Gói thành viên', () => triggerExisting('vqcMembershipLaunch', () => window.vqcOpenMembershipSafe?.()), '👑');
+    makeAction(content, 'Lời mời thi đấu', () => {
+      closeSheet();
+      const bell = el('vqcInviteBell');
+      if (bell && !bell.hidden) bell.click();
+      else if (typeof window.vqcNotify === 'function') window.vqcNotify('Chưa có hộp thư lời mời thi đấu.', 'info');
+    }, '🔔');
     makeAction(content, 'Tùy chỉnh bàn cờ', () => triggerExisting('unused', () => window.vqcOpenBoardAppearance?.()), '🎨');
     makeAction(content, 'Hồ sơ cá nhân', () => { closeSheet(); if (typeof window.showAccountPanel === 'function') window.showAccountPanel(); }, '👤');
     makeAction(content, 'Đăng xuất', () => { closeSheet(); if (typeof window.accountSignOut === 'function' && window.confirm('Đăng xuất khỏi Đảo Kỳ Thủ?')) window.accountSignOut(); }, '🚪');
