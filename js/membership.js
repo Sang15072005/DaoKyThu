@@ -44,7 +44,6 @@
    const now=firebase.firestore.Timestamp.now();
    await ref.set({plan:u.role==='teacher'?'teacher_pro':'premium',startedAt:firebase.firestore.FieldValue.serverTimestamp(),
     endsAt:firebase.firestore.Timestamp.fromMillis(now.toMillis()+7*DAY),cancelled:false,cancelledAt:null});
-   // Note: exact-time rule enforces server time; clients cannot guarantee request.time.
    await sync(u.uid);
   }catch(e){console.warn('Membership trial:',e);alert('Chưa thể kích hoạt dùng thử. '+(e.code==='permission-denied'?'Vui lòng triển khai Firestore Rules trước.':e.message));}
   finally{loading=false;render();}
