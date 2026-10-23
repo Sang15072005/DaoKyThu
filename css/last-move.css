@@ -60,3 +60,8 @@
 :root[data-vqc-lastmove="off"] .vqc-last-to{
  background-image:none!important;
 }
+
+/* A selected square should keep its selection ring, even if it was just played. */
+.board > .square.selected.last{
+ box-shadow:inset 0 0 0 6px rgba(255,196,0,.95)!important;
+}
