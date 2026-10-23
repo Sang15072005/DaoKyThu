@@ -144,7 +144,7 @@
 
 
 
-<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" type="button" onclick="if(typeof window.vqcOpenMembership==='function'){window.vqcOpenMembership()}else{alert('Gói thành viên chưa tải được. Hãy tải lại trang hoặc kiểm tra kết nối.')}">👑 Gói thành viên</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
+<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" type="button" onclick="window.vqcOpenMembershipSafe()">👑 Gói thành viên</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
 
 
 
@@ -1308,11 +1308,34 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
  },true);
 })();
 </script>
+<script>
+/* Independent fallback: membership modal must open even if the optional membership module fails. */
+window.vqcOpenMembershipSafe=function(){
+ const dialog=document.getElementById('vqcMembershipDialog');
+ if(!dialog){alert('Không tìm thấy giao diện Gói thành viên.');return;}
+ dialog.hidden=false;
+ dialog.style.display='flex';
+ dialog.style.position='fixed';
+ dialog.style.inset='0';
+ dialog.style.zIndex='2147483647';
+ const body=document.getElementById('vqcMembershipBody');
+ if(body&&!body.textContent.trim())body.textContent='Đang tải thông tin thành viên. Nếu nội dung không xuất hiện, vui lòng tải lại trang và kiểm tra Console (F12).';
+ try{
+  if(typeof window.vqcOpenMembership==='function')window.vqcOpenMembership();
+  else if(body)body.textContent='Không tải được chức năng Gói thành viên. Vui lòng tải lại trang hoặc kiểm tra đường dẫn js/membership.js.';
+ }catch(e){console.error('Membership open:',e);if(body)body.textContent='Lỗi Gói thành viên: '+(e.message||String(e));}
+ dialog.hidden=false;dialog.style.display='flex';
+};
+window.vqcCloseMembershipSafe=function(){
+ const dialog=document.getElementById('vqcMembershipDialog');
+ if(dialog){dialog.hidden=true;dialog.style.display='none';}
+};
+</script>
 <div id="vqcMembershipDialog" class="vqc-membership-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="vqcMembershipTitle">
- <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembership()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div><section id="vqcMembershipAdmin" hidden></section></div>
+ <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembershipSafe()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div><section id="vqcMembershipAdmin" hidden></section></div>
 </div>
 <link rel="stylesheet" href="./css/membership.css?v=20261023-4">
-<script src="./js/membership.js?v=20261023-4"></script>
+<script src="./js/membership.js?v=20261023-5"></script>
 <script src="./js/board-appearance.js?v=20261020-2"></script>
 </body>
 
