@@ -73,8 +73,8 @@
   if(candidates.length===1)return candidates[0];
   // Khi nhập thành (Vua + Xe cùng di chuyển), ưu tiên đoạn Vua đi hai cột.
   if(changed.length===4&&candidates.length===2){
-   const kingMove=candidates.filter(m=>Math.abs(FILES.indexOf(m.from[0])-FILES.indexOf(m.to[0]))===2
-    &&m.from[1]===m.to[1]);
+   const kingMove=candidates.filter(m=>m.from[0]==='e'&&['g','c'].includes(m.to[0])
+    &&['1','8'].includes(m.from[1])&&m.from[1]===m.to[1]);
    if(kingMove.length===1)return kingMove[0];
   }
   // Tốt phong cấp thay hình quân nên không còn cùng dấu nhận diện ảnh ở ô đích.
