@@ -12,12 +12,13 @@ function friendName(uid){return otherDisplay||'Kỳ thủ '+String(uid).slice(-4
 function close(){if(unsubscribe){unsubscribe();unsubscribe=null;}otherId='';otherDisplay='';matchId='';matchData=null;selected='';legal=[];$('vqcFriendDuel')?.setAttribute('hidden','');}
 function render(){
  const board=$('vqcDuelBoard');if(!board||!matchData)return;
+ window.vqcLastMove?.mark('vqcDuelBoard',(matchData.lastMove||'').slice(0,2),(matchData.lastMove||'').slice(2,4));
  const chess=new Chess(matchData.fen);
  const mine=myId(),white=matchData.white===mine,files=white?'abcdefgh':'hgfedcba',ranks=white?[8,7,6,5,4,3,2,1]:[1,2,3,4,5,6,7,8];
  board.replaceChildren();
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
   const square=files[f]+ranks[r],cell=document.createElement('button');
-  cell.type='button';cell.className='vqc-duel-square '+((r+f)%2?'dark':'light');
+  cell.type='button';cell.dataset.square=square;cell.className='vqc-duel-square '+((r+f)%2?'dark':'light');
   if(selected===square)cell.classList.add('selected');
   if(legal.includes(square))cell.classList.add('hint');
   const piece=chess.get(square);
