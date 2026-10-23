@@ -73,7 +73,7 @@ function init(){
   input.addEventListener('change',()=>{prefs[key]=input.checked;save();});
   if(key==='lastmove'){
    const description=el('span',{class:'vqc-appearance-check__copy'});
-   description.append(el('strong',{},title),el('small',{},'Xem nước đi gần nhất: làm nổi bật ô xuất phát và ô đích trên bàn cờ ở mọi chế độ.'));
+   description.append(el('strong',{},title),el('small',{},'Tô sáng ô vừa rời đi và ô vừa đến, áp dụng cho bài luyện tập, chơi với máy, đấu trực tuyến và trong lớp.'));
    line.append(input,description);
   }else line.append(input,el('span',{},title));
   panel.appendChild(line);toggles.push([key,input]);
