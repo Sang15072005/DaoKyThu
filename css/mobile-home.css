@@ -1,79 +1,53 @@
-/* Dao Ky Thu mobile-first home and navigation. Desktop remains unchanged. */
+/* Dao Ky Thu — clean mobile layout. Desktop styles remain untouched. */
 .vqc-mobile-nav{display:none}
 @media(max-width:760px){
- html{scroll-padding-top:72px}
- body{overflow-x:hidden}
- .header{height:auto!important;min-height:66px;padding:9px 12px!important;display:flex!important;flex-wrap:wrap;gap:7px;align-items:center;position:relative;z-index:30}
- .header .logo{flex:1 1 auto;min-width:0;gap:9px}
- .header .logo-icon{width:42px;height:42px;font-size:25px;border-radius:13px;flex-shrink:0}
- .header .logo-text strong{font-size:18px;line-height:1.1}
- .header .logo-text span{font-size:11px}
- .header #accountBar{margin:0!important;display:flex!important;align-items:center;justify-content:flex-end;gap:5px;flex:0 1 auto;min-width:0}
- .header #accountUserLabel{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px!important}
- .header #accountBar>button{display:none!important}
- .header .room-box{width:100%;flex-wrap:wrap;gap:6px}
- .header .room-box input{max-width:100%;min-width:0}
- .header #vqcBackHome{margin-left:auto;min-height:42px}
- body:not(.vqc-mobile-logged-in) .vqc-mobile-nav{display:none!important}
- body:not(.vqc-mobile-logged-in){padding-bottom:0!important}
- .vqc-mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:3900;background:#fffefa;border-top:1px solid #cfe0f1;box-shadow:0 -6px 24px #123c6220;padding:7px max(6px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));gap:3px}
- .vqc-mobile-nav button{appearance:none;border:0;border-radius:12px;background:transparent;color:#426184;min-width:0;min-height:51px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit;font-weight:700;font-size:10px;line-height:1.2;cursor:pointer;position:relative}
- .vqc-mobile-nav button .vqc-mobile-icon{font-size:22px;line-height:1.1}
- .vqc-mobile-nav button[aria-current="page"]{background:#e6f2ff;color:#1557a0}
- .vqc-mobile-nav button:focus-visible{outline:3px solid #267de0;outline-offset:-3px}
- .vqc-mobile-nav .vqc-mobile-unread{position:absolute;right:17%;top:4px;width:9px;height:9px;border-radius:50%;background:#f05b61;display:none}
- body:has(#vqcFriendsUnread:not([hidden])) .vqc-mobile-unread{display:block}
- body.vqc-mobile-logged-in{padding-bottom:calc(83px + env(safe-area-inset-bottom))!important}
- .vqc-entry{width:calc(100% - 20px)!important;max-width:540px;margin:14px auto 22px!important;padding:16px 12px 20px!important;border-radius:20px}
- .vqc-entry-head{margin-bottom:17px!important}
- .vqc-entry-head h1{font-size:clamp(25px,7vw,36px)!important;line-height:1.15}
- .vqc-entry-head p{font-size:14px;line-height:1.5}
- .vqc-entry-symbol{width:64px!important;height:64px!important;font-size:40px!important;border-radius:19px!important}
- .vqc-entry-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
- .vqc-entry-card{padding:17px!important;border-radius:18px!important;gap:9px!important;min-width:0;box-shadow:0 5px 16px #1e4f7a16}
- .vqc-entry-card h2{font-size:22px!important}
- .vqc-entry-card p{font-size:14px!important;line-height:1.5!important;min-height:0!important}
- .vqc-entry-caption{min-height:0!important;font-size:12px!important}
- .vqc-entry-emoji{font-size:34px!important}
- .vqc-entry-card .btn{min-height:48px!important;font-size:15px!important;padding:11px!important;border-radius:12px}
- .vqc-entry-note{font-size:12px;line-height:1.5;margin:15px 5px 0}
- .vqc-entry-join input{font-size:16px}
- .vqc-world-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
- .vqc-world-grid article{padding:13px;min-height:125px}
- .app,.board-shell,.board{min-width:0;max-width:100%}
- .board-shell{padding:5px!important;border-width:2px!important;border-radius:14px!important}
- .board{width:100%;aspect-ratio:1/1;touch-action:manipulation}
- .square{min-width:0;min-height:0}
- .account-overlay{padding:8px!important;align-items:center}
- .account-modal{width:min(100%,500px)!important;max-height:calc(100dvh - 16px)!important;padding:15px!important;overflow-y:auto}
- .account-modal input,.account-modal select{font-size:16px;min-height:44px}
- .vqc-friends-modal{max-width:100vw;max-height:100dvh}
-}
-@media(max-width:360px){
- .header .logo-text span{display:none}
- .header #accountUserLabel{max-width:82px}
- .vqc-mobile-nav button{font-size:9px}
- .vqc-entry{width:calc(100% - 12px)!important;padding:12px 9px 17px!important}
- .vqc-entry-card{padding:13px!important}
-}
-
-/* Mobile revision 3: compact signed-in header, persistent dock. */
-@media(max-width:760px){
- body.vqc-mobile-logged-in .header{min-height:60px!important;max-height:none!important;padding:8px 14px!important;display:flex!important;flex-wrap:nowrap!important;justify-content:space-between!important;gap:8px!important}
- body.vqc-mobile-logged-in .header .logo{display:flex!important;flex:1 1 auto!important;min-width:0!important}
+ *,*::before,*::after{box-sizing:border-box}
+ html,body{max-width:100%;overflow-x:clip}
+ body.vqc-mobile-logged-in{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+ body.vqc-mobile-logged-in .header{position:relative!important;z-index:25;display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;height:auto!important;min-height:64px!important;padding:10px 14px!important;gap:10px!important}
+ body.vqc-mobile-logged-in .header .logo{display:flex!important;flex:1 1 100%!important;min-width:0!important;gap:10px!important;align-items:center!important}
+ body.vqc-mobile-logged-in .header .logo-icon{width:44px!important;height:44px!important;flex:0 0 44px!important;border-radius:13px!important;font-size:27px!important}
  body.vqc-mobile-logged-in .header .logo-text{display:flex!important;flex-direction:column!important;min-width:0!important}
- body.vqc-mobile-logged-in .header .logo-text strong{display:block!important;font-size:17px!important;white-space:nowrap!important}
- body.vqc-mobile-logged-in .header .logo-text span{display:block!important;font-size:10px!important;white-space:nowrap!important}
+ body.vqc-mobile-logged-in .header .logo-text strong{display:block!important;font-size:19px!important;line-height:1.2!important}
+ body.vqc-mobile-logged-in .header .logo-text span{display:block!important;font-size:11px!important}
  body.vqc-mobile-logged-in .header #accountBar{display:none!important}
  body.vqc-mobile-logged-in .header #vqcBackHome{display:none!important}
- body.vqc-mobile-logged-in .header>.btn:not(#vqcBackHome){display:none!important}
- body.vqc-mobile-logged-in .vqc-mobile-nav{display:grid!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;visibility:visible!important;opacity:1!important;transform:none!important;z-index:2147482000!important}
- body.vqc-mobile-logged-in .vqc-entry-head{margin-bottom:12px!important}
- body.vqc-mobile-logged-in .vqc-entry-head .vqc-entry-symbol{width:54px!important;height:54px!important;font-size:35px!important}
- body.vqc-mobile-logged-in .vqc-entry-head h1{font-size:clamp(25px,7vw,32px)!important}
- body.vqc-mobile-logged-in .vqc-entry-card{padding:14px!important;gap:8px!important}
- body.vqc-mobile-logged-in .vqc-entry-card p{font-size:13px!important}
- body.vqc-mobile-logged-in .vqc-entry-card .btn{min-height:46px!important}
- body.vqc-mobile-logged-in .vqc-entry-emoji{font-size:30px!important}
- body.vqc-mobile-logged-in .vqc-entry-card h2{font-size:21px!important}
+ /* Classroom controls remain accessible, but no longer overlap the brand. */
+ body.vqc-mobile-logged-in .header .room-box{order:3!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;margin:0!important;padding:8px!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:7px!important;border-radius:13px!important}
+ body.vqc-mode-home .header .room-box,body.vqc-mode-world .header .room-box{display:none!important}
+ body.vqc-mobile-logged-in .header .room-box input{flex:1 1 90px!important;min-width:0!important;max-width:135px!important;height:42px!important;font-size:16px!important}
+ body.vqc-mobile-logged-in .header .room-box button{flex:0 1 auto!important;min-height:42px!important;padding:8px 11px!important;font-size:13px!important;white-space:nowrap!important}
+ body.vqc-mobile-logged-in .vqc-mobile-nav{display:grid!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;z-index:7000!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:2px!important;padding:6px 5px calc(7px + env(safe-area-inset-bottom,0px))!important;background:#fff!important;border-top:1px solid #d8e6f5!important;box-shadow:0 -4px 18px #143c6420!important;visibility:visible!important;opacity:1!important;transform:none!important}
+ .vqc-mobile-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:51px;border:0;border-radius:11px;background:transparent;color:#486581;font:700 10px/1.15 inherit;cursor:pointer;position:relative}
+ .vqc-mobile-nav button .vqc-mobile-icon{font-size:21px;line-height:1}
+ .vqc-mobile-nav button[aria-current="page"]{background:#e8f3ff;color:#1559a0}
+ .vqc-mobile-nav button:focus-visible{outline:2px solid #2876c6}
+ .vqc-mobile-unread{display:none;position:absolute;right:20%;top:3px;width:9px;height:9px;background:#f15a62;border-radius:50%}
+ body:has(#vqcFriendsUnread:not([hidden])) .vqc-mobile-unread{display:block}
+ /* A calmer, compact landing page. */
+ body.vqc-mobile-logged-in .vqc-entry{width:calc(100% - 20px)!important;max-width:520px!important;margin:14px auto 22px!important;padding:18px 12px!important;border-radius:20px!important}
+ body.vqc-mobile-logged-in .vqc-entry-head{margin-bottom:14px!important}
+ body.vqc-mobile-logged-in .vqc-entry-symbol{width:56px!important;height:56px!important;font-size:35px!important;border-radius:17px!important}
+ body.vqc-mobile-logged-in .vqc-entry-head h1{font-size:clamp(25px,7vw,32px)!important;line-height:1.15!important}
+ body.vqc-mobile-logged-in .vqc-entry-head p{font-size:13px!important;line-height:1.4!important}
+ body.vqc-mobile-logged-in .vqc-entry-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+ body.vqc-mobile-logged-in .vqc-entry-card{padding:16px!important;border-radius:17px!important;gap:8px!important;min-width:0!important}
+ body.vqc-mobile-logged-in .vqc-entry-emoji{font-size:29px!important}
+ body.vqc-mobile-logged-in .vqc-entry-card h2{font-size:21px!important;margin:0!important}
+ body.vqc-mobile-logged-in .vqc-entry-card p{font-size:13px!important;line-height:1.5!important;min-height:0!important;margin:0!important}
+ body.vqc-mobile-logged-in .vqc-entry-caption{font-size:11px!important;min-height:0!important}
+ body.vqc-mobile-logged-in .vqc-entry-card .btn{width:100%!important;min-height:46px!important;padding:10px!important;font-size:15px!important;margin-top:5px!important}
+ body.vqc-mobile-logged-in .vqc-entry-note{font-size:12px!important;line-height:1.45!important}
+ .vqc-entry-join input,.account-modal input,.account-modal select{font-size:16px!important}
+ /* Keep chessboard square and fully inside viewport. */
+ body.vqc-mobile-logged-in .app,body.vqc-mobile-logged-in .board-shell,body.vqc-mobile-logged-in .board{min-width:0!important;max-width:100%!important}
+ body.vqc-mobile-logged-in .board-shell{padding:5px!important;border-width:2px!important}
+ body.vqc-mobile-logged-in .board{width:100%!important;aspect-ratio:1!important}
+ body.vqc-mobile-logged-in .square{min-width:0!important;min-height:0!important}
+ .account-modal{max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 20px)!important;overflow-y:auto!important}
+}
+@media(max-width:360px){
+ body.vqc-mobile-logged-in .header .logo-text strong{font-size:17px!important}
+ body.vqc-mobile-logged-in .vqc-entry{width:calc(100% - 12px)!important}
+ body.vqc-mobile-logged-in .vqc-entry-card{padding:13px!important}
 }
