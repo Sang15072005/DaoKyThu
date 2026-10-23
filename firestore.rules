@@ -11,6 +11,29 @@ service cloud.firestore {
    allow read: if active() && (request.auth.uid==uid || (teacher() && resource.data.role=='student' && resource.data.teacherId==request.auth.uid));
    allow write: if false;
   }
+  // Membership trials: an authenticated user may start one free, non-renewing
+  // seven-day trial for their own account type. Existing trial records cannot
+  // be deleted or restarted. Times come from Firestore request.time.
+  match /membershipTrials/{uid} {
+   allow get: if signed() && request.auth.uid==uid;
+   allow list: if false;
+   allow create: if active() && request.auth.uid==uid
+     && request.resource.data.keys().hasOnly(['plan','startedAt','endsAt','cancelled','cancelledAt'])
+     && request.resource.data.plan == (teacher() ? 'teacher_pro' : 'premium')
+     && request.resource.data.startedAt == request.time
+     && request.resource.data.endsAt == request.time + duration.value(7,'d')
+     && request.resource.data.cancelled == false
+     && request.resource.data.cancelledAt == null;
+   allow update: if active() && request.auth.uid==uid
+     && resource.data.plan == request.resource.data.plan
+     && resource.data.startedAt == request.resource.data.startedAt
+     && resource.data.endsAt == request.resource.data.endsAt
+     && resource.data.cancelled == false
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cancelled','cancelledAt'])
+     && request.resource.data.cancelled == true
+     && request.resource.data.cancelledAt == request.time;
+   allow delete: if false;
+  }
   match /studentCodes/{code} {allow read,write: if false;}
   match /classes/{id} {
    allow read: if teacher() && resource.data.teacherId==request.auth.uid || student() && resource.data.teacherId==me().data.teacherId && resource.data.code==me().data.classCode;
