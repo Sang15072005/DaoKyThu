@@ -1336,6 +1336,7 @@ function vqcCloseOtherViews(target){
   if(target!=='pawngame')document.getElementById('pawnGameOverlay')?.classList.remove('open');
   if(target!=='check1')document.getElementById('checkOneOverlay')?.classList.remove('open');
   if(target!=='escape')document.getElementById('escapeOverlay')?.classList.remove('open');
+  if(target!=='lonemate')document.getElementById('vqcLoneMateOverlay')?.classList.remove('open');
 }
 function vqcBroadcastView(view,index=0){
   if(vqcNavApplying)return;
@@ -1364,7 +1365,7 @@ function vqcSafeReceiveExercise(label,receiver,payload){
 }
 function vqcReceiveView(data){
   if(!data||!data.stamp)return;
-  const dialogIds={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay'};
+  const dialogIds={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay',lonemate:'vqcLoneMateOverlay'};
   const activeDialog=dialogIds[data.view]&&document.getElementById(dialogIds[data.view]);
   // Reopen a classroom dialog on the student machine if its DOM was hidden
   // after the snapshot had already been marked as received.
@@ -1380,11 +1381,12 @@ function vqcReceiveView(data){
       document.getElementById('vqcModeHome')?.setAttribute('aria-hidden','true');
       document.getElementById('vqcModeWorld')?.setAttribute('aria-hidden','true');
     }
-    const dialogs={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay'};
+    const dialogs={mate2:'mateOverlay',mate3:'mate3Overlay',pvp:'pvpOverlay',capture:'captureOverlay',freecapture:'freeCaptureOverlay',defense:'defenseOverlay',pawngame:'pawnGameOverlay',check1:'checkOneOverlay',escape:'escapeOverlay',lonemate:'vqcLoneMateOverlay'};
     const overlay=dialogs[view]&&document.getElementById(dialogs[view]);
     if(overlay&&overlay.parentElement!==document.body)document.body.appendChild(overlay);
     vqcCloseOtherViews(view);
-    if(view==='mate2')openMateExercises(index);
+    if(view==='lonemate')window.loneKingMateOpen?.(index,true);
+    else if(view==='mate2')openMateExercises(index);
     else if(view==='mate3')openMate3(index);
     else if(view==='pvp')openPvp();
     else if(view==='capture')captureOpen(index);
@@ -1544,6 +1546,7 @@ function listenToRoom(){
     if(active.view==='escape' && data.escapeExercise && data.escapeExercise.index===active.index)vqcSafeReceiveExercise('Thoát chiếu',vqcReceiveEscape,data.escapeExercise);
     if(active.view==='mate3' && data.mate3Exercise && data.mate3Exercise.index===active.index)vqcSafeReceiveExercise('Chiếu hết 3 nước',vqcReceiveMate3,data.mate3Exercise);
     if(active.view==='mate2' && data.mateExercise && data.mateExercise.index===active.index)vqcSafeReceiveExercise('Chiếu hết 2 nước',receiveMateExercise,data.mateExercise);
+    if(active.view==='lonemate' && data.loneKingMateExercise && data.loneKingMateExercise.mode===active.index)vqcSafeReceiveExercise('Chiếu hết Vua đơn độc',window.loneKingMateReceive,data.loneKingMateExercise);
     try{pvpReceive(data.pvp||null);}catch(e){console.error('Lỗi đồng bộ đối kháng',e);}
     // Chỉ nhận dữ liệu từ máy khác hoặc bản đã xác nhận, không xóa nước đi đang chọn.
     if(Array.isArray(data.state)&&data.state.length===64){
