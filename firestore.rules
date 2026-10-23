@@ -37,9 +37,23 @@ service cloud.firestore {
    allow delete: if false;
   }
   // Server-issued paid/manual entitlements: client can only read its own.
+  // Spark plan: Firestore Rules enforce the owner UID. No Cloud Functions needed.
+  function membershipOwner(){return signed() && request.auth.uid=='DIZfL0tmr5eT7I7gOGF3h75EGkH3';}
   match /membershipEntitlements/{uid} {
-   allow get: if signed() && request.auth.uid==uid;
-   allow list,create,update,delete: if false;
+   allow get: if signed() && (request.auth.uid==uid || membershipOwner());
+   allow list: if false;
+   allow create,update: if membershipOwner()
+     && exists(/databases/$(database)/documents/users/$(uid))
+     && get(/databases/$(database)/documents/users/$(uid)).data.active==true
+     && request.resource.data.keys().hasOnly(['plan','expiresAt','revoked','grantedAt','grantedBy','updatedAt','revokedAt','revokedBy'])
+     && request.resource.data.plan in ['premium','teacher_pro']
+     && request.resource.data.plan == (get(/databases/$(database)/documents/users/$(uid)).data.role=='teacher' ? 'teacher_pro' : 'premium')
+     && (request.resource.data.expiresAt == null || request.resource.data.expiresAt is timestamp)
+     && request.resource.data.revoked is bool
+     && request.resource.data.grantedBy == request.auth.uid
+     && request.resource.data.grantedAt is timestamp
+     && request.resource.data.updatedAt == request.time;
+   allow delete: if false;
   }
   match /membershipAudit/{id} {
    allow read,write: if false;
