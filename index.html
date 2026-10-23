@@ -46,6 +46,7 @@
 <link rel="stylesheet" href="./css/friend-challenges.css?v=challenges-20261020-2">
 <link rel="stylesheet" href="./css/arcade-online.css?v=arcade-recheck-20261020-4">
 <link rel="stylesheet" href="./css/mobile-home.css?v=20261023-mobile7">
+<link rel="stylesheet" href="./css/lone-king-mate.css?v=20261023-1">
 </head>
 
 
@@ -722,7 +723,8 @@
 <div class="lesson" id="freeCaptureMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('freeCaptureOpen',0)"><div class="lesson-icon">🎯</div> Ăn quân không được bảo vệ</div>
 <div class="lesson" id="captureMenu" role="button" tabindex="0" onclick="vqcOpenChallengeSafe('captureOpen',0)"><div class="lesson-icon">🎯</div> Ăn quân</div>
 <div class="lesson" id="openMateExercises" role="button" tabindex="0" onclick="openMateExercises(0)" onkeydown="if(event.key==='Enter')openMateExercises(0)"><div class="lesson-icon">♔</div> Chiếu hết trong 2 nước</div>
-<div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước</div><div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
+<div class="lesson" role="button" tabindex="0" onclick="openMate3(0)"><div class="lesson-icon">♛</div> Chiếu hết trong 3 nước</div><div class="lesson" id="loneKingMateMenu" role="button" tabindex="0" onclick="loneKingMateOpen(0)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loneKingMateOpen(0)}"><div class="lesson-icon">♚</div> Chiếu hết Vua đơn độc — 6 cách</div>
+<div class="lesson" id="pvpMenu" role="button" tabindex="0" onclick="openPvp()" onkeydown="if(event.key==='Enter')openPvp()"><div class="lesson-icon">⚔️</div> Đối kháng trực tuyến</div></aside>
 
 
 
@@ -1265,7 +1267,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
   defenseAttackMenu:['defenseOpenNew','defenseOverlay'],
   defenseMenu:['defenseOpen','defenseOverlay'],
   freeCaptureMenu:['freeCaptureOpen','freeCaptureOverlay'],
-  captureMenu:['captureOpen','captureOverlay']
+  captureMenu:['captureOpen','captureOverlay'],
+  loneKingMateMenu:['loneKingMateOpen','vqcLoneMateOverlay']
  };
  window.vqcOpenChallengeSafe=function(name,index){
   const found=Object.entries(targetMap).find(([,v])=>v[0]===name);
@@ -1357,6 +1360,36 @@ window.vqcCloseMembershipSafe=function(){
 <link rel="stylesheet" href="./css/membership.css?v=20261023-mobile1">
 <script src="./js/membership.js?v=20261023-8"></script>
 <script src="./js/board-appearance.js?v=20261020-2"></script>
+
+<!-- Chiếu hết Vua đơn độc: luật cờ chính xác bằng chess.js và hòa Pat. -->
+<div id="vqcLoneMateOverlay" role="dialog" aria-modal="true" aria-labelledby="vqcLoneMateTitle">
+ <div class="vqc-lonemate-dialog">
+  <div class="vqc-lonemate-top">
+   <div><h2 id="vqcLoneMateTitle">♚ Chiếu hết Vua đơn độc</h2><p id="vqcLoneMateSubtitle">Sáu kỹ thuật chiếu hết · Trắng đi trước</p></div>
+   <button class="btn btn-soft" id="vqcLoneMateClose" type="button">✕ Đóng</button>
+  </div>
+  <div class="vqc-lonemate-nav">
+   <button type="button" id="vqcLoneMatePrev">← Dạng trước</button>
+   <button type="button" id="vqcLoneMateNext">Dạng tiếp →</button>
+  </div>
+  <div class="vqc-lonemate-layout">
+   <div id="vqcLoneMateBoard" class="vqc-lonemate-board" aria-label="Bàn cờ tập chiếu hết"></div>
+   <section class="vqc-lonemate-info">
+    <h3>🎯 Mục tiêu: chiếu hết</h3>
+    <p id="vqcLoneMateAdvice">Dùng các quân trắng để chiếu hết Vua đen.</p>
+    <p id="vqcLoneMateMessage" role="status" aria-live="polite"></p>
+    <p id="vqcLoneMateMoves" aria-live="polite"></p>
+    <div class="vqc-lonemate-actions">
+     <button type="button" id="vqcLoneMateRestart">↻ Chơi lại</button>
+     <button type="button" id="vqcLoneMateBack">↶ Lùi nước</button>
+     <button type="button" id="vqcLoneMateHint">💡 Gợi ý</button>
+    </div>
+    <p class="vqc-lonemate-rules">Vua đen chỉ đi các nước hợp lệ và có thể ăn quân không được bảo vệ. Không được để hai Vua đứng sát nhau. Nếu bên đến lượt không còn nước hợp lệ nhưng không bị chiếu, ván cờ hòa Pat. Bàn cờ cũng xử lý hòa do lặp lại và luật 50 nước.</p>
+   </section>
+  </div>
+ </div>
+</div>
+<script src="./js/lone-king-mate.js?v=20261023-1"></script>
 </body>
 
 </html>
