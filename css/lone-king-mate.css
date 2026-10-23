@@ -1,0 +1,65 @@
+/* Lone-king mate lessons: isolated overlay, no changes to the existing classroom board. */
+#vqcLoneMateOverlay{display:none;position:fixed;inset:0;z-index:40000;
+ align-items:center;justify-content:center;background:rgba(9,28,49,.78);padding:14px}
+#vqcLoneMateOverlay.open{display:flex}
+.vqc-lonemate-dialog{width:min(980px,100%);max-height:96dvh;overflow:auto;
+ background:linear-gradient(150deg,#f8fcff,#f1f8ff);border:2px solid #9ac3ea;border-radius:22px;
+ padding:18px;box-shadow:0 25px 75px rgba(5,24,45,.5);color:#234567}
+.vqc-lonemate-top{display:flex;justify-content:space-between;align-items:start;gap:12px;padding-bottom:11px}
+.vqc-lonemate-top h2{font-size:clamp(19px,3vw,26px);line-height:1.2;margin:0 0 5px;color:#1e5994}
+.vqc-lonemate-top p{font-size:13px;color:#597691;margin:0}
+.vqc-lonemate-top button{min-height:42px;white-space:nowrap}
+.vqc-lonemate-nav{display:flex;flex-wrap:wrap;gap:8px;margin:7px 0 14px}
+.vqc-lonemate-nav button,.vqc-lonemate-actions button{border:1px solid #b4d7ef;
+ border-radius:12px;background:#eaf5ff;color:#245985;padding:11px 13px;font-weight:800;min-height:44px;cursor:pointer}
+.vqc-lonemate-nav button:disabled,.vqc-lonemate-actions button:disabled{opacity:.45;cursor:not-allowed}
+.vqc-lonemate-nav button:hover:not(:disabled),.vqc-lonemate-actions button:hover:not(:disabled){background:#d1e9fc}
+.vqc-lonemate-layout{display:grid;grid-template-columns:minmax(0,520px) minmax(220px,1fr);align-items:start;gap:17px}
+.vqc-lonemate-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));
+ width:100%;aspect-ratio:1/1;border:5px solid #d7eafa;border-radius:14px;overflow:hidden;box-sizing:border-box}
+.vqc-lonemate-square{position:relative;border:0;min-width:0;min-height:0;aspect-ratio:1/1;padding:0;
+ display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation}
+.vqc-lonemate-square.light{background:#fff0c7}
+.vqc-lonemate-square.dark{background:#79b7e8}
+.vqc-lonemate-square.selected{box-shadow:inset 0 0 0 4px #ffc02d}
+.vqc-lonemate-square.legal:after{content:"";position:absolute;z-index:3;top:42%;left:42%;
+ width:16%;height:16%;border-radius:50%;background:#28669c88;pointer-events:none}
+.vqc-lonemate-square.legal:has(.vqc-lonemate-piece):after{top:8%;left:8%;width:84%;height:84%;
+ background:transparent;border:4px solid #c84b55aa}
+.vqc-lonemate-square.hint-from{outline:3px solid #ffb515;outline-offset:-4px}
+.vqc-lonemate-square.hint-to{box-shadow:inset 0 0 0 4px #20b96b}
+.vqc-lonemate-piece{width:88%;height:88%;display:flex;align-items:center;justify-content:center;font-size:clamp(25px,5vw,56px);
+ position:relative;z-index:2;pointer-events:none}
+.vqc-lonemate-piece .chess-piece-img{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;pointer-events:none}
+.vqc-lonemate-piece svg{width:100%;height:100%;pointer-events:none}
+.vqc-lonemate-rank,.vqc-lonemate-file{position:absolute;font-size:11px;font-weight:900;color:#234969;line-height:1;z-index:3;pointer-events:none}
+.vqc-lonemate-rank{top:4px;left:4px}
+.vqc-lonemate-file{bottom:3px;right:4px}
+.vqc-lonemate-info{min-width:0;background:white;border:1px solid #cfe4f5;border-radius:15px;padding:15px}
+.vqc-lonemate-info h3{margin:0 0 10px;font-size:18px;color:#1d5e93}
+.vqc-lonemate-info p{line-height:1.55;margin:0 0 12px;font-size:14px}
+#vqcLoneMateMessage{min-height:70px;background:#edf7ff;border-radius:11px;padding:12px;color:#285c87;font-weight:750}
+#vqcLoneMateMessage.vqc-lonemate-success{background:#d8f7e6;color:#1c754c}
+#vqcLoneMateMessage.vqc-lonemate-draw{background:#fff0d5;color:#94651d}
+#vqcLoneMateMoves{font-size:13px;color:#5b7690;margin-bottom:12px}
+.vqc-lonemate-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.vqc-lonemate-actions button{font-size:13px}
+.vqc-lonemate-rules{margin-top:12px;border-top:1px dashed #bbd6e9;padding-top:11px;color:#647d94;font-size:12px}
+body:has(#vqcLoneMateOverlay.open) .vqc-annotation-toolbar{display:none!important}
+@media(max-width:700px){
+ #vqcLoneMateOverlay{padding:3px}
+ .vqc-lonemate-dialog{width:100%;max-height:calc(100dvh - 6px);padding:9px 9px 16px;border-radius:14px}
+ .vqc-lonemate-top{gap:8px}
+ .vqc-lonemate-top h2{font-size:19px}
+ .vqc-lonemate-top p{font-size:12px}
+ .vqc-lonemate-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+ .vqc-lonemate-nav button{padding:8px 5px;min-height:43px;font-size:13px}
+ .vqc-lonemate-layout{grid-template-columns:minmax(0,1fr);gap:10px}
+ .vqc-lonemate-board{width:min(100%,min(49dvh,480px));margin:0 auto;border-width:3px}
+ .vqc-lonemate-info{padding:11px}
+ .vqc-lonemate-info h3{font-size:15px}
+ .vqc-lonemate-info p{font-size:13px;margin-bottom:8px}
+ #vqcLoneMateMessage{min-height:0;padding:9px}
+ .vqc-lonemate-rank,.vqc-lonemate-file{font-size:9px}
+ .vqc-lonemate-actions button{min-height:43px}
+}
