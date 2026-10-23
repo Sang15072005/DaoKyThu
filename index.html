@@ -144,7 +144,7 @@
 
 
 
-<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
+<button id="vqcBackHome" class="btn btn-soft" onclick="vqcGoHome()">⌂ Trang chủ</button><div id="accountBar" aria-label="Tài khoản người dùng"><span id="accountUserLabel" style="font-size:13px;font-weight:700">Chưa đăng nhập</span><button id="vqcFriendsOpen" class="btn btn-soft vqc-friends-trigger" type="button" aria-haspopup="dialog" aria-controls="vqcFriendsModal" title="Bạn bè Kỳ Thủ">👥 Bạn bè <span id="vqcFriendsUnread" class="vqc-friends-trigger__badge" aria-label="Lời mời mới" hidden></span></button><button class="btn btn-soft" onclick="showAccountPanel()">👤 Tài khoản</button><button class="btn btn-soft" type="button" onclick="vqcOpenMembership()">👑 Gói thành viên</button><button class="btn btn-soft" onclick="accountSignOut()">Thoát</button></div></header>
 
 
 
@@ -1308,6 +1308,11 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
  },true);
 })();
 </script>
+<div id="vqcMembershipDialog" class="vqc-membership-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="vqcMembershipTitle">
+ <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembership()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div></div>
+</div>
+<link rel="stylesheet" href="./css/membership.css?v=20261023-1">
+<script src="./js/membership.js?v=20261023-1"></script>
 <script src="./js/board-appearance.js?v=20261020-2"></script>
 </body>
 
