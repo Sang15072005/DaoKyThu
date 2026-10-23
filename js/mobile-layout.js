@@ -192,7 +192,7 @@
       if (action === 'home') toHome();
       if (action === 'class') toClass();
       if (action === 'board') toBoard();
-      if (action === 'lessons') { populateLessons(); showSheet(lessonSheet, btn); }
+      if (action === 'lessons') { if (!document.body.classList.contains('vqc-mode-class')) toClass(); populateLessons(); showSheet(lessonSheet, btn); }
       if (action === 'friends') triggerExisting('vqcFriendsOpen');
       if (action === 'account') { closeSheet(); if (typeof window.showAccountPanel === 'function') window.showAccountPanel(); }
       if (action === 'more') { populateMore(); showSheet(moreSheet, btn); }
