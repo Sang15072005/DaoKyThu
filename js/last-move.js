@@ -83,6 +83,11 @@
   const info=boardSquares(board);
   if(!info)return;
   const explicitPending=st.revision!==st.seenRevision;
+  if(!st.snapshot&&!st.last){
+   // The main classroom board already has native .last markers after initial load.
+   const old=Array.from(info.map).filter(([,cell])=>cell.classList.contains('last')).map(([sq])=>sq);
+   if(old.length===2)st.last={from:old[0],to:old[1]};
+  }
   if(st.snapshot&&!explicitPending){
    const changes=Array.from(info.snap.keys()).filter(sq=>st.snapshot.get(sq)!==info.snap.get(sq));
    if(changes.length>4){st.last=null;}
@@ -128,12 +133,13 @@
  }
  function mark(id,from,to){
   if(!ID_SET.has(id))return;
+  const board=document.getElementById(id);
+  if(board)attach(board); // Preserve the first recorded move on dynamic game boards.
   const st=ensure(id);
   const a=normalize(from),b=normalize(to);
   st.last=a&&b&&a!==b?{from:a,to:b}:null;
   st.revision++;
-  const board=document.getElementById(id);
-  if(board){attach(board);queue(board);}
+  if(board)queue(board);
  }
  function clear(id){mark(id,null,null);}
  function lastFromChess(id,chess){
