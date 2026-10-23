@@ -45,7 +45,7 @@
 <link rel="stylesheet" href="./css/arcade-games.css?v=arcade-20261020-2">
 <link rel="stylesheet" href="./css/friend-challenges.css?v=challenges-20261020-2">
 <link rel="stylesheet" href="./css/arcade-online.css?v=arcade-recheck-20261020-4">
-<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-clean4">
+<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-mobile5">
 </head>
 
 
@@ -1342,37 +1342,15 @@ window.vqcCloseMembershipSafe=function(){
  if(dialog){dialog.hidden=true;dialog.style.display='none';}
 };
 </script>
-<nav class="vqc-mobile-nav" aria-label="Điều hướng nhanh trên điện thoại">
+<nav class="vqc-mobile-nav" aria-label="Điều hướng trên điện thoại">
  <button type="button" data-vqc-mobile="home" aria-current="page"><span class="vqc-mobile-icon" aria-hidden="true">⌂</span><span>Trang chủ</span></button>
- <button type="button" data-vqc-mobile="class"><span class="vqc-mobile-icon" aria-hidden="true">♟</span><span>Vào lớp</span></button>
+ <button type="button" data-vqc-mobile="lessons" aria-expanded="false" aria-controls="vqcMobileLessonSheet"><span class="vqc-mobile-icon" aria-hidden="true">📚</span><span>Bài học</span></button>
+ <button type="button" data-vqc-mobile="board"><span class="vqc-mobile-icon" aria-hidden="true">♟</span><span>Bàn cờ</span></button>
  <button type="button" data-vqc-mobile="friends"><span class="vqc-mobile-icon" aria-hidden="true">👥</span><span>Bạn bè</span><span class="vqc-mobile-unread" aria-hidden="true"></span></button>
  <button type="button" data-vqc-mobile="account"><span class="vqc-mobile-icon" aria-hidden="true">👤</span><span>Hồ sơ</span></button>
- <button type="button" data-vqc-mobile="board"><span class="vqc-mobile-icon" aria-hidden="true">♞</span><span>Bàn cờ</span></button>
+ <button type="button" data-vqc-mobile="more" aria-expanded="false" aria-controls="vqcMobileMoreSheet"><span class="vqc-mobile-icon" aria-hidden="true">☰</span><span>Thêm</span></button>
 </nav>
-<script>
-(function(){
- function syncMobileLogin(){
-  const logged=!!window.accountProfile?.uid;
-  document.body.classList.toggle('vqc-mobile-logged-in',logged);
- }
- window.addEventListener('vqc:account-change',syncMobileLogin);
- syncMobileLogin();
- if(window.firebase?.auth){firebase.auth().onAuthStateChanged(()=>setTimeout(syncMobileLogin,0));}
- const actions={
-  home:()=>{if(typeof window.vqcGoHome==='function')window.vqcGoHome();else document.getElementById('vqcModeHome')?.scrollIntoView({behavior:'smooth'});},
-  class:()=>{if(typeof window.vqcEnterClass==='function')window.vqcEnterClass();},
-  friends:()=>document.getElementById('vqcFriendsOpen')?.click(),
-  account:()=>{if(typeof window.showAccountPanel==='function')window.showAccountPanel();},
-  board:()=>{const b=document.querySelector('.board-shell');if(document.body.classList.contains('vqc-mode-class')&&b){b.scrollIntoView({behavior:'smooth',block:'start'});}else if(typeof window.vqcEnterClass==='function'){window.vqcEnterClass();requestAnimationFrame(()=>document.querySelector('.board-shell')?.scrollIntoView({behavior:'smooth',block:'start'}));}}
- };
- document.querySelectorAll('[data-vqc-mobile]').forEach(btn=>btn.addEventListener('click',()=>{
-  const action=btn.dataset.vqcMobile;
-  try{actions[action]?.();}catch(e){console.error('Mobile navigation:',e);}
-  document.querySelectorAll('[data-vqc-mobile]').forEach(x=>x.removeAttribute('aria-current'));
-  btn.setAttribute('aria-current','page');
- }));
-})();
-</script>
+<script src="./js/mobile-layout.js?v=20261023-mobile5"></script>
 <div id="vqcMembershipDialog" class="vqc-membership-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="vqcMembershipTitle">
  <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembershipSafe()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div><section id="vqcMembershipAdmin" hidden></section></div>
 </div>
