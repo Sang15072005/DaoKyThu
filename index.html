@@ -45,7 +45,7 @@
 <link rel="stylesheet" href="./css/arcade-games.css?v=arcade-20261020-2">
 <link rel="stylesheet" href="./css/friend-challenges.css?v=challenges-20261020-2">
 <link rel="stylesheet" href="./css/arcade-online.css?v=arcade-recheck-20261020-4">
-<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-2">
+<link rel="stylesheet" href="./css/mobile-home.css?v=20261023-3">
 </head>
 
 
@@ -1352,10 +1352,12 @@ window.vqcCloseMembershipSafe=function(){
 <script>
 (function(){
  function syncMobileLogin(){
-  document.body.classList.toggle('vqc-mobile-logged-in',!!window.accountProfile?.uid);
+  const logged=!!(window.accountProfile?.uid || (window.auth && window.auth.currentUser && !document.getElementById('accountLoggedArea')?.hidden && document.getElementById('accountLoggedArea')?.style.display!=='none'));
+  document.body.classList.toggle('vqc-mobile-logged-in',logged);
  }
  window.addEventListener('vqc:account-change',syncMobileLogin);
  syncMobileLogin();
+ if(window.firebase?.auth){firebase.auth().onAuthStateChanged(()=>setTimeout(syncMobileLogin,0));}
  const actions={
   home:()=>{if(typeof window.vqcGoHome==='function')window.vqcGoHome();else document.getElementById('vqcModeHome')?.scrollIntoView({behavior:'smooth'});},
   class:()=>{if(typeof window.vqcEnterClass==='function')window.vqcEnterClass();},
