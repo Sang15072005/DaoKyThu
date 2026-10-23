@@ -390,6 +390,9 @@ function getPieceGameLegalMoves(from){
 }
 
 function renderBoard(){
+    if(lastFrom!==null&&lastTo!==null&&Number.isInteger(lastFrom)&&Number.isInteger(lastTo))
+      window.vqcLastMove?.mark('board',squareName(lastFrom),squareName(lastTo));
+    else window.vqcLastMove?.clear('board');
     const center=document.querySelector('section.center');
     if(center)center.classList.toggle('vqc-practice-active',!!pieceGame);
 
@@ -2069,10 +2072,12 @@ function mateReset(){
 }
 function renderMateBoard(){
   if(!mateChess)return;
+  window.vqcLastMove?.fromChess('mateBoard',mateChess);
   const el=document.getElementById('mateBoard');el.innerHTML='';
   const hints=mateSelected?mateChess.moves({square:mateSelected,verbose:true}).map(x=>x.to):[];
   for(let i=0;i<64;i++){
     const sq=mateCoords(i),pc=mateChess.get(sq),cell=document.createElement('div');
+    cell.dataset.square=sq;
     cell.className='mate-square '+((Math.floor(i/8)+i%8)%2?'dark':'light');
     if(sq===mateSelected)cell.classList.add('selected');
     if(hints.includes(sq))cell.classList.add('hint');
@@ -2131,7 +2136,7 @@ function openMate3(i){document.getElementById("vqcHomeHero")?.setAttribute("hidd
 function closeMate3(){closeMate3Promotion();document.getElementById('mate3Overlay').classList.remove('open');}
 function mate3Message(t){document.getElementById('mate3Message').textContent=t;}
 function resetMate3(){closeMate3Promotion();const p=MATE3_DATA[mate3Index];mate3Chess=new Chess(p.fen);mate3Selected=null;mate3White=0;mate3Done=false;mate3History=[];document.getElementById('mate3Title').textContent='♛ Chiếu hết trong 3 nước — Bài '+(mate3Index+1)+'/6 (Hình '+p.num+')';mate3Message('Trắng đi trước. Hãy chiếu hết Vua Đen trong 3 nước của Trắng.'+(p.num===163?' Lưu ý: nước Đen thứ hai được hiệu chỉnh thành Ka2 vì Ka1–b3 không hợp lệ.':''));renderMate3();}
-function renderMate3(){const b=document.getElementById('mate3Board');b.innerHTML='';const hints=mate3Selected?mate3Chess.moves({square:mate3Selected,verbose:true}).map(m=>m.to):[];for(let i=0;i<64;i++){const sq=mateCoords(i),pc=mate3Chess.get(sq),el=document.createElement('div');el.className='mate-square '+((Math.floor(i/8)+i%8)%2?'dark':'light');if(sq===mate3Selected)el.classList.add('selected');if(hints.includes(sq))el.classList.add('hint');if(pc){const w=document.createElement('span');w.className='piece';w.innerHTML=pieceSvgMarkup(pc.color==='w'?pc.type.toUpperCase():pc.type);el.appendChild(w);}el.onclick=()=>clickMate3(sq);b.appendChild(el);}}
+function renderMate3(){window.vqcLastMove?.fromChess('mate3Board',mate3Chess);const b=document.getElementById('mate3Board');b.innerHTML='';const hints=mate3Selected?mate3Chess.moves({square:mate3Selected,verbose:true}).map(m=>m.to):[];for(let i=0;i<64;i++){const sq=mateCoords(i),pc=mate3Chess.get(sq),el=document.createElement('div');el.dataset.square=sq;el.className='mate-square '+((Math.floor(i/8)+i%8)%2?'dark':'light');if(sq===mate3Selected)el.classList.add('selected');if(hints.includes(sq))el.classList.add('hint');if(pc){const w=document.createElement('span');w.className='piece';w.innerHTML=pieceSvgMarkup(pc.color==='w'?pc.type.toUpperCase():pc.type);el.appendChild(w);}el.onclick=()=>clickMate3(sq);b.appendChild(el);}}
 function mate3Key(m){return m.from+m.to+(m.promotion||'');}
 function mate3Options(){return MATE3_DATA[mate3Index].lines.filter(l=>mate3History.every((m,i)=>l[i]===m));}
 let mate3PendingPromotion=null;
@@ -2285,6 +2290,7 @@ function pvpHistoryChess(){
  return c;
 }
 function renderPvp(){
+ window.vqcLastMove?.fromUci('pvpBoard',pvpData?.moves||[]);
  const board=document.getElementById('pvpBoard');if(!board)return;
  if(typeof Chess!=='function'){board.textContent='Không tải được thư viện chess.js. Hãy kiểm tra Internet và tải lại trang.';return;}
  const chess=pvpChess()||new Chess();const mine=pvpMyColor()||'w';const flip=mine==='b';
@@ -2293,6 +2299,7 @@ function renderPvp(){
  const allowed=pvpSelected?chess.moves({square:pvpSelected,verbose:true}).map(m=>m.to):[];
  squares.forEach((sq,i)=>{
   const pc=chess.get(sq),cell=document.createElement('div');
+  cell.dataset.square=sq;
   const f=sq.charCodeAt(0)-97,r=Number(sq[1]);
   cell.className='pvp-cell '+((f+r)%2?'dark':'light');
   if(sq===pvpSelected)cell.classList.add('selected');
