@@ -36,6 +36,14 @@ service cloud.firestore {
      && request.resource.data.cancelledAt == request.time;
    allow delete: if false;
   }
+  // Server-issued paid/manual entitlements: client can only read its own.
+  match /membershipEntitlements/{uid} {
+   allow get: if signed() && request.auth.uid==uid;
+   allow list,create,update,delete: if false;
+  }
+  match /membershipAudit/{id} {
+   allow read,write: if false;
+  }
   match /studentCodes/{code} {allow read,write: if false;}
   match /classes/{id} {
    allow read: if teacher() && resource.data.teacherId==request.auth.uid || student() && resource.data.teacherId==me().data.teacherId && resource.data.code==me().data.classCode;
