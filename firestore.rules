@@ -56,7 +56,16 @@ service cloud.firestore {
    allow delete: if false;
   }
   match /membershipAudit/{id} {
-   allow read,write: if false;
+   allow read: if membershipOwner();
+   allow create: if membershipOwner()
+     && request.resource.data.keys().hasOnly(['uid','action','plan','actor','at','days'])
+     && request.resource.data.uid is string
+     && request.resource.data.action in ['grant','revoke']
+     && request.resource.data.plan in ['premium','teacher_pro']
+     && request.resource.data.actor==request.auth.uid
+     && request.resource.data.at==request.time
+     && (request.resource.data.days == null || request.resource.data.days in [7,30,365]);
+   allow update,delete: if false;
   }
   match /studentCodes/{code} {allow read,write: if false;}
   match /classes/{id} {
