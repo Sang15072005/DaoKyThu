@@ -64,6 +64,7 @@
   msg.textContent=feedback||state.message;
   msg.classList.toggle('vqc-lonemate-success',!!state.won);
   msg.classList.toggle('vqc-lonemate-draw',!!(state.done&&!state.won));
+  window.vqcLastMove?.fromChess('vqcLoneMateBoard',game);
   const history=game.history({verbose:true});
   $('vqcLoneMateMoves').textContent='Số nước trắng: '+Math.ceil(history.length/2)+' · Nước gần nhất: '+(history.length?history[history.length-1].san:'—');
   $('vqcLoneMateBack').disabled=history.length===0;
