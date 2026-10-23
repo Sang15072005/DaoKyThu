@@ -7,7 +7,7 @@ const CAPTURE_TASKS=[
  {pieces:{g3:'Q',d5:'n',f7:'b',f6:'p',g5:'p'},from:'g3',tip:'Dùng Hậu trắng ăn hết 4 quân đen. Quan sát các ô bị quân đen tấn công.'},
  {pieces:{f4:'N',d7:'b',c6:'p',f6:'q',d4:'p'},from:'f4',tip:'Dùng Mã trắng ăn hết 4 quân đen bằng những bước nhảy hình chữ L. Tránh bị ăn lại.'}
 ];
-let captureIndex=0,captureSelected=null,captureSolved=false,captureBusy=false,capturePosition=null,captureReply=null,captureTimer=null,captureWhiteSquare=null;
+let captureIndex=0,captureSelected=null,captureSolved=false,captureBusy=false,capturePosition=null,captureReply=null,captureTimer=null,captureWhiteSquare=null,captureLastMove=null;
 const captureDone=new Set();
 function captureOpen(i){
  if(captureTimer)clearTimeout(captureTimer);
@@ -20,7 +20,7 @@ function captureOpen(i){
 function captureClose(){if(captureTimer)clearTimeout(captureTimer);captureTimer=null;captureBusy=false;document.getElementById('captureOverlay').classList.remove('open');if(typeof vqcBroadcastView==='function')vqcBroadcastView('board');}
 function captureReset(){
  if(captureTimer)clearTimeout(captureTimer);captureTimer=null;
- captureSelected=null;captureSolved=false;captureBusy=false;captureReply=null;
+ captureSelected=null;captureSolved=false;captureBusy=false;captureReply=null;captureLastMove=null;
  capturePosition={...CAPTURE_TASKS[captureIndex].pieces};
  captureWhiteSquare=CAPTURE_TASKS[captureIndex].from;
  document.getElementById('captureInstruction').textContent=CAPTURE_TASKS[captureIndex].tip;
@@ -28,9 +28,9 @@ function captureReset(){
  captureRender();vqcPublishCapture();
 }
 function captureRender(){
- const task=CAPTURE_TASKS[captureIndex],board=document.getElementById('captureBoard');board.innerHTML='';
+ const task=CAPTURE_TASKS[captureIndex],board=document.getElementById('captureBoard');window.vqcLastMove?.mark('captureBoard',captureLastMove?.from||null,captureLastMove?.to||null);board.innerHTML='';
  for(let rank=8;rank>=1;rank--){for(const file of 'abcdefgh'){
-  const sq=file+rank,cell=document.createElement('div');
+  const sq=file+rank,cell=document.createElement('div');cell.dataset.square=sq;
   cell.className='capture-cell '+(((8-rank+'abcdefgh'.indexOf(file))%2)===0?'light':'dark')+(captureSelected===sq?' selected':'')+(captureReply?.from===sq?' capture-reply-from':'')+(captureReply?.to===sq?' capture-reply-to':'');
   cell.setAttribute('role','button');cell.tabIndex=0;cell.setAttribute('aria-label','Ô '+sq);
   if(capturePosition[sq])cell.innerHTML=pieceSvgMarkup(capturePosition[sq]);
@@ -137,7 +137,7 @@ function captureClick(sq){
   captureRender();return;
  }
  const capturedBlack=!!target&&target===target.toLowerCase();
- capturePosition[sq]=moving;delete capturePosition[whiteFrom];
+ capturePosition[sq]=moving;delete capturePosition[whiteFrom];captureLastMove={from:whiteFrom,to:sq};
  captureWhiteSquare=sq;captureSelected=null;captureReply=null;
  const remainingBlack=Object.values(capturePosition).filter(p=>p===p.toLowerCase()).length;
  if(remainingBlack===0){
@@ -160,7 +160,7 @@ function captureClick(sq){
  captureTimer=setTimeout(()=>{
   capturePosition[sq]=capturePosition[blackFrom];delete capturePosition[blackFrom];
   captureWhiteSquare=null;
-  captureReply={from:blackFrom,to:sq};captureRender();
+  captureReply={from:blackFrom,to:sq};captureLastMove={from:blackFrom,to:sq};captureRender();
   captureWrong('Quân đen đã ăn lại quân trắng! Hãy quan sát ô bị tấn công.');
   document.getElementById('captureInstruction').textContent='Nhấn THỬ LẠI để xếp lại thế cờ.';
   captureBusy=false;captureTimer=null;vqcPublishCapture();
