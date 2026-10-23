@@ -70,7 +70,30 @@
     candidates.push({from,to});
    }
   }
-  return candidates.length===1?candidates[0]:null;
+  if(candidates.length===1)return candidates[0];
+  // Khi nhập thành (Vua + Xe cùng di chuyển), ưu tiên đoạn Vua đi hai cột.
+  if(changed.length===4&&candidates.length===2){
+   const kingMove=candidates.filter(m=>Math.abs(FILES.indexOf(m.from[0])-FILES.indexOf(m.to[0]))===2
+    &&m.from[1]===m.to[1]);
+   if(kingMove.length===1)return kingMove[0];
+  }
+  // Tốt phong cấp thay hình quân nên không còn cùng dấu nhận diện ảnh ở ô đích.
+  // Chỉ suy đoán khi đúng hàng phong cấp, tránh tô nhầm lúc thay bài.
+  if(candidates.length===0&&changed.length>=2&&changed.length<=3){
+   const promotion=[];
+   for(const from of changed){
+    if(!a.get(from)||b.get(from))continue;
+    if(from[1]!=='7'&&from[1]!=='2')continue;
+    for(const to of changed){
+     if(from===to||!b.get(to)||(to[1]!=='8'&&to[1]!=='1'))continue;
+     if(Math.abs(FILES.indexOf(from[0])-FILES.indexOf(to[0]))>1)continue;
+     if(Math.abs(Number(from[1])-Number(to[1]))!==1)continue;
+     promotion.push({from,to});
+    }
+   }
+   if(promotion.length===1)return promotion[0];
+  }
+  return null;
  }
  function paint(board,info,last){
   for(const [sq,cell] of info.map){
