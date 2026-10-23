@@ -91,13 +91,8 @@
  function adminPanel(){
   const root=el('vqcMembershipAdmin');if(!root)return;
   const allowed=window.accountProfile?.uid===ADMIN_UID;
-  root.hidden=false;
-  if(!allowed){
-   root.replaceChildren();
-   const p=document.createElement('p');
-   p.textContent='Quản trị viên: tài khoản hiện tại chưa được nhận diện. UID đang đăng nhập: '+(window.accountProfile?.uid||'Chưa đăng nhập')+'. Hãy đối chiếu UID trong Firebase Authentication và tải lại trang.';
-   root.append(p);return;
-  }
+  root.hidden=!allowed;
+  if(!allowed){root.replaceChildren();return;}
   root.innerHTML='<h3>🛡️ Quản trị gói thành viên · Spark</h3><p>Tìm bằng UID hoặc mã tài khoản. Chỉ chủ sở hữu được ghi quyền.</p>'+
    '<div class="vqc-admin-row"><input id="vqcAdminLookup" placeholder="UID hoặc mã tài khoản" maxlength="128"><button class="btn btn-soft" id="vqcAdminSearch">Tìm</button></div>'+
    '<div id="vqcAdminFound"></div><p id="vqcAdminMessage" role="status"></p>';
