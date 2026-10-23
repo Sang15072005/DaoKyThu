@@ -9,7 +9,7 @@ function vqcExerciseWrite(field,value){
  roomRef.update({[field]:{...value,clientId:vqcExerciseClientId},updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
  .catch(e=>{console.warn('Đồng bộ bài tập thất bại:',e);vqcNotify('Chưa đồng bộ được bài tập. Kiểm tra kết nối phòng.','warning');});
 }
-function vqcCaptureState(){return {index:captureIndex,position:{...capturePosition},whiteSquare:captureWhiteSquare,solved:captureSolved,busy:captureBusy,reply:captureReply,done:[...captureDone],instruction:document.getElementById('captureInstruction').textContent,feedback:document.getElementById('captureFeedback').innerHTML,feedbackClass:document.getElementById('captureFeedback').className,feedbackHidden:document.getElementById('captureFeedback').hidden};}
+function vqcCaptureState(){return {index:captureIndex,position:{...capturePosition},whiteSquare:captureWhiteSquare,solved:captureSolved,busy:captureBusy,reply:captureReply,lastMove:captureLastMove,done:[...captureDone],instruction:document.getElementById('captureInstruction').textContent,feedback:document.getElementById('captureFeedback').innerHTML,feedbackClass:document.getElementById('captureFeedback').className,feedbackHidden:document.getElementById('captureFeedback').hidden};}
 function vqcPublishCapture(){
  if(!roomRef||vqcApplyingExercise||vqcNavApplying||!capturePosition||!document.getElementById('captureOverlay').classList.contains('open'))return;
  clearTimeout(vqcCapturePublishTimer);
@@ -23,7 +23,7 @@ function vqcReceiveCapture(d){
  try{
   if(captureTimer){clearTimeout(captureTimer);captureTimer=null;}
   captureIndex=d.index;capturePosition={...d.position};captureWhiteSquare=d.whiteSquare??null;
-  captureSolved=!!d.solved;captureBusy=!!d.busy;captureReply=d.reply||null;captureSelected=null;
+  captureSolved=!!d.solved;captureBusy=!!d.busy;captureReply=d.reply||null;captureLastMove=d.lastMove||null;captureSelected=null;
   captureDone.clear();(d.done||[]).forEach(x=>{if(Number.isInteger(x))captureDone.add(x);});
   document.getElementById('captureInstruction').textContent=d.instruction||CAPTURE_TASKS[d.index].tip;
   const fb=document.getElementById('captureFeedback');fb.className=d.feedbackClass||'capture-feedback';fb.innerHTML=(d.feedback||'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');fb.hidden=!!d.feedbackHidden;
