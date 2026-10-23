@@ -243,7 +243,7 @@
    if(chess.turn()!=='w'||chess.in_check()||chess.in_stalemate()||chess.in_checkmate())throw Error('Bài tập không hợp lệ: '+level.name);
    const white=chess.board().flat().filter(p=>p&&p.color==='w'),black=chess.board().flat().filter(p=>p&&p.color==='b');
    if(black.length!==1||black[0].type!=='k'||white.filter(p=>p.type==='k').length!==1)throw Error('Bài tập không có Vua đơn độc: '+level.name);
-   const bks=SQUARES.flatMap(file=>[4,5].map(rank=>file+rank)).find(sq=>chess.get(sq)?.color==='b'&&chess.get(sq)?.type==='k');
+   const bks=Array.from(SQUARES).flatMap(file=>[4,5].map(rank=>file+rank)).find(sq=>chess.get(sq)?.color==='b'&&chess.get(sq)?.type==='k');
    if(!['d4','e4','d5','e5'].includes(bks))throw Error('Vua đen không bắt đầu ở trung tâm: '+level.name);
    if(chess.in_draw())throw Error('Bài tập đang hòa ngay từ đầu: '+level.name);
    if(level.name==='2 Tượng'&&white.filter(p=>p.type==='b').length!==2)throw Error('Thiếu Tượng');
