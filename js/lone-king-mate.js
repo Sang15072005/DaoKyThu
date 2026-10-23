@@ -101,7 +101,7 @@
    +Math.min(6,coordDistance(move.to,whiteKingSquare))*4
    +(Math.max(0,6-checks))*0.25
    -(mating?3000+mating*400:0)
-   +(move.captured?-450:0);
+   +(move.captured?650:0);
   game.undo();
   return score;
  }
