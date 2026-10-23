@@ -1311,6 +1311,8 @@ function vqcToggleLoginPassword(){const el=document.getElementById('accountLogin
 <script>
 /* Independent fallback: membership modal must open even if the optional membership module fails. */
 window.vqcOpenMembershipSafe=function(){
+ const account=document.getElementById('accountOverlay');
+ if(account&&window.accountProfile)account.classList.add('hidden');
  const dialog=document.getElementById('vqcMembershipDialog');
  if(!dialog){alert('Không tìm thấy giao diện Gói thành viên.');return;}
  dialog.hidden=false;
@@ -1335,7 +1337,7 @@ window.vqcCloseMembershipSafe=function(){
  <div class="vqc-membership-modal"><div class="vqc-membership-head"><h2 id="vqcMembershipTitle">👑 Gói thành viên Đảo Kỳ Thủ</h2><button class="btn btn-soft" type="button" onclick="vqcCloseMembershipSafe()" aria-label="Đóng">✕</button></div><div id="vqcMembershipBody"></div><section id="vqcMembershipAdmin" hidden></section></div>
 </div>
 <link rel="stylesheet" href="./css/membership.css?v=20261023-4">
-<script src="./js/membership.js?v=20261023-5"></script>
+<script src="./js/membership.js?v=20261023-6"></script>
 <script src="./js/board-appearance.js?v=20261020-2"></script>
 </body>
 
